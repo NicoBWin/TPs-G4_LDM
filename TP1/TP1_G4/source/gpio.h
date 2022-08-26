@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "MK64F12.h"
 
 
 /*******************************************************************************
@@ -45,6 +46,10 @@ enum { PA, PB, PC, PD, PE };
 #define HIGH    1
 #endif // LOW
 
+// Offsets
+#define CLK_GATING_OFFSET 10
+#define MUX_SHIFT_1 8
+#define MUX_SHIFT_0 9
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -52,6 +57,18 @@ enum { PA, PB, PC, PD, PE };
 
 typedef uint8_t pin_t;
 
+
+typedef void (*pinIrqFun_t)(void);
+
+// IRQ modes
+enum {
+    GPIO_IRQ_MODE_DISABLE,
+    GPIO_IRQ_MODE_RISING_EDGE,
+    GPIO_IRQ_MODE_FALLING_EDGE,
+    GPIO_IRQ_MODE_BOTH_EDGES,
+
+    GPIO_IRQ_CANT_MODES
+};
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
@@ -69,10 +86,21 @@ typedef uint8_t pin_t;
 void gpioMode (pin_t pin, uint8_t mode);
 
 /**
+ * @brief Configures how the pin reacts when an IRQ event ocurrs
+ * @param pin the pin whose IRQ mode you wish to set (according PORTNUM2PIN)
+ * @param irqMode disable, risingEdge, fallingEdge or bothEdges
+ * @param irqFun function to call on pin event
+ * @return Registration succeed
+ */
+bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun);
+
+/**
  * @brief Write a HIGH or a LOW value to a digital pin
  * @param pin the pin to write (according PORTNUM2PIN)
  * @param val Desired value (HIGH or LOW)
  */
+
+
 void gpioWrite (pin_t pin, bool value);
 
 /**

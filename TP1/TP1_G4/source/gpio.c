@@ -1,66 +1,69 @@
-/***************************************************************************//**
-  @file     gpio.c
-  @brief    Application functions
-  @author   Grupo 4
- ******************************************************************************/
-
-/*******************************************************************************
- * INCLUDE HEADER FILES
- ******************************************************************************/
-#include "MK64F12.h"
 #include "gpio.h"
-#include "hardware.h"
 
-
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
-
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
- ******************************************************************************/
-static void privFunc(uint32_t veces)
-{
-    while (veces--);
-}
-
-
-/*******************************************************************************
- *******************************************************************************
-                        GLOBAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
 /**
  * @brief Configures the specified pin to behave either as an input or an output
  * @param pin the pin whose mode you wish to set (according PORTNUM2PIN)
  * @param mode INPUT, OUTPUT, INPUT_PULLUP or INPUT_PULLDOWN.
  */
-void gpioMode (pin_t pin, uint8_t mode){
-	if ( pin > PORTNUM2PIN(PE,31) ) return;
-		if ( mode > INPUT_PULLDOWN) return;
 
-		uint32_t port = PIN2PORT(pin);
+static PORT_Type* port_base_pointer[]= PORT_BASE_PTRS;
+static GPIO_Type* gpio_base_pointer[]= GPIO_BASE_ADDRS;
+enum {DESABL,ENABL};
 
-		// 1) Clock enable
-		SIM->SCGC5 |= SIM_SCGC5_PORT(port,1);
+void gpioMode (pin_t pin, uint8_t mode)
+{
 
-		// 2) PORT configuration
-		PORT_Type* port_ptr = PORT_PTRS[port];
-		port_ptr->PCR[PIN2NUM(pin)] = 0x0;//!!!
-		port_ptr->PCR[PIN2NUM(pin)] |= PORT_PCR_MUX(0b001);
-		port_ptr->PCR[PIN2NUM(pin)] |= PORT_PCR_DSE(0b1);
+	PORT_Type* port_pointer = port_base_pointer[ PIN2PORT(pin) ];	// Apunto al pcr del puerto correspondiente
+	GPIO_Type* gpio_pointer = gpio_base_pointer[ PIN2PORT(pin) ];   // Apunto al GPIo del puerto correspondiente
+	port_pointer->PCR[PIN2NUM(pin)]=0;
+	SIM->SCGC5 |= 1<<(PIN2PORT(pin)+ CLK_GATING_OFFSET );	// Prendo el clock del puerto a configurar
+	// Configuro el LOCK y el MUX
+	port_pointer->PCR[PIN2NUM(pin)] &= ~(1<<PORT_PCR_LK_SHIFT);	// Desactiva el LOCK
+	port_pointer->PCR[PIN2NUM(pin)] &= ~(3<< MUX_SHIFT_0);		// Configuro los ceros de mux
+	port_pointer->PCR[PIN2NUM(pin)] |=  (1<< MUX_SHIFT_1);		// Configuro el 1 del mux para hacerlo gpio
 
-		if ((mode==INPUT_PULLDOWN)||(mode==INPUT_PULLUP)) {
-			port_ptr->PCR[PIN2NUM(pin)] |= PORT_PCR_PE(0b1);
-			port_ptr->PCR[PIN2NUM(pin)] |= PORT_PCR_PS( mode==INPUT_PULLDOWN ? 0b0 : 0b1 );
+
+	//**************************** Configuro el PCR ****************************//
+	if(mode <=OUTPUT && mode >=INPUT)
+	{
+		port_pointer->PCR[PIN2NUM(pin)] &= ~(1<<1);	// Apago el Pull
+	}
+	else if(mode <=INPUT_PULLDOWN && mode >=INPUT_PULLUP)
+	{
+		port_pointer->PCR[PIN2NUM(pin)] |= 1<<1;	// Prendo el Pull
+		if(mode == 2)
+		{
+			port_pointer->PCR[PIN2NUM(pin)] |= 1; // Configuro PulluP
 		}
+		else
+		{
+			port_pointer->PCR[PIN2NUM(pin)] &= ~1; // Configuro PullDown
+		}
+	}
+	//**************************** Configuro el GPIO ****************************//
 
-		// 3) GPIO configuration
-		GPIO_Type* gpio_ptr = GPIO_PTRS[port];
-		gpio_ptr->PDDR |= ((mode == OUTPUT) ? 1 : 0) << PIN2NUM(pin);
+	if(mode == OUTPUT)
+	{
+		gpio_pointer->PDDR |= 1<<PIN2NUM(pin); 		 // Configuro como pin de salida
+	}
+	else if(mode ==  INPUT  || mode == INPUT_PULLUP || mode ==INPUT_PULLDOWN)
+	{
+		gpio_pointer->PDDR &= ~(1<<PIN2NUM(pin));	// Configuro como pin de entrada
+	}
 
-		return;
+
+}
+
+/**
+ * @brief Configures how the pin reacts when an IRQ event ocurrs
+ * @param pin the pin whose IRQ mode you wish to set (according PORTNUM2PIN)
+ * @param irqMode disable, risingEdge, fallingEdge or bothEdges
+ * @param irqFun function to call on pin event
+ * @return Registration succeed
+ */
+bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun)
+{
+
 }
 
 /**
@@ -68,16 +71,27 @@ void gpioMode (pin_t pin, uint8_t mode){
  * @param pin the pin to write (according PORTNUM2PIN)
  * @param val Desired value (HIGH or LOW)
  */
-void gpioWrite (pin_t pin, bool value){
-
+void gpioWrite (pin_t pin, bool value)
+{
+	GPIO_Type* gpio_pointer = gpio_base_pointer[ PIN2PORT(pin) ];
+	if (value == 1)
+	{
+		gpio_pointer->PSOR |= 1<<PIN2NUM(pin);	// Pone un uno en el Set del pin correspondiente
+	}
+	else
+	{
+		gpio_pointer->PCOR |= 1<<PIN2NUM(pin);  // Pone un uno en el Clear del pin correspondiente
+	}
 }
 
 /**
  * @brief Toggle the value of a digital pin (HIGH<->LOW)
  * @param pin the pin to toggle (according PORTNUM2PIN)
  */
-void gpioToggle (pin_t pin){
-
+void gpioToggle (pin_t pin)
+{
+	GPIO_Type* gpio_pointer = gpio_base_pointer[ PIN2PORT(pin) ];
+	gpio_pointer->PTOR |= 1<<PIN2NUM(pin);     // Pone un uno en el Toggle del pin correspondiente
 }
 
 /**
@@ -85,22 +99,18 @@ void gpioToggle (pin_t pin){
  * @param pin the pin to read (according PORTNUM2PIN)
  * @return HIGH or LOW
  */
-bool gpioRead (pin_t pin){
-
-}
-
-
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
-
-static void privFunc(uint32_t veces)
+bool gpioRead (pin_t pin)
 {
-    while (veces--);
+	bool value;
+	GPIO_Type* gpio_pointer = gpio_base_pointer[ PIN2PORT(pin) ];
+
+	if ( ((gpio_pointer->PDIR) & (1<<PIN2NUM(pin)) ) != 0 )	// Me quedo con la salida del pin corrrespondiente
+	{
+		value = 1;
+	}
+	else
+	{
+		value= 0;
+	}
+	return value;
 }
-
-
-/*******************************************************************************
- ******************************************************************************/
