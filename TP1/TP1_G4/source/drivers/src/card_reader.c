@@ -1,6 +1,6 @@
 /***************************************************************************//**
-  @file     App.c
-  @brief    Application functions
+  @file     car_reader.c
+  @brief    Driver lector de tarjetas de banda magnetica
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
@@ -9,13 +9,12 @@
  ******************************************************************************/
 
 #include "/TP1/TP1_G4/source/drivers/headers/card_reader.h"
-#include "/TP1/TP1_G4/source/drivers/headers/display.h"
-#include "/TP1/TP1_G4/source/drivers/headers/encoder.h"
 
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+
 
 
 /*******************************************************************************
@@ -28,12 +27,15 @@
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
 
+// +ej: unsigned int anio_actual;+
+
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static void delayLoop(uint32_t veces);
+// +ej: static void falta_envido (int);+
+
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -55,18 +57,6 @@ static void delayLoop(uint32_t veces);
  *******************************************************************************
  ******************************************************************************/
 
-/* Función que se llama 1 vez, al comienzo del programa */
-void App_Init (void)
-{
-    gpioMode(PIN_LED_BLUE, OUTPUT);
-}
-
-/* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void)
-{
-    delayLoop(4000000UL);
-    gpioToggle(PIN_LED_BLUE);
-}
 
 
 /*******************************************************************************
@@ -74,12 +64,3 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-static void delayLoop(uint32_t veces)
-{
-    while (veces--);
-}
-
-
-
-

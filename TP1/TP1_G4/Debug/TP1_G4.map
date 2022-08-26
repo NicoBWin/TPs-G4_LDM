@@ -1,6 +1,21 @@
 
 Discarded input sections
 
+ .group         0x00000000        0xc ./source/drivers/src/board.o
+ .text          0x00000000        0x0 ./source/drivers/src/board.o
+ .data          0x00000000        0x0 ./source/drivers/src/board.o
+ .bss           0x00000000        0x0 ./source/drivers/src/board.o
+ .debug_info    0x00000000       0x21 ./source/drivers/src/board.o
+ .debug_abbrev  0x00000000       0x13 ./source/drivers/src/board.o
+ .debug_aranges
+                0x00000000       0x18 ./source/drivers/src/board.o
+ .debug_macro   0x00000000       0x11 ./source/drivers/src/board.o
+ .debug_macro   0x00000000      0xa5a ./source/drivers/src/board.o
+ .debug_line    0x00000000       0x3e ./source/drivers/src/board.o
+ .debug_str     0x00000000     0x2d1a ./source/drivers/src/board.o
+ .comment       0x00000000       0x7f ./source/drivers/src/board.o
+ .ARM.attributes
+                0x00000000       0x39 ./source/drivers/src/board.o
  .group         0x00000000        0xc ./source/App.o
  .group         0x00000000        0xc ./source/App.o
  .group         0x00000000        0xc ./source/App.o
@@ -16,6 +31,7 @@ Discarded input sections
  .text          0x00000000        0x0 ./source/App.o
  .data          0x00000000        0x0 ./source/App.o
  .bss           0x00000000        0x0 ./source/App.o
+ .debug_macro   0x00000000      0xa5a ./source/App.o
  .group         0x00000000        0xc ./source/gpio.o
  .group         0x00000000        0xc ./source/gpio.o
  .group         0x00000000        0xc ./source/gpio.o
@@ -140,65 +156,6 @@ Discarded input sections
  .debug_macro   0x00000000       0x48 ./SDK/CMSIS/system_MK64F12.o
  .debug_macro   0x00000000     0xe07b ./SDK/CMSIS/system_MK64F12.o
  .debug_macro   0x00000000     0x122b ./SDK/CMSIS/system_MK64F12.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .group         0x00000000        0xc C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text          0x00000000        0x0 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .data          0x00000000        0x0 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .bss           0x00000000        0x0 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .rodata.portPtrList
-                0x00000000       0x14 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .rodata.gpioPtrList
-                0x00000000       0x14 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .rodata.mode2pcr
-                0x00000000       0x10 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text.gpioMode
-                0x00000000       0x98 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text.gpioWrite
-                0x00000000       0x5c C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text.gpioToggle
-                0x00000000       0x48 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text.gpioRead
-                0x00000000       0x68 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .text.parsePin
-                0x00000000       0x42 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_info    0x00000000      0x48c C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_abbrev  0x00000000      0x162 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_aranges
-                0x00000000       0x40 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_ranges  0x00000000       0x60 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0xd5 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000      0xa5a C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000      0x34e C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x22 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x3a C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x10 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x5c C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x1c C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x22 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0xdf C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000      0xecf C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x48 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000     0xe07b C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000     0x122b C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_macro   0x00000000       0x16 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_line    0x00000000      0x1ec C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_str     0x00000000    0x772d6 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .comment       0x00000000       0x7f C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .debug_frame   0x00000000       0xc8 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
- .ARM.attributes
-                0x00000000       0x39 C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
 
 Memory Configuration
 
@@ -211,6 +168,7 @@ FLEX_RAM         0x14000000         0x00001000         xrw
 
 Linker script and memory map
 
+LOAD ./source/drivers/src/board.o
 LOAD ./source/App.o
 LOAD ./source/gpio.o
 LOAD ./SDK/startup/hardware.o
@@ -218,7 +176,6 @@ LOAD ./SDK/startup/main.o
 LOAD ./SDK/startup/semihost_hardfault.o
 LOAD ./SDK/startup/startup_mk64f12.o
 LOAD ./SDK/CMSIS/system_MK64F12.o
-LOAD C:/Users/Nico Bustelo/Desktop/Coding/GitHub/TPs-G4_LDM/TP1/TP1_G4/source/gpio.o
 START GROUP
 LOAD c:/nxp/mcuxpressoide_10.2.0_759/ide/tools/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard\libcr_c.a
 LOAD c:/nxp/mcuxpressoide_10.2.0_759/ide/tools/bin/../lib/gcc/arm-none-eabi/7.2.1/thumb/v7e-m/fpv4-sp/hard\libcr_eabihelpers.a
@@ -853,53 +810,52 @@ OUTPUT(TP1_G4.axf elf32-littlearm)
  .debug_ranges  0x00000090      0x320 ./SDK/startup/startup_mk64f12.o
  .debug_ranges  0x000003b0       0x20 ./SDK/CMSIS/system_MK64F12.o
 
-.debug_macro    0x00000000    0x114b3
- .debug_macro   0x00000000       0x95 ./source/App.o
- .debug_macro   0x00000095      0xa5a ./source/App.o
- .debug_macro   0x00000aef      0x34e ./source/App.o
- .debug_macro   0x00000e3d       0x22 ./source/App.o
- .debug_macro   0x00000e5f       0x5c ./source/App.o
- .debug_macro   0x00000ebb       0x1c ./source/App.o
- .debug_macro   0x00000ed7       0x22 ./source/App.o
- .debug_macro   0x00000ef9       0xdf ./source/App.o
- .debug_macro   0x00000fd8      0xecf ./source/App.o
- .debug_macro   0x00001ea7       0x48 ./source/App.o
- .debug_macro   0x00001eef     0xe07b ./source/App.o
- .debug_macro   0x0000ff6a       0x4c ./source/App.o
- .debug_macro   0x0000ffb6       0x34 ./source/App.o
- .debug_macro   0x0000ffea       0x86 ./source/gpio.o
- .debug_macro   0x00010070       0x9c ./SDK/startup/hardware.o
- .debug_macro   0x0001010c       0x10 ./SDK/startup/hardware.o
- .debug_macro   0x0001011c     0x122b ./SDK/startup/hardware.o
- .debug_macro   0x00011347       0x16 ./SDK/startup/hardware.o
- .debug_macro   0x0001135d       0x9c ./SDK/startup/main.o
- .debug_macro   0x000113f9       0x11 ./SDK/startup/semihost_hardfault.o
- .debug_macro   0x0001140a       0x29 ./SDK/startup/startup_mk64f12.o
- .debug_macro   0x00011433       0x80 ./SDK/CMSIS/system_MK64F12.o
+.debug_macro    0x00000000    0x10a8d
+ .debug_macro   0x00000000       0x99 ./source/App.o
+ .debug_macro   0x00000099      0x34e ./source/App.o
+ .debug_macro   0x000003e7       0x22 ./source/App.o
+ .debug_macro   0x00000409       0x5c ./source/App.o
+ .debug_macro   0x00000465       0x1c ./source/App.o
+ .debug_macro   0x00000481       0x22 ./source/App.o
+ .debug_macro   0x000004a3       0xdf ./source/App.o
+ .debug_macro   0x00000582      0xecf ./source/App.o
+ .debug_macro   0x00001451       0x48 ./source/App.o
+ .debug_macro   0x00001499     0xe07b ./source/App.o
+ .debug_macro   0x0000f514       0x4c ./source/App.o
+ .debug_macro   0x0000f560       0x64 ./source/App.o
+ .debug_macro   0x0000f5c4       0x86 ./source/gpio.o
+ .debug_macro   0x0000f64a       0x9c ./SDK/startup/hardware.o
+ .debug_macro   0x0000f6e6       0x10 ./SDK/startup/hardware.o
+ .debug_macro   0x0000f6f6     0x122b ./SDK/startup/hardware.o
+ .debug_macro   0x00010921       0x16 ./SDK/startup/hardware.o
+ .debug_macro   0x00010937       0x9c ./SDK/startup/main.o
+ .debug_macro   0x000109d3       0x11 ./SDK/startup/semihost_hardfault.o
+ .debug_macro   0x000109e4       0x29 ./SDK/startup/startup_mk64f12.o
+ .debug_macro   0x00010a0d       0x80 ./SDK/CMSIS/system_MK64F12.o
 
-.debug_line     0x00000000      0xf57
- .debug_line    0x00000000      0x169 ./source/App.o
- .debug_line    0x00000169      0x1ad ./source/gpio.o
- .debug_line    0x00000316      0x1d4 ./SDK/startup/hardware.o
- .debug_line    0x000004ea      0x175 ./SDK/startup/main.o
- .debug_line    0x0000065f       0x59 ./SDK/startup/semihost_hardfault.o
- .debug_line    0x000006b8      0x6d8 ./SDK/startup/startup_mk64f12.o
- .debug_line    0x00000d90      0x1c7 ./SDK/CMSIS/system_MK64F12.o
+.debug_line     0x00000000      0xf71
+ .debug_line    0x00000000      0x183 ./source/App.o
+ .debug_line    0x00000183      0x1ad ./source/gpio.o
+ .debug_line    0x00000330      0x1d4 ./SDK/startup/hardware.o
+ .debug_line    0x00000504      0x175 ./SDK/startup/main.o
+ .debug_line    0x00000679       0x59 ./SDK/startup/semihost_hardfault.o
+ .debug_line    0x000006d2      0x6d8 ./SDK/startup/startup_mk64f12.o
+ .debug_line    0x00000daa      0x1c7 ./SDK/CMSIS/system_MK64F12.o
 
-.debug_str      0x00000000    0x77bed
- .debug_str     0x00000000    0x70484 ./source/App.o
-                              0x705fc (size before relaxing)
- .debug_str     0x00070484      0x1c1 ./source/gpio.o
+.debug_str      0x00000000    0x77d1d
+ .debug_str     0x00000000    0x705b4 ./source/App.o
+                              0x7072c (size before relaxing)
+ .debug_str     0x000705b4      0x1c1 ./source/gpio.o
                               0x70710 (size before relaxing)
- .debug_str     0x00070645     0x6cbb ./SDK/startup/hardware.o
+ .debug_str     0x00070775     0x6cbb ./SDK/startup/hardware.o
                               0x771f8 (size before relaxing)
- .debug_str     0x00077300       0x1b ./SDK/startup/main.o
+ .debug_str     0x00077430       0x1b ./SDK/startup/main.o
                               0x76fcc (size before relaxing)
- .debug_str     0x0007731b       0x36 ./SDK/startup/semihost_hardfault.o
+ .debug_str     0x0007744b       0x36 ./SDK/startup/semihost_hardfault.o
                                0x2d32 (size before relaxing)
- .debug_str     0x00077351      0x83a ./SDK/startup/startup_mk64f12.o
+ .debug_str     0x00077481      0x83a ./SDK/startup/startup_mk64f12.o
                                0x35a0 (size before relaxing)
- .debug_str     0x00077b8b       0x62 ./SDK/CMSIS/system_MK64F12.o
+ .debug_str     0x00077cbb       0x62 ./SDK/CMSIS/system_MK64F12.o
                               0x77107 (size before relaxing)
 
 .comment        0x00000000       0x7e

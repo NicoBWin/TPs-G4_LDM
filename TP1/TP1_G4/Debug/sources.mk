@@ -17,4 +17,5 @@ SUBDIRS := \
 SDK/CMSIS \
 SDK/startup \
 source \
+source/drivers/src \
 

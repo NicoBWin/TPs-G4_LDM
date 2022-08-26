@@ -7,9 +7,6 @@ C_SRCS += \
 ../source/App.c \
 ../source/gpio.c 
 
-O_SRCS += \
-../source/gpio.o 
-
 OBJS += \
 ./source/App.o \
 ./source/gpio.o 
