@@ -8,7 +8,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "/TP1/TP1_G4/source/drivers/headers/card_reader.h"
+#include "../headers/card_reader.h"
 
 
 /*******************************************************************************
