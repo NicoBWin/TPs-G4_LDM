@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "encoder.h": "c",
+        "display.h": "c",
+        "card_reader.h": "c"
     }
 }
