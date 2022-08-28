@@ -32,7 +32,6 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static void delayLoop(uint32_t veces);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -57,14 +56,14 @@ static void delayLoop(uint32_t veces);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    gpioMode(PIN_LED_BLUE, OUTPUT);
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    delayLoop(4000000UL);
-    gpioToggle(PIN_LED_BLUE);
+	//MAIN PROGRAM
+	dispInit();
 }
 
 
@@ -73,12 +72,3 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-static void delayLoop(uint32_t veces)
-{
-    while (veces--);
-}
-
-
-
-

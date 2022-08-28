@@ -11,7 +11,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "../../MCAL/gpio.h"
+#include "../MCAL/gpio.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

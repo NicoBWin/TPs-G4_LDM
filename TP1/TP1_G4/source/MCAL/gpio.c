@@ -7,19 +7,34 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-// +Incluir el header propio (ej: #include "template.h")+
+#include "MK64F12.h"
 #include "gpio.h"
+#include "hardware.h"
 
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
+
+
+/*******************************************************************************
+ * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
+ ******************************************************************************/
+static PORT_Type* port_base_pointer[]= PORT_BASE_PTRS;
+static GPIO_Type* gpio_base_pointer[]= GPIO_BASE_ADDRS;
+enum {DESABL,ENABL};
+
+
+
+/*******************************************************************************
+ *******************************************************************************
+                        GLOBAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
 /**
  * @brief Configures the specified pin to behave either as an input or an output
  * @param pin the pin whose mode you wish to set (according PORTNUM2PIN)
  * @param mode INPUT, OUTPUT, INPUT_PULLUP or INPUT_PULLDOWN.
  */
-
-static PORT_Type* port_base_pointer[]= PORT_BASE_PTRS;
-static GPIO_Type* gpio_base_pointer[]= GPIO_BASE_ADDRS;
-enum {DESABL,ENABL};
-
 void gpioMode (pin_t pin, uint8_t mode)
 {
 

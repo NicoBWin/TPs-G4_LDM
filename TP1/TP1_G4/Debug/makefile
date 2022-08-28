@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include source/drivers/src/subdir.mk
+-include source/MCAL/subdir.mk
 -include source/subdir.mk
 -include SDK/startup/subdir.mk
 -include SDK/CMSIS/subdir.mk

@@ -10,16 +10,13 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
 #include <stdint.h>
 #include <stdbool.h>
-#include "MK64F12.h"
 
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
 // Ports
 enum { PA, PB, PC, PD, PE };
 
@@ -30,7 +27,6 @@ enum { PA, PB, PC, PD, PE };
 #define PIN2PORT(p)         (((p)>>5) & 0x07)
 #define PIN2NUM(p)          ((p) & 0x1F)
 
-
 // Modes
 #ifndef INPUT
 #define INPUT               0
@@ -38,7 +34,6 @@ enum { PA, PB, PC, PD, PE };
 #define INPUT_PULLUP        2
 #define INPUT_PULLDOWN      3
 #endif // INPUT
-
 
 // Digital values
 #ifndef LOW
@@ -54,19 +49,17 @@ enum { PA, PB, PC, PD, PE };
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
 typedef uint8_t pin_t;
-
-
 typedef void (*pinIrqFun_t)(void);
 
 // IRQ modes
 enum {
     GPIO_IRQ_MODE_DISABLE,
+	GPIO_IRQ_MODE_LOGIC_0,
     GPIO_IRQ_MODE_RISING_EDGE,
     GPIO_IRQ_MODE_FALLING_EDGE,
     GPIO_IRQ_MODE_BOTH_EDGES,
-
+	GPIO_IRQ_MODE_LOGIC_1,
     GPIO_IRQ_CANT_MODES
 };
 

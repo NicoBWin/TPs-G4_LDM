@@ -1,23 +1,9 @@
 source/App.o source/App.d: ../source/App.c \
- ../source/drivers\headers\board.h ../source/gpio.h \
- ../SDK/CMSIS/MK64F12.h ../SDK/CMSIS/core_cm4.h \
- ../SDK/CMSIS/cmsis_version.h ../SDK/CMSIS/cmsis_compiler.h \
- ../SDK/CMSIS/cmsis_gcc.h ../SDK/CMSIS/system_MK64F12.h ../source/gpio.h
+ ../source/drivers/headers/card_reader.h \
+ ../source/drivers/headers/display.h ../source/drivers/headers/encoder.h
 
-../source/drivers\headers\board.h:
+../source/drivers/headers/card_reader.h:
 
-../source/gpio.h:
+../source/drivers/headers/display.h:
 
-../SDK/CMSIS/MK64F12.h:
-
-../SDK/CMSIS/core_cm4.h:
-
-../SDK/CMSIS/cmsis_version.h:
-
-../SDK/CMSIS/cmsis_compiler.h:
-
-../SDK/CMSIS/cmsis_gcc.h:
-
-../SDK/CMSIS/system_MK64F12.h:
-
-../source/gpio.h:
+../source/drivers/headers/encoder.h:
