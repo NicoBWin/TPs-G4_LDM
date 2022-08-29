@@ -7,15 +7,15 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-#include "../headers/card_reader.h"
+#include "../headers/encoder.h"
 #include "../board.h"
 
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
-
+//El switch tiene un pullup externo
+#define SW_ACTIVE       LOW
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -47,8 +47,9 @@
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static int temperaturas_actuales[4];+
+//Data de encoder
+static bool status;
+static EResult_t encEvent;
 
 
 /*******************************************************************************
@@ -56,8 +57,36 @@
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+/**
+ * @brief Initialize encoder
+ */
+void encInit() {
+  //Inicializo Data
+  encEvent = ENC_NONE;
+  status = false;
 
+  //Seteo los Pines
+	gpioMode(PIN_RCHA, INPUT);
+	gpioMode(PIN_RCHB, INPUT);
+	gpioMode(PIN_SW, INPUT);
 
+}
+
+/**
+ * @brief Check for new encoder events
+ * @return true if there is an encoder event
+ */
+bool encGetStatus() {
+
+}
+
+/**
+ * @brief Get event type
+ * @return event
+ */
+EResult_t encGetEvent() {
+
+}
 
 /*******************************************************************************
  *******************************************************************************

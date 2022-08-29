@@ -53,40 +53,49 @@ bool dispSelect(int8_t disp);
  ******************************************************************************/
 /**
  * @brief dispInit: Initializes the display
- *
  */
 void dispInit(void){
 	gpioMode(PINA_SEG, OUTPUT);
 	gpioWrite(PINA_SEG, LOW);
 	gpioMode(PINB_SEG, OUTPUT);
 	gpioWrite(PINB_SEG, HIGH);
-	for (int i = 0; i < SEVEN_SEGMENTS_PINS; i++)
-		{
-			gpioMode(SEGMENTS[i], OUTPUT);
-			gpioWrite(SEGMENTS[i], HIGH);
-		}
-	for (int j = 0; j < 4; j++) {
-		dispSelect(j);
+	for (int i = 0; i < SEVEN_SEGMENTS_PINS; i++) {
+		gpioMode(SEGMENTS[i], OUTPUT);
+		gpioWrite(SEGMENTS[i], LOW);
 	}
+}
+
+
+/**
+ * @brief dispSendChar: Writes ONE character in designated display:
+ * @param ch : character to be sent coded in ascii.
+ * seven_seg_module: numer of seven segment, it ranges from 0 to 3
+ */
+void dispSendChar(char ch, uint8_t seven_seg_module){
+
 }
 
 
 /**
  * @brief dispSendChar: sends to the selected 7 seg the character:
  * @param ch : character to be sent coded in ascii.
- * seven_seg_module: numer of seven segment, it ranges from 0 to 3
- *
  */
-void dispSendChar(char ch, uint8_t seven_seg_module){
+void dispSendWord(char* ch) {
 
 }
+
 
 /**
  * @brief dispClearAll: Clears ALL the display.
  *
  */
 void dispClearAll(void){
-
+	for (int i = 0; i < SEVEN_SEGMENTS_PINS; i++) {
+		gpioWrite(SEGMENTS[i], LOW);
+	}
+	for (int j = 0; j < MAX_CHARACTERS; j++) {
+		dispSelect(j);
+	}
 }
 
 /**

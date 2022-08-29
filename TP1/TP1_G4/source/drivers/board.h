@@ -1,7 +1,7 @@
 /***************************************************************************/ /**
   @file     board.h
   @brief    Board management
-  @author   Nicolás Magliola
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
 #ifndef _BOARD_H_
@@ -10,11 +10,10 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
 #include "../MCAL/gpio.h"
 
 /*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ * PIN ASSIGNMENT
  ******************************************************************************/
 
 /***** BOARD V1.00 defines ****************************************************/
@@ -39,7 +38,7 @@
 // Encoder + SW
 #define PIN_SW PORTNUM2PIN(PC, 2)
 #define PIN_RCHA PORTNUM2PIN(PD, 0)
-#define PINB_RCHB PORTNUM2PIN(PA, 0)
+#define PIN_RCHB PORTNUM2PIN(PA, 0)
 
 // On Board User Switches
 #define PIN_SW2 PORTNUM2PIN(PC, 6)
@@ -49,5 +48,7 @@
 #define DEBUG_PIN PIN_B10 //PB10
 
 /***** Card Reader defines *****************************************************/
+
+
 
 #endif // _BOARD_H_
