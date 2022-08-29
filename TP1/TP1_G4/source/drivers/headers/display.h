@@ -12,7 +12,7 @@
  ******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
-
+#include <string>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -31,13 +31,11 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-
 /**
  * @brief dispInit: Initializes the display
  *
  */
 void dispInit(void);
-
 
 /**
  * @brief dispSendChar: sends to the selected 7 seg the character:
@@ -48,6 +46,12 @@ void dispInit(void);
 void dispSendChar(char ch, uint8_t seven_seg_module);
 
 /**
+ * @brief dispSendChar: sends to the selected 7 seg the character:
+ * @param ch : character to be sent coded in ascii.
+ */
+void dispSendWord(char* ch);
+
+/**
  * @brief dispClearAll: Clears ALL the display.
  *
  */
@@ -55,7 +59,7 @@ void dispClearAll(void);
 
 /**
  * @brief dispBrightness: Changes the brightness of all displays.
- * @params brightness: the brightness value to be set. Lives between 0<b<100
+ * @params brightness: the brightness value to be set.
  *
  */
 void dispBrightness(uint8_t brightness);

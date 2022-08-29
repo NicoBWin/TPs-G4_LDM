@@ -22,9 +22,24 @@
 #define SIZE_ID 8
 #define SIZE_PASSWORD 5 
 #define SIZE_NAME 10
+#define SIZE_DISPLAY_ID 16
+#define LIMITE_IZQ_ID 3
+#define LIMITE_DER_ID  SIZE_DISPLAY_ID -1
+#define POS_SUBMIT 11
+#define POS_CLEAR 12
+
+/// Posibles salidas del joystick
+#define NOMOVE 0
+#define DERECHA 1
+#define IZQUIERDA 2 
+#define CLICK 3
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+
+// Defino estados
+
+
 typedef struct User
 {
     char id[SIZE_ID] ;

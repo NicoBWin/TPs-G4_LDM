@@ -10,7 +10,9 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
+#include <stdint.h>
+#include <stdbool.h>
+#include <string>
 
 
 /*******************************************************************************
@@ -22,7 +24,12 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
+typedef enum{
+	ENC_LEFT,
+	ENC_RIGHT,
+	ENC_CLICK,
+	ENC_NONE
+}EResult_t;
 
 
 /*******************************************************************************
@@ -35,14 +42,22 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+/**
+ * @brief Initialize encoder
+ */
+void encInit();
 
 /**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
-*/
-// +ej: char lcd_goto (int fil, int col);+
+ * @brief Check for new encoder events
+ * @return true if there is an encoder event
+ */
+bool encGetStatus();
+
+/**
+ * @brief Get event type
+ * @return event
+ */
+EResult_t encGetEvent();
 
 
 /*******************************************************************************
