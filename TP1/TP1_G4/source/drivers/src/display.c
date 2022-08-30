@@ -10,6 +10,7 @@
 #include "../headers/display.h"
 #include "../headers/7seg.h"
 #include "../../MCAL/gpio.h"
+#include "../../timer/timer.h"
 #include "../board.h"
 
 /*******************************************************************************
@@ -50,7 +51,7 @@ typedef struct
 static letter_t displays[4] = {{false, '0'}, {false, '0'}, {false, '0'}, {false, '0'}};
 
 //Timer para el encoder
-static tim_id_t rate_id;
+static tim_id_t display_id;
 static tim_id_t bright_id;
 
 /*******************************************************************************
@@ -154,26 +155,6 @@ bool dispSelect(int8_t disp) {
 		ret = true;
 		break;
 	default:
-		ret = false;
-	}
-	return ret;
-}
-
-
-bool dispSetChar(char ch) {
-	int i;
-	bool ret = true;
-	for (i = 0; i < MAX_CHARACTERS; i++) {
-		if (characters[i].name == ch) {
-			for (int j = 0; j < SEVEN_SEGMENTS_PINS; j++) {
-				led_set_state(seven_segment_id[j], characters[i].pin_mode[j]);
-			}
-			ret = true;
-			break;
-		}
-	}
-	if (i == MAX_CHARACTERS)
-	{
 		ret = false;
 	}
 	return ret;

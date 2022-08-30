@@ -12,7 +12,15 @@
  ******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include "../../MCAL/gpio.h"
 
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
+typedef struct {
+	char name;
+	uint8_t pin_mode[SEVEN_SEGMENTS_PINS]; // PIN_A, PIN_B, PIN_C, PIN_D, PIN_E, PIN_F, PIN_G, PIN_DOT
+} character_t;
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -74,14 +82,6 @@ const character_t characters[] = {
 	{'f', {LOW, LOW, LOW, LOW, LOW, HIGH, LOW, LOW}},
 	{'g', {LOW, LOW, LOW, LOW, LOW, LOW, HIGH, LOW}}
 }
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-typedef struct {
-	char name;
-	uint8_t pin_mode[SEVEN_SEGMENTS_PINS]; // PIN_A, PIN_B, PIN_C, PIN_D, PIN_E, PIN_F, PIN_G, PIN_DOT
-} character_t;
 
 /*******************************************************************************
  ******************************************************************************/

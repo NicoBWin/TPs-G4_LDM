@@ -9,6 +9,7 @@
  ******************************************************************************/
 #include "../headers/leds.h"
 #include "../board.h"
+#include "../../timer/timer.h"
 
 
 /*******************************************************************************
@@ -65,11 +66,12 @@ void ledsInit() {
     gpioMode(PINA_LEDS, OUTPUT);
 	gpioMode(PINB_LEDS, OUTPUT);
 	//ledsClear(OFF);
+	int n;
     for (int i=0;i<3;i++){
         ledSelect(n);
     }
 	leds_id = timerGetId();
-	timerStart(leds_id, TIMER_MS2TICKS(my_refresh_rate), TIM_MODE_PERIODIC, &update_leds);
+	timerStart(leds_id, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, &update_leds);
 }
 
 /**

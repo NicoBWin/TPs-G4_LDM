@@ -19,4 +19,5 @@ SDK/startup \
 source \
 source/MCAL \
 source/drivers/src \
+source/timer \
 

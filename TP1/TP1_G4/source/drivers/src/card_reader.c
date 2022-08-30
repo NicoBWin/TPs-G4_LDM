@@ -118,7 +118,7 @@ void mag_drv_INIT()
 	gpioMode(CLOCK_PIN,INPUT_PULLUP);	//Preparo el pin para el clock.
 	gpioMode(DATA_PIN,INPUT_PULLUP);	//Preparo el pin para data.
 	systick_t mag_drv_SYST = {.speed = TSAMPLE, .periodic_Flag =TRUE , .funcallback = &mag_drv_LIVE,.kill_process = &mag_read_end };
-  SysTick_Init (mag_drv_SYST);
+	SysTick_Init (mag_drv_SYST);
 }
 
 int mag_drv_LIVE()

@@ -9,6 +9,8 @@
  ******************************************************************************/
 #include "../../timer/timer.h"
 #include "../headers/encoder.h"
+#include "../../MCAL/gpio.h"
+#include "../../timer/timer.h"
 #include "../board.h"
 
 
@@ -103,7 +105,7 @@ bool encGetStatus() {
  * @brief Get event type
  * @return event
  */
-EResult_t encGetEvent() {
+encResult_t encGetEvent() {
   return encEvent;
 }
 
@@ -124,7 +126,7 @@ static void readPins(void) {
 }
 
 static encResult_t encStatus(bool A, bool B, bool SW){
-  encoderResult_t result = ENC_NONE;
+  encResult_t result = ENC_NONE;
   static enum states encFSM = START;
 
   //SWITCH
@@ -134,7 +136,7 @@ static encResult_t encStatus(bool A, bool B, bool SW){
     currentSW = SW;
   if(!lastSW && currentSW) {
    	result = ENC_CLICK;
-    encFSM =  CLICK:
+    encFSM =  CLICK;
    	status = true;
   }
   lastSW = currentSW;
@@ -190,7 +192,7 @@ static encResult_t encStatus(bool A, bool B, bool SW){
       else if(A && !B){ 	//"Me quedo quieto"
       }
       else{
-        estado = START;   //Volvi para atras
+    	 encFSM = START;   //Volvi para atras
       }
     break;
     case CCW1:

@@ -48,9 +48,9 @@
 #define PIN_DEBUG PORTNUM2PIN(PB, 10)
 
 /***** Card Reader defines *****************************************************/
-#define ENABLE_PIN PORTNUM2PIN(PX, XX)
-#define CLOCK_PIN PORTNUM2PIN(PX, XX)
-#define DATA_PIN PORTNUM2PIN(PX, XX)
+#define ENABLE_PIN PORTNUM2PIN(PB, 18)
+#define CLOCK_PIN PORTNUM2PIN(PB, 19)
+#define DATA_PIN PORTNUM2PIN(PC, 1)
 
 
 #endif // _BOARD_H_

@@ -7,9 +7,10 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-//#include "drivers/headers/card_reader.h"
-//#include "drivers/headers/display.h"
-//#include "drivers/headers/encoder.h"
+#include "drivers/headers/card_reader.h"
+#include "drivers/headers/display.h"
+#include "drivers/headers/encoder.h"
+#include "timer/timer.h"
 #include "App.h"
 
 /*******************************************************************************
@@ -35,14 +36,13 @@ static User* user_init(int cant_user, User* ptr_user);
 static char encoder_control(char number, int joystick_input, int *status);
 static void print_display(char first, char second, char third, char fourth);
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status);
-static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
+//static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
 static int simulacion(void);
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
+static encResult_t encoderState;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -69,21 +69,20 @@ enum status
  *******************************************************************************
  ******************************************************************************/
 /* Función que se llama 1 vez, al comienzo del programa */
-int main(void) {
-  App_Init();
-  return 1;
-}
+//int main(void) {
+//  App_Init();
+//  return 1;
+//}
 
 void App_Init(void) {
   // Varios INITS
   timerInit();
-  encInit()
-  dispInit();
-  ledsInit();
-  mag_drv_INIT();
+  encInit();
+  //dispInit();
+  //ledsInit();
+  //mag_drv_INIT();
 
   App_Run();
-
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -113,8 +112,13 @@ void App_Run(void) {
   while (counter <= 40)
   {
     counter++;
-    int joystick_input = simulacion();
-    // printf("%d \n", joystick_input);
+    if(encGetStatus()) {
+    	encoderState = encGetEvent();
+    }
+    if(encoderState == ENC_CLICK){
+    	printf("CLICK REY");
+    }
+    int joystick_input=0;
     switch (status)
     {
 
@@ -125,7 +129,6 @@ void App_Run(void) {
       break;
 
     case ID:
-    
       ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
       break;
@@ -365,10 +368,10 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
   return ptr_id;
 }
 
-static char *mag_get_ID(void)
-{
-  return "12345678";
-}
+//static char *mag_get_ID(void)
+//{
+// return "12345678";
+//}
 
 int simulacion(void)
 {

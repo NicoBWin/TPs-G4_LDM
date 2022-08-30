@@ -12,7 +12,6 @@
  ******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
-#include <string>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -21,12 +20,12 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef enum{
+typedef enum {
 	ENC_LEFT,
 	ENC_RIGHT,
 	ENC_CLICK,
 	ENC_NONE
-}EResult_t;
+}encResult_t;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
@@ -46,7 +45,7 @@ bool encGetStatus();
  * @brief Get event type
  * @return event
  */
-EResult_t encGetEvent();
+encResult_t encGetEvent();
 
 
 /*******************************************************************************
