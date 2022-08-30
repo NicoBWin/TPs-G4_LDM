@@ -17,7 +17,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-/*const static character_t characters[] = {
+const character_t characters[] = {
 	{'0', {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, LOW, LOW}},
 	{'1', {LOW, HIGH, HIGH, LOW, LOW, LOW, LOW, LOW}},
 	{'2', {HIGH, HIGH, LOW, HIGH, HIGH, LOW, HIGH, LOW}},
@@ -72,16 +72,16 @@
 	{'d', {LOW, LOW, LOW, HIGH, LOW, LOW, LOW, LOW}},
 	{'e', {LOW, LOW, LOW, LOW, HIGH, LOW, LOW, LOW}},
 	{'f', {LOW, LOW, LOW, LOW, LOW, HIGH, LOW, LOW}},
-	{'g', {LOW, LOW, LOW, LOW, LOW, LOW, HIGH, LOW}},
-*/
+	{'g', {LOW, LOW, LOW, LOW, LOW, LOW, HIGH, LOW}}
+}
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-/*typedef struct {
+typedef struct {
 	char name;
 	uint8_t pin_mode[SEVEN_SEGMENTS_PINS]; // PIN_A, PIN_B, PIN_C, PIN_D, PIN_E, PIN_F, PIN_G, PIN_DOT
-} character_t;*/
+} character_t;
 
 /*******************************************************************************
  ******************************************************************************/

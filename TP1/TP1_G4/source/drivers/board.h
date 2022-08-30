@@ -45,7 +45,7 @@
 #define PIN_SW3 PORTNUM2PIN(PA, 4)
 
 //DEBUG?
-#define DEBUG_PIN PIN_B10 //PB10
+#define PIN_DEBUG PORTNUM2PIN(PB, 10)
 
 /***** Card Reader defines *****************************************************/
 

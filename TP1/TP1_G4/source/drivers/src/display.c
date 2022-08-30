@@ -15,13 +15,11 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-const uint8_t SEGMENTS[SEVEN_SEGMENTS_PINS] = {PIN_SEG_A, PIN_SEG_B, PIN_SEG_C, PIN_SEG_D, PIN_SEG_E,
-											PIN_SEG_F, PIN_SEG_G, PIN_SEG_DT};
+
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
-
 // +ej: unsigned int anio_actual;+
 
 
@@ -35,15 +33,20 @@ bool dispSelect(int8_t disp);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
+static const uint8_t SEGMENTS[SEVEN_SEGMENTS_PINS] = {PIN_SEG_A, PIN_SEG_B, PIN_SEG_C, PIN_SEG_D, PIN_SEG_E,
+											PIN_SEG_F, PIN_SEG_G, PIN_SEG_DT};
 
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
+typedef struct
+{
+	bool enable;
+	char ch;
+} letter_t;
 
-// +ej: static int temperaturas_actuales[4];+
+static letter_t displays[4] = {{false, '0'}, {false, '0'}, {false, '0'}, {false, '0'}};
 
 
 /*******************************************************************************
@@ -72,12 +75,16 @@ void dispInit(void){
  * seven_seg_module: numer of seven segment, it ranges from 0 to 3
  */
 void dispSendChar(char ch, uint8_t seven_seg_module){
-
+	if (seven_seg_module < 4)
+	{
+		displays[seven_seg_module].enable = true;
+		displays[seven_seg_module].ch = ch;
+	}
 }
 
 
 /**
- * @brief dispSendChar: sends to the selected 7 seg the character:
+ * @brief dispSendChar: sends to the selected 7 seg the character and scrolls:
  * @param ch : character to be sent coded in ascii.
  */
 void dispSendWord(char* ch) {
@@ -103,7 +110,7 @@ void dispClearAll(void){
  * @params brightness: the brightness value to be set. Lives between 0<b<100
  *
  */
-void dispBrightness(uint8_t brightness){
+void dispBrightness(uint8_t brightness) {
   
 }
 
@@ -145,5 +152,20 @@ bool dispSelect(int8_t disp) {
 
 
 bool dispSetChar(char ch) {
-
+	int i;
+	bool ret = true;
+	for (i = 0; i < MAX_CHARACTERS; i++) {
+		if (characters[i].name == ch) {
+			for (int j = 0; j < SEVEN_SEGMENTS_PINS; j++) {
+				led_set_state(seven_segment_id[j], characters[i].pin_mode[j]);
+			}
+			ret = true;
+			break;
+		}
+	}
+	if (i == MAX_CHARACTERS)
+	{
+		ret = false;
+	}
+	return ret;
 }

@@ -23,10 +23,17 @@
 #define SIZE_PASSWORD 5 
 #define SIZE_NAME 10
 #define SIZE_DISPLAY_ID 16
+#define SIZE_DISPLAY_PW 10
+#define SIZE_PW 5
 #define LIMITE_IZQ_ID 3
 #define LIMITE_DER_ID  SIZE_DISPLAY_ID -1
 #define POS_SUBMIT 11
 #define POS_CLEAR 12
+
+#define LIMITE_IZQ_PW 3
+#define LIMITE_DER_PW  SIZE_DISPLAY_PW -1
+#define POS_CHECK LIMITE_DER_ID -1
+#define POS_CHECK_PW LIMITE_DER_PW -1
 
 /// Posibles salidas del joystick
 #define NOMOVE 0
