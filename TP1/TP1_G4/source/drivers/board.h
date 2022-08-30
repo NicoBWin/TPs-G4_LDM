@@ -16,7 +16,7 @@
  * PIN ASSIGNMENT
  ******************************************************************************/
 
-/***** BOARD V1.00 defines ****************************************************/
+/***** BOARD Lab Micros V1.00 define ******************************************/
 // 7seg Display
 #define PIN_SEG_A PORTNUM2PIN(PE, 24)
 #define PIN_SEG_B PORTNUM2PIN(PD, 1)
@@ -44,7 +44,7 @@
 #define PIN_SW2 PORTNUM2PIN(PC, 6)
 #define PIN_SW3 PORTNUM2PIN(PA, 4)
 
-//DEBUG?
+/***** DEBUG *******************************************************************/
 #define PIN_DEBUG PORTNUM2PIN(PB, 10)
 
 /***** Card Reader defines *****************************************************/

@@ -29,14 +29,15 @@
 // Selec display between 0-3
 bool dispSelect(int8_t disp);
 
-
+// Display update
+static void displayCallback(void);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static const uint8_t SEGMENTS[SEVEN_SEGMENTS_PINS] = {PIN_SEG_A, PIN_SEG_B, PIN_SEG_C, PIN_SEG_D, PIN_SEG_E,
 											PIN_SEG_F, PIN_SEG_G, PIN_SEG_DT};
 
-
+static int fps = 6;
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -48,6 +49,9 @@ typedef struct
 
 static letter_t displays[4] = {{false, '0'}, {false, '0'}, {false, '0'}, {false, '0'}};
 
+//Timer para el encoder
+static tim_id_t rate_id;
+static tim_id_t bright_id;
 
 /*******************************************************************************
  *******************************************************************************
@@ -61,11 +65,16 @@ void dispInit(void){
 	gpioMode(PINA_SEG, OUTPUT);
 	gpioWrite(PINA_SEG, LOW);
 	gpioMode(PINB_SEG, OUTPUT);
-	gpioWrite(PINB_SEG, HIGH);
+	gpioWrite(PINB_SEG, LOW);
 	for (int i = 0; i < SEVEN_SEGMENTS_PINS; i++) {
 		gpioMode(SEGMENTS[i], OUTPUT);
 		gpioWrite(SEGMENTS[i], LOW);
 	}
+
+	//Seteo el timer para que llame periodicamente a la callback con 1ms
+	display_id = timerGetId();
+	bright_id = timerGetId();
+	timerStart(display_id, TIMER_MS2TICKS(fps), TIM_MODE_PERIODIC, displayCallback);
 }
 
 
@@ -168,4 +177,8 @@ bool dispSetChar(char ch) {
 		ret = false;
 	}
 	return ret;
+}
+
+static void displayCallback(void){
+	
 }

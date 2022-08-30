@@ -68,24 +68,26 @@ enum status
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
 /* Función que se llama 1 vez, al comienzo del programa */
-int main(void)
-{
+int main(void) {
   App_Init();
   return 1;
 }
 
-void App_Init(void)
-{
+void App_Init(void) {
+  // Varios INITS
+  timerInit();
+  encInit()
+  dispInit();
+  ledsInit();
+
 
   App_Run();
 
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run(void)
-{
+void App_Run(void) {
   User *ptr_user;
   int cant_user = 4;
   ptr_user = user_init(cant_user, ptr_user);

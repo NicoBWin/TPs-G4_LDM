@@ -80,16 +80,16 @@ void timerInit(void) {
 
 
 tim_id_t timerGetId(void) {
-#ifdef TIMER_DEVELOPMENT_MODE
-    if (timers_cant >= TIMERS_MAX_CANT)
-    {
-        return TIMER_INVALID_ID;
-    }
-    else
-#endif // TIMER_DEVELOPMENT_MODE
-    {
-        return timers_cant++;
-    }
+    #ifdef TIMER_DEVELOPMENT_MODE
+        if (timers_cant >= TIMERS_MAX_CANT)
+        {
+            return TIMER_INVALID_ID;
+        }
+        else
+    #endif // TIMER_DEVELOPMENT_MODE
+        {
+            return timers_cant++;
+        }
 }
 
 
