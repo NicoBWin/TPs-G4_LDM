@@ -40,8 +40,7 @@ bool SysTick_Init(systick_callback_t callback) {
 	bool init_status = false;
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	if (callback != NULL)
-	{
+	if (callback != NULL) {
 		SysTick->CTRL = 0x00;			   //Enable sysT interrupt
 		SysTick->LOAD = SYSTICK_LOAD_INIT; //00100000L  - 1;
 		SysTick->VAL = 0x00;
@@ -52,7 +51,6 @@ bool SysTick_Init(systick_callback_t callback) {
 	return init_status;
 }
 
-__ISR__ SysTick_Handler(void)
-{
+__ISR__ SysTick_Handler(void) {
 		st_callback();
 }

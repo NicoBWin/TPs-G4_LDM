@@ -80,7 +80,7 @@ void App_Init(void) {
   encInit()
   dispInit();
   ledsInit();
-
+  mag_drv_INIT();
 
   App_Run();
 

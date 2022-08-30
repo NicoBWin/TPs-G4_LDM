@@ -10,40 +10,25 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-
+#include <stdint.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
-
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: extern unsigned int anio_actual;+
-
+#define TSAMPLE	1	//Cada cuanto espero un pulso en enable, en ms
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-
-/**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
-*/
-// +ej: char lcd_goto (int fil, int col);+
-
+void mag_drv_INIT();
+int mag_set_LIVE();
+char* mag_drv_read();	//Devuelve un strinc de todos los campos de datos.
+char* mag_get_ID();		//Devuelve un string del campo de datos PAN
+char* mag_get_DATE();	//Devuelve un string del campo de datos adicionales
+void mag_clear_active();
+void mag_set_active();
+void mag_read_end();	//Se llama desde la IRQ cuando se termina de leer una palabra, desactiva las interrupciones. (Kill_process)
 
 /*******************************************************************************
  ******************************************************************************/

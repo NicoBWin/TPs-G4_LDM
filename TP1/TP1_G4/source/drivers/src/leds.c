@@ -49,8 +49,8 @@ const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static int temperaturas_actuales[4];+
+//Timer para el los leds
+static tim_id_t leds_id;
 
 
 /*******************************************************************************
@@ -68,8 +68,8 @@ void ledsInit() {
     for (int i=0;i<3;i++){
         ledSelect(n);
     }
-	//rate_id = timerGetId();
-	//timerStart(rate_id, TIMER_MS2TICKS(my_refresh_rate), TIM_MODE_PERIODIC, &update_leds);
+	leds_id = timerGetId();
+	timerStart(leds_id, TIMER_MS2TICKS(my_refresh_rate), TIM_MODE_PERIODIC, &update_leds);
 }
 
 /**

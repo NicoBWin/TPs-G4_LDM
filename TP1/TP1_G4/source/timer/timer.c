@@ -20,7 +20,7 @@
 #define TIMER_DEVELOPMENT_MODE    0
 #define TIMER_ID_INTERNAL   0 //ID del timer bloqueante reservado dentro del driver
 
-#define TIMERS_MAX_CANT 35
+#define TIMERS_MAX_CANT 35  // Maxima cantidad de timers en simultaneo
 
 #define TIMER_RUNNING 1
 #define TIMER_STOPED 0
@@ -65,7 +65,6 @@ static tim_id_t timers_cant = TIMER_ID_INTERNAL+1;
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
 void timerInit(void) {
     gpioMode(PIN_DEBUG, OUTPUT);
 	gpioWrite(PIN_DEBUG, LOW);
@@ -73,7 +72,7 @@ void timerInit(void) {
     if (yaInit)
         return;
 
-    SysTick_Init(timer_isr); // init peripheral
+    SysTick_Init(timer_isr); // Init SysTick preiferico
 
     yaInit = true;
 }
@@ -200,7 +199,5 @@ static void timer_isr(void) {
         	timers[id].running=0;
         }
       }
-
-
     }
 }
