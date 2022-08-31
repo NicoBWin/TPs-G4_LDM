@@ -20,13 +20,13 @@
 #define TIMER_DEVELOPMENT_MODE    0
 #define TIMER_ID_INTERNAL   0 //ID del timer bloqueante reservado dentro del driver
 
-#define TIMERS_MAX_CANT 35  // Maxima cantidad de timers en simultaneo
+#define TIMERS_MAXCANT 35  // Maxima cantidad de timers en simultaneo
 
 #define TIMER_RUNNING 1
 #define TIMER_STOPED 0
 
-#define TIMER_EXPIRED 1
-#define TIMER_NOT_EXPIRED 0
+#define TIMER_EXPIRED 0
+#define TIMER_NOT_EXPIRED 1
 
 #define END_OF_TIMER 0
 
@@ -55,10 +55,8 @@ static void timer_isr(void);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static uint8_t index; 
-static timer_t timers[TIMERS_MAX_CANT];
+static timer_t timers[TIMERS_MAXCANT];
 static tim_id_t timers_cant = TIMER_ID_INTERNAL+1;
-
 
 /*******************************************************************************
  *******************************************************************************
@@ -66,15 +64,10 @@ static tim_id_t timers_cant = TIMER_ID_INTERNAL+1;
  *******************************************************************************
  ******************************************************************************/
 void timerInit(void) {
-    gpioMode(PIN_DEBUG, OUTPUT);
-	gpioWrite(PIN_DEBUG, LOW);
-    static bool yaInit = false;
-    if (yaInit)
-        return;
+    gpioMode(PIN_IRQ, OUTPUT);
+	gpioWrite(PIN_IRQ, LOW);
 
     SysTick_Init(timer_isr); // Init SysTick preiferico
-
-    yaInit = true;
 }
 
 
@@ -97,16 +90,28 @@ void timerStart(tim_id_t id, ttick_t ticks, uint8_t mode, tim_callback_t callbac
     if ((id < timers_cant) && (mode < CANT_TIM_MODES) && (id >= 0))
 #endif // TIMER_DEVELOPMENT_MODE
     {
-        //Timer init default config
+    	timers[id].running = 0b0;
+
+    	//Timer init default config
         timers[id].period = ticks;
-        timers[id].cnt = timers[id].period;
+        timers[id].cnt = ticks;
         timers[id].mode = mode;
         timers[id].callback = callback;
-        timers[id].running = TIMER_RUNNING;
-        timers[id].expired = TIMER_NOT_EXPIRED;
+        timers[id].expired = 0b0;
+
+        timers[id].running = 0b1;
     }
 }
 
+
+void timerStop(tim_id_t id)
+{
+    // Apago el timer
+    timers[id].running = 0b0;
+
+    // y bajo el flag
+    timers[id].expired=0b0;
+}
 
 //Set timer on TIMER_RUNNING if it was previously stopped
 void timerResume(tim_id_t id)
@@ -130,48 +135,33 @@ void timerReset(tim_id_t id)
     }
 }
 
-bool timerExpired(tim_id_t id)
-{
-#if TIMER_DEVELOPMENT_MODE
-    if ((id < timers_cant) && (id >= 0))
-#endif
-    {
-        if (timers[id].cnt == 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+bool timerExpired(tim_id_t id) {
+	return timers[id].expired;
 }
 
 //Blocking delay
 void timerDelay(ttick_t ticks)
 {
     timerStart(TIMER_ID_INTERNAL, ticks, TIM_MODE_SINGLESHOT, NULL);
-    while (!timerExpired(TIMER_ID_INTERNAL))
-    {
+    while (!timerExpired(TIMER_ID_INTERNAL)) {
         //timers[TIMER_ID_INTERNAL].cnt-=1;
     }
 }
 
 uint8_t isTimerPaused(tim_id_t id)
 {
-#if TIMER_DEVELOPMENT_MODE
-    if ((id < timers_cant) && (id >= 0))
-#endif
-    {
-        if (timers[id].running == TIMER_RUNNING)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
+	#if TIMER_DEVELOPMENT_MODE
+		if ((id < timers_cant) && (id >= 0))
+	#endif
+		{
+			if (timers[id].running == TIMER_RUNNING) {
+				return false;
+			}
+			else {
+				return true;
+			}
+		}
+	return false;
 }
 
 
@@ -181,23 +171,23 @@ uint8_t isTimerPaused(tim_id_t id)
  *******************************************************************************
  ******************************************************************************/
 static void timer_isr(void) {
-    for(tim_id_t id=TIMER_ID_INTERNAL; id<timers_cant; id++){
-      // decremento los timers activos y si hubo timeout!
-      if(timers[id].running && !(--timers[id].cnt)){
+	for(tim_id_t id=TIMER_ID_INTERNAL; id<TIMERS_MAXCANT; id++){
 
-        // 1) execute action: callback or set flag
-        if (timers[id].callback != NULL){
-          timers[id].callback();
-        }
-        timers[id].expired=0b1;
+	  // decremento los timers activos y si hubo timeout!
+	  if(timers[id].running && !(--timers[id].cnt)){
+		// 1) execute action: callback or set flag
+		if (timers[id].callback != NULL){
+		  (*timers[id].callback)();
+		}
+		timers[id].expired=0b1;
 
-        // 2) update state
-        if(timers[id].mode){
-        	timers[id].cnt=timers[id].period;
-        }
-        else{
-        	timers[id].running=0;
-        }
-      }
-    }
+		// 2) update state
+		if(timers[id].mode){
+			timers[id].cnt=timers[id].period;
+		}
+		else{
+			timers[id].running=0;
+		}
+	  }
+	}
 }

@@ -18,6 +18,8 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define SYSTICK_DEVELOPMENT_MODE    1
+
 #define SYSTICK_LOAD_INIT ((__CORE_CLOCK__ / SYSTICK_ISR_FREQUENCY_HZ) - 1U)
 #if SYSTICK_LOAD_INIT > (1 << 24)
 #error Overflow de SysTick! Ajustar  __CORE_CLOCK__ y SYSTICK_ISR_FREQUENCY_HZ!
@@ -34,23 +36,23 @@ static systick_callback_t st_callback;
  *******************************************************************************
  ******************************************************************************/
 bool SysTick_Init(systick_callback_t callback) {
-	gpioMode(PIN_DEBUG, OUTPUT);
-	gpioWrite(PIN_DEBUG, LOW);
-
-	bool init_status = false;
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	if (callback != NULL) {
-		SysTick->CTRL = 0x00;			   //Enable sysT interrupt
-		SysTick->LOAD = SYSTICK_LOAD_INIT; //00100000L  - 1;
-		SysTick->VAL = 0x00;
-		SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
-		st_callback = callback;
-		init_status = true;
-	}
-	return init_status;
+	SysTick->CTRL = 0x00;			   //Enable sysT interrupt
+	SysTick->LOAD = SYSTICK_LOAD_INIT; //00100000L  - 1;
+	SysTick->VAL = 0x00;
+	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+	st_callback = callback;
+
+	return true;
 }
 
 __ISR__ SysTick_Handler(void) {
-		st_callback();
+	#ifdef SYSTICK_DEVELOPMENT_MODE
+		gpioWrite(PIN_IRQ, HIGH);
+	#endif //SYSTICK_DEVELOPMENT_MODE
+	st_callback();
+	#ifdef SYSTICK_DEVELOPMENT_MODE
+		gpioMode(PIN_IRQ, LOW);
+	#endif //SYSTICK_DEVELOPMENT_MODE
 }
