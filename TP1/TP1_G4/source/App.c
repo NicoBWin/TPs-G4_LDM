@@ -81,7 +81,7 @@ void App_Init(void) {
   timerInit();
   encInit();
   //dispInit();
-  ledsInit();
+  //ledsInit();
   mag_drv_INIT();
 }
 
@@ -108,9 +108,9 @@ void App_Run(void) {
   encResult_t joystick_input = ENC_NONE;
   tim_id_t ID_LED = timerGetId();
 
-  ledSet(D1);
-  ledSet(D2);
-  ledSet(D3);
+  //ledSet(D1);
+  //ledSet(D2);
+  //ledSet(D3);
 
   //printf("%c", *(array_pw_number + prueba));
 

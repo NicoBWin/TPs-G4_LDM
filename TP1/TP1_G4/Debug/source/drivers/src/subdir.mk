@@ -5,17 +5,14 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../source/drivers/src/encoder.c \
-../source/drivers/src/leds.c \
 ../source/drivers/src/magDriver.c 
 
 OBJS += \
 ./source/drivers/src/encoder.o \
-./source/drivers/src/leds.o \
 ./source/drivers/src/magDriver.o 
 
 C_DEPS += \
 ./source/drivers/src/encoder.d \
-./source/drivers/src/leds.d \
 ./source/drivers/src/magDriver.d 
 
 

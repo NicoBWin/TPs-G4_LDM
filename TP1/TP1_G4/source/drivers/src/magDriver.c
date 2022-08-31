@@ -170,10 +170,10 @@ char* mag_drv_read()
 	{
 		if(mag_data2bits())				//Data es enmascarado a mag_word.
 		{
-			if(mag_bitscheck())
-			{
+		//	if(mag_bitscheck())
+		//	{
 				mag_bitstochar();
-			}
+		//	}
 		}
 		word_ready = FALSE;
 		return &(final_word[0]);
@@ -182,7 +182,7 @@ char* mag_drv_read()
 		return NULL;
 }
 
-bool mag_data2bits()
+bool mag_data2bits() //ya debbugeada
 {
 	static single_char_t	mask = {0b00001};	//Arranca en 00001
 	static int index = 0;
@@ -191,30 +191,36 @@ bool mag_data2bits()
 	{
 		if (data[index].bit0==data[index].bit1)		//En este caso, el dato es un uno
 		{
-			if(prev_char!=0)						//Si antes vino un uno, antes para escribir el cero nuevo, necesito 11011, por ejemplo.
-			{
-				mask.ch= ~(mask.ch);						//Bit Flipping
-			}
+
+
+			mask.ch= ~(mask.ch);						//Bit Flipping
 			mag_word[index].ch&=mask.ch;					// Hago una AND con un solo cero y el resto unos
+			mask.ch= ~(mask.ch);						//Bit Flipping
 			mask.ch=mask.ch<<1;								// Shifteo para la proxima iteracion
-			prev_char=0;							// Aviso que recien fue un uno para evitar doble bit flipping
-			data[index].bit0=0;							// De a poco voy borrando data..
-			data[index].bit1=0;
+			if(!(index%5))
+			{
+				mask.ch = 0b00001;
+			}
 			index++;
+			//data[index].bit0=0;							// De a poco voy borrando data..
+			//data[index].bit1=0;
+
 			// Paso el indice al siguiente dato.
 		}
 		else if (data[index].bit0!=data[index].bit1)//En este caso, el dato es un uno
 		{
-			if(prev_char!=1)						//Si antes vino un uno, antes para escribir el cero nuevo, necesito 00100, por ejemplo.
-			{
-				mask.ch= ~(mask.ch);
-			}
-			mag_word[index].ch|=(mask.ch);					// Hago una OR con un solo uno y el resto ceros
+
+			mag_word[index].ch|=(mask.ch);
 			mask.ch=mask.ch<<1;
-			prev_char=1;							// Aviso que recien fue un uno para evitar doble bit flipping
-			data[index].bit0=0;							// De a poco voy borrando data..
-			data[index].bit1=0;
-			index++;								// Paso el indice al siguiente dato.
+			if(!(index%5))
+			{
+				mask.ch = 0b00001;
+			}
+			index++;
+			//prev_char=1;							// Aviso que recien fue un uno para evitar doble bit flipping
+			//data[index].bit0=0;							// De a poco voy borrando data..
+			//data[index].bit1=0;
+											// Paso el indice al siguiente dato.
 		}
 	}
 	if (index==200)									//Si termine de procesar toda la data-
