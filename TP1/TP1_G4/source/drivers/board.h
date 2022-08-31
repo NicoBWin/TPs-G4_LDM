@@ -38,14 +38,14 @@
 // Encoder + SW
 #define PIN_SW PORTNUM2PIN(PC, 2)
 #define PIN_RCHA PORTNUM2PIN(PD, 0)
-#define PIN_RCHB PORTNUM2PIN(PA, 0)
+#define PIN_RCHB PORTNUM2PIN(PE, 26)
 
 // On Board User Switches
 #define PIN_SW2 PORTNUM2PIN(PC, 6)
 #define PIN_SW3 PORTNUM2PIN(PA, 4)
 
 /***** DEBUG *******************************************************************/
-#define PIN_DEBUG PORTNUM2PIN(PB, 10)
+#define PIN_IRQ PORTNUM2PIN(PB, 10)
 
 /***** Card Reader defines *****************************************************/
 #define ENABLE_PIN PORTNUM2PIN(PB, 18)
