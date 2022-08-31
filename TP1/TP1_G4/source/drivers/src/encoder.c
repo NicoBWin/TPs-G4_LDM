@@ -24,7 +24,7 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 //Estados de la Encoder FSM
-enum states {CLICK, START, CW, CW1, CW2, CCW, CCW1, CCW2};
+enum states {START, CW, CW1, CW2, CCW, CCW1, CCW2};
 //Son 3 estados porque analizamos 3 flancos
 
 /*******************************************************************************
@@ -78,13 +78,13 @@ void encInit() {
   status = false;
 
   //Seteo los Pines
-	gpioMode(PIN_RCHA, INPUT);
-	gpioMode(PIN_RCHB, INPUT);
-	gpioMode(PIN_SW, INPUT);
+  gpioMode(PIN_RCHA, INPUT);
+  gpioMode(PIN_RCHB, INPUT);
+  gpioMode(PIN_SW, INPUT);
 
   //Seteo el timer para que llame periodicamente a la callback con 1ms
-	encTimer = timerGetId();
-	timerStart(encTimer, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, encoCallback);
+  encTimer = timerGetId();
+  timerStart(encTimer, TIMER_MS2TICKS(2), TIM_MODE_PERIODIC, encoCallback);
 }
 
 /**
@@ -96,7 +96,7 @@ bool encGetStatus() {
 		status = false;
 		return true;
 	}
-  else {
+	else {
 		return false;
 	}
 }
@@ -132,24 +132,21 @@ static encResult_t encStatus(bool A, bool B, bool SW){
   //SWITCH
   static bool lastSW = false;
   bool currentSW;
-  if(SW == SWACTIVE)
-    currentSW = SW;
+  currentSW = SW == SWACTIVE;
   if(!lastSW && currentSW) {
    	result = ENC_CLICK;
-    encFSM =  CLICK;
    	status = true;
   }
   lastSW = currentSW;
 
   //ENCODER FSM
   switch(encFSM) {
-    case CLICK: break;
     //INICIO
     case START:
-      if (!A && B) {  
+      if (A && !B) {
         encFSM = CW;
       }
-      if (A && !B) {
+      if (!A && B) {
         encFSM = CCW;
       }
     break;
@@ -157,14 +154,14 @@ static encResult_t encStatus(bool A, bool B, bool SW){
       if(!A && !B){
           encFSM = CW1;   //Sigo girando
       }
-      else if(!A && B){   //"Me quedo quieto"
+      else if(A && !B){   //"Me quedo quieto"
       }
       else{
           encFSM = START; //Volvi para atras
       }
     break;
     case CW1:
-      if(A && !B){
+      if(!A && B){
         encFSM = CW2;     //Sigo girando
       }
       else if(!A && !B){  //"Me quedo quieto"
@@ -179,7 +176,7 @@ static encResult_t encStatus(bool A, bool B, bool SW){
           result = ENC_RIGHT;
           status = true;
       } 
-      else if(A && !B){   //"Me quedo quieto"
+      else if(!A && B){   //"Me quedo quieto"
       } 
       else{
           encFSM = START; //Volvi para atras
@@ -189,14 +186,14 @@ static encResult_t encStatus(bool A, bool B, bool SW){
       if(!A && !B){       //Sigo girando
           encFSM = CCW1;
       }
-      else if(A && !B){ 	//"Me quedo quieto"
+      else if(!A && B){ 	//"Me quedo quieto"
       }
       else{
     	 encFSM = START;   //Volvi para atras
       }
     break;
     case CCW1:
-      if(!A && B){
+      if(A && !B){
         encFSM = CCW2;    //Sigo girando
       }
       else if(!A && !B){  //"Me quedo quieto"
