@@ -16,10 +16,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
-#define OFF 3
-#define D1  1
-#define D2  2
-#define D3  3
+//#define OFF 4
+//#define D1  1
+//#define D2  2
+//#define D3  3
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -36,7 +36,7 @@ const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+void ledSelect(int disp);
 // +ej: static void falta_envido (int);+
 
 
@@ -68,10 +68,10 @@ void ledsInit() {
 	//ledsClear(OFF);
 	int n;
     for (int i=0;i<3;i++){
-        ledSelect(n);
+    	ledClear(i);
     }
-	leds_id = timerGetId();
-	timerStart(leds_id, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, &update_leds);
+	//leds_id = timerGetId();
+	//timerStart(leds_id, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, &update_leds);
 }
 
 /**
@@ -79,7 +79,7 @@ void ledsInit() {
  * @param n Index of LED to turn off
  */
 void ledClear(int n) {
-    ledSelect(n);
+    ledSelect(OFF);
 }
 
 /**
@@ -101,8 +101,8 @@ void ledSet(int n) {
 // Case 1: D2
 // Case 2: D3
 // Case 3: OFF
-void ledSelect(int8_t disp) {
-	int8_t ret;
+void ledSelect(int disp) {
+	int ret;
 	switch (disp)
 	{
 	case D1:
@@ -128,5 +128,5 @@ void ledSelect(int8_t disp) {
 	default:
 		ret = false;
 	}
-	return ret;
+	//return ret;
 }

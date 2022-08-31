@@ -12,6 +12,8 @@
 #include "drivers/headers/encoder.h"
 #include "timer/timer.h"
 #include "App.h"
+#include "drivers/headers/leds.h"
+#include "drivers/headers/magDriver.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -34,7 +36,7 @@ static void write_array(char arr[], char arr_copy[], int size);
 static int user_verify(char id[], char password[], User *ptr_user, int cant_user);
 static User* user_init(int cant_user, User* ptr_user);
 static char encoder_control(char number, int joystick_input, int *status);
-static void print_display(char first, char second, char third, char fourth);
+static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input );
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status);
 //static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
 static int simulacion(void);
@@ -79,21 +81,19 @@ void App_Init(void) {
   timerInit();
   encInit();
   //dispInit();
-  //ledsInit();
-  //mag_drv_INIT();
-
-  App_Run();
+  ledsInit();
+  mag_drv_INIT();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
   User *ptr_user;
-  int cant_user = 4;
+  int cant_user = 1;
   ptr_user = user_init(cant_user, ptr_user);
   
   // MAIN PROGRAM
   // dispInit();
-  int status = ID;
+  static int status = ID;
   // int status_number = CERO;
   // int status_bright = NINE;
   char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=0";
@@ -105,51 +105,70 @@ void App_Run(void) {
   int prueba = 0;
   int cant_try = 0;
   int temporal=0;
+  encResult_t joystick_input = ENC_NONE;
+  tim_id_t ID_LED = timerGetId();
+
+  ledSet(D1);
+  ledSet(D2);
+  ledSet(D3);
 
   //printf("%c", *(array_pw_number + prueba));
 
   int counter = 0;
-  while (counter <= 40)
+  while (1)
   {
     counter++;
     if(encGetStatus()) {
     	encoderState = encGetEvent();
+    	//printf("Cambie algo crack    : ");
+    	//printf("%d\n",encoderState);
     }
+    else{
+    	encoderState = ENC_NONE;
+    }
+
     if(encoderState == ENC_CLICK){
-    	printf("CLICK REY");
+    	//printf("CLICK REY");
     }
-    int joystick_input=0;
+    joystick_input= encoderState;
+
+    if( mag_get_data_ready())
+    {
+    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1 , SIZE_ID);
+    	status = PASSWORD;
+    	printf("%s", mag_drv_read()+1);
+    }
     switch (status)
     {
 
     case CHANGE_BRIGHT:
       *ptr_id = encoder_control(*ptr_id, joystick_input, &status);
       //printf(" Llamar funcion de Nico");
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
+      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input );
       break;
 
     case ID:
       ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
+      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
       break;
 
     case CHANGE_ID:
       *ptr_id = encoder_control(*ptr_id, joystick_input, &status);
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
+      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
       break;
 
     case SUBMIT:
       status = PASSWORD;
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0]);
+      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       //dispSendWord(char* ch); //"ingresar pin"
       break;
     case PASSWORD:
       ptr_pw= PW_scroll(array_pw, ptr_pw,joystick_input, &status);
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0]);
+      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       break;
     case CHECK_ID_PW:
-      printf("entro a chech id \n");
-      printf("password: %s \n", array_pw_number);
+      //printf("entro a chech id \n");
+      //printf("password: %s \n", array_pw_number);
       
       if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))
       {
@@ -167,7 +186,7 @@ void App_Run(void) {
         else
         {
           status = ID;
-          printf(" Realizo 5 intentos");
+          printf(" Realizo 5 intentos ");
         }
       }
       break;
@@ -180,7 +199,7 @@ void App_Run(void) {
       {
         *ptr_pw = '_';
       }
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0]);
+      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       break;
     case CANCEL:
       status = ID;
@@ -190,8 +209,19 @@ void App_Run(void) {
       write_array(array_pw_number, "0000_", SIZE_PASSWORD);
       ptr_id = array_id + LIMITE_IZQ_ID;
       ptr_pw = array_pw + LIMITE_IZQ_PW;
-
       break;
+    case OPEN:
+    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+    	printf("PRENDER LED\n");
+    	while ( !timerExpired(ID_LED) )
+    	{
+    		print_display('O','P','E','N',joystick_input);
+    	}
+    	printf("APAGAR LED\n");
+    	status = CANCEL;
+
+
+
 
     default:
       break;
@@ -206,23 +236,30 @@ void App_Run(void) {
  *******************************************************************************
  ******************************************************************************/
 
-static void print_display(char first, char second, char third, char fourth)
+static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input )
 {
-  printf("%c %c %c %c", first, second, third, fourth);
-  printf("\n");
+  if (joystick_input != ENC_NONE)
+  {
+	  printf("%c %c %c %c", first, second, third, fourth);
+	  printf("\n");
+  }
+
 }
 
 static char encoder_control(char number, int joystick_input, int *status)
 {
 
-  if (joystick_input == DERECHA)
+  if (joystick_input == ENC_RIGHT){
+
     if(number== '_')
       number = '1';
     else if (number == '9')
       number = '0';
     else
       number++;
-  else if (joystick_input == IZQUIERDA)
+  }
+  else if (joystick_input == ENC_LEFT)
+  {
     if (number == '_')
     {
       number = '9';
@@ -233,7 +270,8 @@ static char encoder_control(char number, int joystick_input, int *status)
     }
     else
       number = '9';
-  else if (joystick_input == CLICK)
+  }
+  else if (joystick_input == ENC_CLICK)
   {
     if(*status==CHANGE_ID || *status==CHANGE_BRIGHT )
     {
@@ -251,8 +289,8 @@ static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usu
 {
   ptr_user = malloc(cant_user * sizeof(User));
 
-  write_array(ptr_user[0].id, "01230000", SIZE_ID);
-  write_array(ptr_user[0].password, "10001", SIZE_PASSWORD);
+  write_array(ptr_user[0].id, "00000000", SIZE_ID);
+  write_array(ptr_user[0].password, "1000", SIZE_PASSWORD);
   write_array(ptr_user[0].name, "PORRAS", SIZE_NAME);
   //printf("USER: %s",ptr_user[0].password );
   return ptr_user;
@@ -270,7 +308,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
   {
     if (compare_array(id, ptr_user[i].id, SIZE_ID))
     {
-      printf("user correct \n");
+      //printf("user correct \n");
       if (password[SIZE_PASSWORD-1] == '_')
       {
         //printf("es de 4 \n");
@@ -283,6 +321,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
       else
       {
         return INCORRECTO;
+
       }
     }
   }
@@ -292,8 +331,8 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
 // compara 2 arreglos y devuelve 1 si son iguales y 0 sin son distintos
 static int compare_array(char arr1[], char arr2[], int size)
 {
-  printf("arr1:%s \n", arr1);
-  printf("arr2:%s \n", arr2);
+  //printf("arr1:%s \n", arr1);
+  //printf("arr2:%s \n", arr2);
   int i;
   for (i = 0; i < size; i++)
   {
@@ -315,7 +354,7 @@ static void write_array(char arr[], char arr_copy[], int size)
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status)
 {
 
-  if (joystick_input == DERECHA)
+  if (joystick_input == ENC_RIGHT)
   {
 
     if (ptr_id == (array_id + LIMITE_DER_ID))
@@ -330,8 +369,9 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
     {
       ptr_id++;
     }
+
   }
-  else if (joystick_input == IZQUIERDA)
+  else if (joystick_input == ENC_LEFT)
   {
     if (ptr_id == (array_id + LIMITE_IZQ_ID))
     {
@@ -345,8 +385,9 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
     {
       ptr_id--;
     }
+
   }
-  else if (joystick_input == CLICK)
+  else if (joystick_input == ENC_CLICK)
   {
     if ((ptr_id >= array_id + LIMITE_IZQ_ID) && (ptr_id <= array_id + LIMITE_IZQ_ID + 7))
     {
@@ -364,7 +405,9 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
     {
       *status = CHANGE_BRIGHT;
     }
+
   }
+  //printf("%c", ptr_id[0]);
   return ptr_id;
 }
 
@@ -615,7 +658,7 @@ int simulacion(void)
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status)
 {
 
-  if (joystick_input == DERECHA)
+  if (joystick_input == ENC_RIGHT)
   {
 
     if (ptr_pw == (array_pw + LIMITE_DER_PW))
@@ -627,7 +670,7 @@ static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *s
       ptr_pw++;
     }
   }
-  else if (joystick_input == IZQUIERDA)
+  else if (joystick_input == ENC_LEFT)
   {
     if (ptr_pw== (array_pw + LIMITE_IZQ_PW))
     {
@@ -638,7 +681,7 @@ static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *s
       ptr_pw--;
     }
   }
-  else if (joystick_input == CLICK)
+  else if (joystick_input == ENC_CLICK)
   {
    // printf("click \n");
     if ((ptr_pw >= array_pw + LIMITE_IZQ_PW) && (ptr_pw <= array_pw + LIMITE_IZQ_PW + 4))

@@ -84,7 +84,7 @@ void encInit() {
 
   //Seteo el timer para que llame periodicamente a la callback con 1ms
   encTimer = timerGetId();
-  timerStart(encTimer, TIMER_MS2TICKS(2), TIM_MODE_PERIODIC, encoCallback);
+  timerStart(encTimer, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, encoCallback);
 }
 
 /**
