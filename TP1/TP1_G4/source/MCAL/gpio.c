@@ -86,9 +86,8 @@ void gpioMode (pin_t pin, uint8_t mode)
  * @param irqFun function to call on pin event
  * @return Registration succeed
  */
-bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun)
-{
-
+bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun) {
+	return true;
 }
 
 /**
