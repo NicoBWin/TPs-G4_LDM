@@ -7,26 +7,35 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
+// Drivers
 #include "drivers/headers/card_reader.h"
 #include "drivers/headers/display.h"
 #include "drivers/headers/encoder.h"
-#include "timer/timer.h"
-#include "App.h"
 #include "drivers/headers/leds.h"
 #include "drivers/headers/magDriver.h"
 
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
+// Timer
+#include "timer/timer.h"
+
+// App
+#include "App.h"
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
-/*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
+enum status
+{
+  CHANGE_BRIGHT,
+  ID,
+  CHANGE_ID,
+  SUBMIT,
+  CANCEL,
+  PASSWORD,
+  OPEN,
+  BLOCK,
+  CHANGE_PW,
+  CHECK_ID_PW
+};
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -41,6 +50,7 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
 //static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
 static int simulacion(void);
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status);
+
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -49,20 +59,6 @@ static encResult_t encoderState;
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-enum status
-{
-  CHANGE_BRIGHT,
-  ID,
-  CHANGE_ID,
-  SUBMIT,
-  CANCEL,
-  PASSWORD,
-  OPEN,
-  BLOCK,
-  CHANGE_PW,
-  CHECK_ID_PW
-};
 // +ej: static int temperaturas_actuales[4];+
 
 /*******************************************************************************
@@ -70,18 +66,12 @@ enum status
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-/* Función que se llama 1 vez, al comienzo del programa */
-//int main(void) {
-//  App_Init();
-//  return 1;
-//}
-
+/* Todos los init necesarios */
 void App_Init(void) {
-  // Varios INITS
   timerInit();
   encInit();
-  //dispInit();
-  //ledsInit();
+  dispInit();
+  ledsInit();
   mag_drv_INIT();
 }
 
@@ -108,9 +98,9 @@ void App_Run(void) {
   encResult_t joystick_input = ENC_NONE;
   tim_id_t ID_LED = timerGetId();
 
-  //ledSet(D1);
-  //ledSet(D2);
-  //ledSet(D3);
+  ledSet(D1);
+  ledSet(D2);
+  ledSet(D3);
 
   //printf("%c", *(array_pw_number + prueba));
 
@@ -220,9 +210,6 @@ void App_Run(void) {
     	printf("APAGAR LED\n");
     	status = CANCEL;
 
-
-
-
     default:
       break;
     }
@@ -235,7 +222,6 @@ void App_Run(void) {
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
 static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input )
 {
   if (joystick_input != ENC_NONE)
