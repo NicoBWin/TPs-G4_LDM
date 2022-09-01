@@ -53,7 +53,7 @@ static char encoder_control(char number, int joystick_input, int *status);
 static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input );
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status);
 //static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
-static int simulacion(void);
+
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status);
 
 static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status);
@@ -123,15 +123,13 @@ void App_Run(void) {
     counter++;
     if(encGetStatus()) {
     	encoderState = encGetEvent();
-    	//printf("Cambie algo crack    : ");
-    	//printf("%d\n",encoderState);
     }
     else{
     	encoderState = ENC_NONE;
     }
 
     if(encoderState == ENC_CLICK){
-    	//printf("CLICK REY");
+
     }
     joystick_input= encoderState;
 
@@ -172,9 +170,9 @@ void App_Run(void) {
       print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       break;
     case CHECK_ID_PW:
-      //printf("entro a chech id \n");
-      //printf("password: %s \n", array_pw_number);
+
       //CleardispDP();
+
       if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))
       {
     	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
@@ -191,9 +189,20 @@ void App_Run(void) {
     	status = CANCEL;
         cant_try = 0;
       }
-      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user))
+      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_administradores))
       {
-    	//status = ADMIN;
+      	timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
+      	ledSet(0);
+      	ledSet(1);
+      	ledSet(2);
+      	while ( !timerExpired(ID_LED) )
+      	{
+      		print_display('G','O','D',' ',joystick_input);
+      	}
+    	ledClear(0);
+    	ledClear(1);
+		ledClear(2);
+    	status = ADMIN;
     	// Llamar a user add
       }
       else
@@ -271,12 +280,31 @@ void App_Run(void) {
     	ptr_admin = ADMIN_scroll( array_admin, ptr_admin, joystick_input, &status);
     	print_display(ptr_admin[-3], ptr_admin[-2], ptr_admin[-1], ptr_admin[0],joystick_input);
     	break;
+
+    case ADD:
+  	  cant_user++;
+  	  //printf("anadir usuario");
+  	  ptr_user = user_add( cant_user,  ptr_user, array_id + LIMITE_IZQ_ID, array_pw_number);
+  	  timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
+  	  while ( !timerExpired(ID_LED) )
+    	  {
+    	      print_display('U','A','D','D',joystick_input);
+    	  }
+  	  status = CANCEL;
+  	  flag_add = 0;
+
+    	break;
+    case DELETE:
+    	if(cant_user>0)
+    		cant_user--;
+    	status = CANCEL;
     default:
       break;
     }
     //print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
   }
   free(ptr_user);
+  free(ptr_administradores);
 }
 
 /*******************************************************************************
@@ -286,11 +314,11 @@ void App_Run(void) {
  ******************************************************************************/
 static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input )
 {
-  if (joystick_input != ENC_NONE)
-  {
-	  printf("%c %c %c %c", first, second, third, fourth);
-	  printf("\n");
-  }
+  //if (joystick_input != ENC_NONE)
+  //{
+//	  printf("%c %c %c %c", first, second, third, fourth);
+	//  printf("\n");
+  //}
   dispSendChar(first, 0);
   dispSendChar(second, 1);
   dispSendChar(third, 2);
@@ -340,8 +368,8 @@ static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usu
 {
   ptr_user = malloc(cant_user * sizeof(User));
 
-  write_array(ptr_user[0].id, "00000000", SIZE_ID);
-  write_array(ptr_user[0].password, "1000", SIZE_PASSWORD);
+  write_array(ptr_user[0].id, "10000000", SIZE_ID);
+  write_array(ptr_user[0].password, "1000_", SIZE_PASSWORD);
   write_array(ptr_user[0].name, "PORRAS", SIZE_NAME);
   //printf("USER: %s",ptr_user[0].password );
   return ptr_user;
@@ -360,8 +388,8 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
 static User* admin_init( User* ptr_admin)
 {
 	ptr_admin = malloc(sizeof(User));
-    write_array(ptr_admin[0].id, "10000000", SIZE_ID);
-	write_array(ptr_admin[0].password, "1200", SIZE_PASSWORD);
+    write_array(ptr_admin[0].id, "00000000", SIZE_ID);
+	write_array(ptr_admin[0].password, "0000_", SIZE_PASSWORD);
 	write_array(ptr_admin[0].name, "PORRAS", SIZE_NAME);
 	return ptr_admin;
 }
@@ -372,9 +400,14 @@ static int admin_verify(char id[], char password[], User* ptr_admin)
     {
       //printf("user correct \n");
       if (password[SIZE_PASSWORD-1] == '_')
-      {
-    	  return INCORRECTO;
-      }
+    	 {
+          //printf("es de 4 \n");
+   	        size_pw--;
+   	        if(ptr_admin[0].password[SIZE_PASSWORD-1] != '_' )
+   	        {
+   	        	return INCORRECTO;
+    	    }
+    	 }
       if (compare_array(password, ptr_admin[0].password, size_pw))
       {
         return CORRECTO;
@@ -403,6 +436,10 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
       {
         //printf("es de 4 \n");
         size_pw--;
+        if(ptr_user[i].password[SIZE_PASSWORD-1] != '_' )
+        {
+        	return INCORRECTO;
+        }
       } 
       if (compare_array(password, ptr_user[i].password, size_pw))
       {
@@ -552,245 +589,7 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
 // return "12345678";
 //}
 
-int simulacion(void)
-{
-  static int counter = -1;
-  counter++;
-  // printf("%d \n ", counter);
-  switch (counter)
-  {
-     case 0:
-        return CLICK; // 0
-        break;
-     case 1:
-       return CLICK; // CAMBIO NUM0
-       break;
-     case 2:
-       return DERECHA; // paso a num1
-       break;
-     case 3:
-       return CLICK; // quiero cambiar primer numero
-       break;
-     case 4:
-       return DERECHA; // 1
-       break;
-     case 5:
-       return CLICK; // CAMBIO NUM1
-       break;
-     case 6:
-       return DERECHA; // paso a num2
-       break;
-     case 7:
-       return CLICK; // quiero cambiar primer numero
-       break;
-     case 8:
-       return DERECHA; //1
-       break;
-     case 9:
-       return DERECHA;//2
-       break;
-     case 10:
-       return CLICK; // MODIFICO NUM2
-       break;
-     case 11:
-       return DERECHA; // paso a num3
-       break;
-     case 12:
-       return CLICK; // quiero cambiar num3
-       break;
-     case 13:
-       return DERECHA; // 1
-       break;
-     case 14:
-       return DERECHA; // 2
-       break;
-     case 15:
-       return DERECHA; // 3
-       break;
-     case 16:
-       return CLICK; // cambio num3
-       break;
-     case 17:
-       return DERECHA; // muevo al NUM4
-       break;
-     case 18:
-       return DERECHA; // muevo a NUM5
-       break;
-     case 19:
-       return DERECHA; // MUEVO A NUM6
-       break;
-     case 20:
-       return DERECHA; // muevo a NUM7
-       break;
-     case 21:
-       return DERECHA; // MUEVO A SUBMIT
-       break;
-     case 22:
-       return CLICK; // paso a password
-       break;
-     case 23:
-       return CLICK; // MODIFICO NUM1
-       break;
-     case 24:
-       return DERECHA; // 1
-       break;
-     case 25:
-       return CLICK; // MODIFICO NUM1
-       break;
-     case 26:
-       return DERECHA; // muevo al segundo numero
-       break;
-     case 27:
-       return DERECHA; // muevo al 3ER numero
-       break;
-      case 28:
-        return DERECHA; // muevo al 4TO numero
-        break;
-      case 29:
-          return DERECHA; // muevo al 5TO numero
-          break;
-      case 30:
-          return CLICK;   // modifico el 5to num
-          break;
-      case 31:
-          return DERECHA; // 1
-          break;
-      case 32:
-        return CLICK; // modifico el 5num
-        break;
-      case 33:
-          return DERECHA; // muevo al SUBMIY numero
-          break;
-      case 34:
-          return CLICK; // chequeo
-          break;
-      case 35:
-          return DERECHA; // XD
-          break;
-  }
-  /*switch (counter)
-  {
-  case 0:
-    return CLICK; //quiero cambiar primer numero
-    break;
-  case 1:
-    return DERECHA; 
-    break;
-  case 2:
-    return DERECHA;
-    break;
-  case 3:
-    return CLICK; //cambie primer numero
-    break;
-  case 4:
-    return DERECHA; // muevo al segundo numero
-    break;
-  case 5:
-    return DERECHA; // muevo al tercer numero
-    break;
-  case 6:
-    return CLICK; // quiero cambiar tercer numero
-    break;
-  case 7:
-    return IZQUIERDA; // paso del 0 al 9
-    break;
-  case 8:
-    return CLICK; // cambio tercer numero
-    break;
-  case 9:
-    return DERECHA; // paso al 4to
-    break;
-  case 10:
-    return DERECHA; // paso al 5to
-    break;
-  case 11:
-    return DERECHA; // paso al 6to
-    break;
-  case 12:
-    return DERECHA; //paso al 7
-    break;
-  case 13:
-    return DERECHA; //paso al 8
-    break;
-  case 14:
-    return DERECHA; // paso al S
-    break;
-  case 15:
-    return DERECHA; // paso al C
-    break;
-  case 16:
-    return DERECHA; //paso al brillo (salteo B=)
-    break;
-  case 17:
-    return CLICK; //quiero cambiar brillo
-    break;
-  case 18:
-    return DERECHA;//
-    break;
-  case 19:
-    return DERECHA;//
-    break;
-  case 20:
-    return CLICK; // cambio brillo incremmentado en 2
-    break;
-  case 21:
-    return IZQUIERDA; // vuelvo a C
-    break;
-  case 22:
-    return IZQUIERDA; // vuelvo a S
-    break;
-  case 23:
-    return CLICK; // paso a password 
-    break;
 
-  case 24:
-    return CLICK; // quiero cambiar primer numero
-    break;
-  case 25:
-    return DERECHA;//1
-    break;
-  case 26:
-    return DERECHA;//2
-    break;
-  case 27:
-    return DERECHA;//3
-    break;
-  case 28:
-    return CLICK;//lo cambio a 3
-    break;
-  case 29:
-    return DERECHA; // paso al numero 2
-    break;
-  case 30:
-    return DERECHA;//paso al numero 3
-    break;
-  case 31:
-    return CLICK; //queiro cambiar el num 3
-    break;
-  case 32:
-    return IZQUIERDA;// 9
-    break;
-  case 33:
-    return CLICK; //cambio num3 a 9
-    break;
-  case 34:
-    return DERECHA; // paso al 4
-    break;
-  case 35:
-    return DERECHA;// paso al 5
-    break;
-  case 36:
-    return DERECHA;// paso a S
-    break;
-  case 37:
-    return DERECHA;//paso a C
-    break;
-  default:
-    return CLICK; //hago un clear y vuelvo a ID
-    break;
-  }*/
-  return 0;
-}
 
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status)
 {

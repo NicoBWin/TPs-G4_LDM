@@ -48,6 +48,7 @@
 /// Tiempo Led on
 #define TIME_LED_ON 5000 // en ms#
 #define TIME_LED_BLOCK 5000 // en ms
+#define TIME_GOD 3000
 #define CANT_TRY_BLOCK 1
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
