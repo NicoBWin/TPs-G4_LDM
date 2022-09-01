@@ -1,6 +1,6 @@
 /***************************************************************************/ /**
   @file     display.h
-  @brief    Driver display de 7 segmentos
+  @brief    Header display de 7 segmentos
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 

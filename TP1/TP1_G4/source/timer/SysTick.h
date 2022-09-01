@@ -1,6 +1,6 @@
 /***************************************************************************/ /**
   @file     SysTick.h
-  @brief    SysTick driver
+  @brief    Header SysTick
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 

@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     gpio.h
-  @brief    Simple GPIO Pin services, similar to Arduino
-  @author   Nicolás Magliola
+  @brief    Header GPIO
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
 #ifndef _GPIO_H_
@@ -20,8 +20,6 @@
 enum { PA, PB, PC, PD, PE };
 
 // Convert port and number into pin ID
-// Ex: PTB5  -> PORTNUM2PIN(PB,5)  -> 0x25
-//     PTC22 -> PORTNUM2PIN(PC,22) -> 0x56
 #define PORTNUM2PIN(p,n)    (((p)<<5) + (n))
 #define PIN2PORT(p)         (((p)>>5) & 0x07)
 #define PIN2NUM(p)          ((p) & 0x1F)
@@ -63,13 +61,8 @@ enum {
 };
 
 /*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-/*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-
 /**
  * @brief Configures the specified pin to behave either as an input or an output
  * @param pin the pin whose mode you wish to set (according PORTNUM2PIN)
@@ -91,8 +84,6 @@ bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun);
  * @param pin the pin to write (according PORTNUM2PIN)
  * @param val Desired value (HIGH or LOW)
  */
-
-
 void gpioWrite (pin_t pin, bool value);
 
 /**

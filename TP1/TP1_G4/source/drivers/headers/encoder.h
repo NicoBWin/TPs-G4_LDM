@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     encoder.h
-  @brief    Driver encoder
+  @brief    Header encoder
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 

@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     timer.c
-  @brief    Timer driver. Advance implementation
-  @author   Nicolás Magliola
+  @brief    Driver del Timer
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
 /*******************************************************************************
@@ -11,6 +11,7 @@
 
 #include "../MCAL/gpio.h"
 #include "../drivers/board.h"
+
 #include "timer.h"
 #include "SysTick.h"
 

@@ -178,7 +178,7 @@ static void displayCallback(void){
 			gpioWrite(SEGMENTS[PIN_SEG_D], HIGH);
 		}
 		if(i==3){
-			if (DPstate){	// HARCODEADO PERO ANDA COMO CURSOR
+			if (DPstate){	// HARCODEADO NO ANDA
 					gpioWrite(SEGMENTS[PIN_SEG_DT], HIGH);
 				}
 				else {

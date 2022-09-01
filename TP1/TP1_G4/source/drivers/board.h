@@ -1,6 +1,6 @@
 /***************************************************************************/ /**
   @file     board.h
-  @brief    Board management
+  @brief    PIN Board assignment file
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
@@ -15,7 +15,6 @@
 /*******************************************************************************
  * PIN ASSIGNMENT
  ******************************************************************************/
-
 /***** BOARD Lab Micros V1.00 define ******************************************/
 // 7seg Display
 #define PIN_SEG_A PORTNUM2PIN(PE, 24)
@@ -44,13 +43,14 @@
 #define PIN_SW2 PORTNUM2PIN(PC, 6)
 #define PIN_SW3 PORTNUM2PIN(PA, 4)
 
-/***** DEBUG *******************************************************************/
-#define PIN_IRQ PORTNUM2PIN(PB, 10)
-
 /***** Card Reader defines *****************************************************/
 #define ENABLE_PIN PORTNUM2PIN(PC, 10)
 #define CLOCK_PIN PORTNUM2PIN(PC, 11)
 #define DATA_PIN PORTNUM2PIN(PB, 11)
 
+/***** DEBUG *******************************************************************/
+#define PIN_IRQ PORTNUM2PIN(PB, 10)
+
+/******************************************************************************/
 
 #endif // _BOARD_H_

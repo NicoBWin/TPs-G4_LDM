@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     timer.h
   @brief    Timer driver. Advance implementation
-  @author   Nicolás Magliola
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
 #ifndef _TIMER_H_
@@ -14,23 +14,18 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-
-
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
 #define TIMER_TICK_MS       1
 #define TIMER_MS2TICKS(ms)  ((ms)/TIMER_TICK_MS)
 
 #define TIMERS_MAX_CANT     16
 #define TIMER_INVALID_ID    255
 
-
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
 // Timer Modes
 enum { TIM_MODE_SINGLESHOT, TIM_MODE_PERIODIC, CANT_TIM_MODES };
 
@@ -38,11 +33,6 @@ enum { TIM_MODE_SINGLESHOT, TIM_MODE_PERIODIC, CANT_TIM_MODES };
 typedef uint32_t ttick_t;
 typedef uint8_t tim_id_t;
 typedef void (*tim_callback_t)(void);
-
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE

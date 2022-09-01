@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     App.h
-  @brief    Application functions
+  @brief    Application functions header
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 

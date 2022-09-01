@@ -1,6 +1,6 @@
 /***************************************************************************//**
-  @file     car_reader.c
-  @brief    Driver lector de tarjetas de banda magnetica
+  @file     SysTick.c
+  @brief    Systyck configurator
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
