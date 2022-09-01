@@ -61,6 +61,15 @@ void SetdispBrightness(int level);
  */
 int GetdispBrightness();
 
+/**
+ * @brief SetdispDP: Turns on DP.
+ */
+void SetdispDP();
+
+/**
+ * @brief CleardispDP: Turns off DP.
+ */
+void CleardispDP();
 /*******************************************************************************
  ******************************************************************************/
 

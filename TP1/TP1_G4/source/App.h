@@ -35,6 +35,10 @@
 #define POS_CHECK LIMITE_DER_ID -1
 #define POS_CHECK_PW LIMITE_DER_PW -1
 
+#define SIZE_DISPLAY_ADMIN 6
+#define LIMITE_IZQ_ADMIN 3
+#define LIMITE_DER_ADMIN SIZE_DISPLAY_ADMIN -1
+
 /// Posibles salidas del joystick
 #define NOMOVE 0
 #define DERECHA 1
@@ -42,7 +46,9 @@
 #define CLICK 3
 
 /// Tiempo Led on
-#define TIME_LED_ON 5000 // en ms
+#define TIME_LED_ON 5000 // en ms#
+#define TIME_LED_BLOCK 5000 // en ms
+#define CANT_TRY_BLOCK 1
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/

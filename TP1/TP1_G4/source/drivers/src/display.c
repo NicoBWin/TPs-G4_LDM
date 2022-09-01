@@ -34,6 +34,8 @@ bool dispSelect(int8_t disp);
 static const uint8_t SEGMENTS[SEVEN_SEGMENTS_PINS] = {PIN_SEG_A, PIN_SEG_B, PIN_SEG_C, PIN_SEG_D, PIN_SEG_E,
 											PIN_SEG_F, PIN_SEG_G, PIN_SEG_DT};
 
+static bool DPstate = false;
+
 static int fps = 5;
 
 static int brightness = (5) * (8.0 / 10.0);
@@ -127,7 +129,20 @@ int GetdispBrightness(){
 }
 
 
+// Configuracion del punto decimal *****************************************************
+/**
+ * @brief SetdispDP: Turns on DP.
+ */
+void SetdispDP(){
+	DPstate = true;
+}
 
+/**
+ * @brief CleardispDP: Turns off DP.
+ */
+void CleardispDP(){
+	DPstate = false;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -161,6 +176,14 @@ static void displayCallback(void){
 			}
 			gpioWrite(SEGMENTS[PIN_SEG_DT], HIGH);
 			gpioWrite(SEGMENTS[PIN_SEG_D], HIGH);
+		}
+		if(i==3){
+			if (DPstate){	// HARCODEADO PERO ANDA COMO CURSOR
+					gpioWrite(SEGMENTS[PIN_SEG_DT], HIGH);
+				}
+				else {
+					gpioWrite(SEGMENTS[PIN_SEG_DT], LOW);
+				}
 		}
 	}
 	else {

@@ -34,7 +34,10 @@ enum status
   OPEN,
   BLOCK,
   CHANGE_PW,
-  CHECK_ID_PW
+  CHECK_ID_PW,
+  ADMIN,
+  ADD,
+  DELETE
 };
 
 /*******************************************************************************
@@ -43,7 +46,9 @@ enum status
 static int compare_array(char arr1[], char arr2[], int size);
 static void write_array(char arr[], char arr_copy[], int size);
 static int user_verify(char id[], char password[], User *ptr_user, int cant_user);
+static int admin_verify(char id[], char password[], User* ptr_admin);
 static User* user_init(int cant_user, User* ptr_user);
+static User* admin_init( User* ptr_admin);
 static char encoder_control(char number, int joystick_input, int *status);
 static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input );
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status);
@@ -51,10 +56,13 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
 static int simulacion(void);
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status);
 
+static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status);
+static User* user_add(int cant_user, User* ptr_user, char id[], char password[]);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static encResult_t encoderState;
+static int flag_add = 0;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -78,29 +86,34 @@ void App_Init(void) {
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
   User *ptr_user;
+  User *ptr_administradores;
   int cant_user = 1;
   ptr_user = user_init(cant_user, ptr_user);
+  ptr_administradores = admin_init(ptr_administradores);
+  SetdispBrightness(7);
   
   // MAIN PROGRAM
   // dispInit();
   static int status = ID;
   // int status_number = CERO;
   // int status_bright = NINE;
-  char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=0";
-  char array_pw[SIZE_DISPLAY_PW] = "PW=_____SC";
+  char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=7";
+  char array_pw[SIZE_DISPLAY_PW] = "PD=_____SC";
   char array_pw_number[SIZE_PW] = "0000_";
+  char array_admin[SIZE_DISPLAY_ADMIN] = "   ADO"; // ADD, DELETE, OUT
   
+
   char *ptr_id = array_id + LIMITE_IZQ_ID;
   char *ptr_pw = array_pw + LIMITE_IZQ_PW;
+  char *ptr_admin = array_admin + LIMITE_DER_ADMIN;
   int prueba = 0;
   int cant_try = 0;
   int temporal=0;
   encResult_t joystick_input = ENC_NONE;
   tim_id_t ID_LED = timerGetId();
 
-  ledSet(D1);
-  ledSet(D2);
-  ledSet(D3);
+  //SetdispDP();
+
 
   //printf("%c", *(array_pw_number + prueba));
 
@@ -134,12 +147,14 @@ void App_Run(void) {
     case CHANGE_BRIGHT:
       *ptr_id = encoder_control(*ptr_id, joystick_input, &status);
       //printf(" Llamar funcion de Nico");
+      SetdispBrightness((int)*ptr_id - 48);
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input );
       break;
 
     case ID:
       ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
+
       break;
 
     case CHANGE_ID:
@@ -159,26 +174,59 @@ void App_Run(void) {
     case CHECK_ID_PW:
       //printf("entro a chech id \n");
       //printf("password: %s \n", array_pw_number);
-      
+      //CleardispDP();
       if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))
       {
-        status = OPEN;
+    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+    	ledSet(0);
+    	ledSet(1);
+    	ledSet(2);
+    	while ( !timerExpired(ID_LED) )
+    	{
+    		print_display('O','P','E','N',joystick_input);
+    	}
+    	ledClear(0);
+    	ledClear(1);
+		ledClear(2);
+    	status = CANCEL;
         cant_try = 0;
-        printf("Me abrí crack");
+      }
+      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user))
+      {
+    	//status = ADMIN;
+    	// Llamar a user add
       }
       else
       {
         cant_try++;
-        if (cant_try <=5)
+        if (cant_try <= CANT_TRY_BLOCK)
         {
-          status = ID;
+          timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+          status = CANCEL;
+          ledSet(1);
+          while ( !timerExpired(ID_LED) )
+          {
+        	  print_display('F','A','I','L',joystick_input);
+          }
+          ledClear(1);
         }
         else
         {
-          status = ID;
-          printf(" Realizo 5 intentos ");
+
+            timerStart(ID_LED, TIMER_MS2TICKS(cant_try*TIME_LED_BLOCK), 0 , NULL);
+            status = CANCEL;
+            ledSet(0);
+            ledSet(2);
+            while ( !timerExpired(ID_LED) )
+            {
+          	  print_display('B','L','O','C',joystick_input);
+            }
+            ledClear(0);
+            ledClear(2);
+
         }
       }
+      //SetdispDP();
       break;
     case CHANGE_PW:
       prueba = (int)(ptr_pw - (array_pw + LIMITE_IZQ_PW));
@@ -201,20 +249,34 @@ void App_Run(void) {
       ptr_pw = array_pw + LIMITE_IZQ_PW;
       break;
     case OPEN:
+    	CleardispDP();
     	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
     	printf("PRENDER LED\n");
+    	ledSet(0);
+    	ledSet(1);
+    	ledSet(2);
     	while ( !timerExpired(ID_LED) )
     	{
     		print_display('O','P','E','N',joystick_input);
     	}
+
+    	ledClear(0);
+    	ledClear(1);
+		ledClear(2);
     	printf("APAGAR LED\n");
     	status = CANCEL;
-
+    	SetdispDP();
+    	break;
+    case ADMIN:
+    	ptr_admin = ADMIN_scroll( array_admin, ptr_admin, joystick_input, &status);
+    	print_display(ptr_admin[-3], ptr_admin[-2], ptr_admin[-1], ptr_admin[0],joystick_input);
+    	break;
     default:
       break;
     }
     //print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
   }
+  free(ptr_user);
 }
 
 /*******************************************************************************
@@ -229,7 +291,10 @@ static void print_display(char first, char second, char third, char fourth,encRe
 	  printf("%c %c %c %c", first, second, third, fourth);
 	  printf("\n");
   }
-
+  dispSendChar(first, 0);
+  dispSendChar(second, 1);
+  dispSendChar(third, 2);
+  dispSendChar(fourth, 3);
 }
 
 static char encoder_control(char number, int joystick_input, int *status)
@@ -281,7 +346,46 @@ static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usu
   //printf("USER: %s",ptr_user[0].password );
   return ptr_user;
 }
+static User* user_add(int cant_user, User* ptr_user, char id[], char password[]) // inicializa primeros usuarios con memoria dinamica
+{
+  ptr_user = realloc(ptr_user, cant_user * sizeof(User));
 
+  write_array(ptr_user[cant_user-1].id, id , SIZE_ID);
+  write_array(ptr_user[cant_user-1].password, password, SIZE_PASSWORD);
+  write_array(ptr_user[cant_user-1].name, "PORRAS", SIZE_NAME);
+  //printf("USER: %s",ptr_user[0].password );
+  return ptr_user;
+}
+
+static User* admin_init( User* ptr_admin)
+{
+	ptr_admin = malloc(sizeof(User));
+    write_array(ptr_admin[0].id, "10000000", SIZE_ID);
+	write_array(ptr_admin[0].password, "1200", SIZE_PASSWORD);
+	write_array(ptr_admin[0].name, "PORRAS", SIZE_NAME);
+	return ptr_admin;
+}
+static int admin_verify(char id[], char password[], User* ptr_admin)
+{
+	int size_pw = SIZE_PASSWORD;
+    if (compare_array(id, ptr_admin[0].id, SIZE_ID))
+    {
+      //printf("user correct \n");
+      if (password[SIZE_PASSWORD-1] == '_')
+      {
+    	  return INCORRECTO;
+      }
+      if (compare_array(password, ptr_admin[0].password, size_pw))
+      {
+        return CORRECTO;
+      }
+      else
+      {
+        return INCORRECTO;
+      }
+    }
+    return INCORRECTO;
+}
 static int user_verify(char id[], char password[], User* ptr_user, int cant_user)
 {
   //printf("ID userver: %s\n", id);
@@ -336,6 +440,52 @@ static void write_array(char arr[], char arr_copy[], int size)
     arr[i] = arr_copy[i];
   }
 }
+static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status)
+{
+	if (joystick_input == ENC_RIGHT)
+	  {
+	    if (ptr_admin == (array_admin + LIMITE_DER_ADMIN))
+	    {
+	      ptr_admin = array_admin + LIMITE_IZQ_ADMIN;
+	    }
+	    else
+	    {
+	      ptr_admin++;
+	    }
+	  }
+	else if (joystick_input == ENC_LEFT)
+	  {
+	    if (ptr_admin == (array_admin + LIMITE_IZQ_ADMIN))
+	    {
+	      ptr_admin = array_admin + LIMITE_DER_ADMIN;
+	    }
+	    else
+	    {
+	      ptr_admin--;
+	    }
+	  }
+	else if (joystick_input == ENC_CLICK)	// " ADO"
+	  {
+		if (ptr_admin == array_admin + LIMITE_IZQ_ADMIN)
+		{
+			*status = CANCEL;
+			flag_add = 1;
+
+		}
+		if (ptr_admin == array_admin + LIMITE_IZQ_ADMIN + 1)
+		{
+			*status = DELETE;
+		}
+		if (ptr_admin == array_admin+ LIMITE_DER_ADMIN)
+		{
+			*status = CANCEL;
+		}
+
+	  }
+	  //printf("%c", ptr_id[0]);
+	  return ptr_admin;
+}
+
 
 static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status)
 {
@@ -639,6 +789,7 @@ int simulacion(void)
     return CLICK; //hago un clear y vuelvo a ID
     break;
   }*/
+  return 0;
 }
 
 static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status)
@@ -678,7 +829,15 @@ static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *s
     else if (ptr_pw == array_pw + POS_CHECK_PW)
     {
       printf("cambio estado \n");
-      *status = CHECK_ID_PW;
+      if ( !flag_add )				// si no esta en modo admin
+      {
+    	  *status = CHECK_ID_PW;
+      }
+      else
+      {
+    	  *status = ADD;
+      }
+
     }
     else if (ptr_pw == array_pw + LIMITE_DER_PW)
     {

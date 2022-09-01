@@ -53,6 +53,6 @@ __ISR__ SysTick_Handler(void) {
 	#endif //SYSTICK_DEVELOPMENT_MODE
 	st_callback();
 	#ifdef SYSTICK_DEVELOPMENT_MODE
-		gpioMode(PIN_IRQ, LOW);
+		gpioWrite(PIN_IRQ, LOW);
 	#endif //SYSTICK_DEVELOPMENT_MODE
 }
