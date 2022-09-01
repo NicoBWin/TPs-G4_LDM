@@ -36,9 +36,9 @@
 #define PINB_LEDS PORTNUM2PIN(PB, 9)
 
 // Encoder + SW
-#define PIN_SW PORTNUM2PIN(PC, 2)
-#define PIN_RCHA PORTNUM2PIN(PD, 0)
-#define PIN_RCHB PORTNUM2PIN(PE, 26)
+#define PIN_SW PORTNUM2PIN(PC, 0)
+#define PIN_RCHA PORTNUM2PIN(PC, 5)
+#define PIN_RCHB PORTNUM2PIN(PC, 7)
 
 // On Board User Switches
 #define PIN_SW2 PORTNUM2PIN(PC, 6)
@@ -48,9 +48,9 @@
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
 
 /***** Card Reader defines *****************************************************/
-#define ENABLE_PIN PORTNUM2PIN(PB, 18)
-#define CLOCK_PIN PORTNUM2PIN(PB, 19)
-#define DATA_PIN PORTNUM2PIN(PC, 1)
+#define ENABLE_PIN PORTNUM2PIN(PC, 10)
+#define CLOCK_PIN PORTNUM2PIN(PC, 11)
+#define DATA_PIN PORTNUM2PIN(PB, 11)
 
 
 #endif // _BOARD_H_

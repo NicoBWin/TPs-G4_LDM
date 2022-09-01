@@ -17,12 +17,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define MAX_LEDS	3
-
-#define OFF 4
-#define D1  1
-#define D2  2
-#define D3  3
-
+enum leds {D1, D2, D3, OFF};
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -43,8 +38,13 @@ void ledClear(int n);
  */
 void ledSet(int n);
 
+/**
+ * @brief Toggle a LED
+ * @param n Index of LED to Toggle
+ */
+void ledToggle(int n);
+
 /*******************************************************************************
  ******************************************************************************/
-
 
 #endif /* _LEDS_H_ */

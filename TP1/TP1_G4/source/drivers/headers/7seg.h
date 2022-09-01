@@ -19,11 +19,11 @@
  ******************************************************************************/
 typedef struct {
 	char name;
-	uint8_t pin_mode[SEVEN_SEGMENTS_PINS]; // PIN_A, PIN_B, PIN_C, PIN_D, PIN_E, PIN_F, PIN_G, PIN_DOT
+	bool pin_mode[SEVEN_SEGMENTS_PINS]; // PIN_A, PIN_B, PIN_C, PIN_D, PIN_E, PIN_F, PIN_G, PIN_DOT
 } character_t;
 
 /*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 const character_t characters[] = {
 	{'0', {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, LOW, LOW}},
@@ -81,7 +81,12 @@ const character_t characters[] = {
 	{'e', {LOW, LOW, LOW, LOW, HIGH, LOW, LOW, LOW}},
 	{'f', {LOW, LOW, LOW, LOW, LOW, HIGH, LOW, LOW}},
 	{'g', {LOW, LOW, LOW, LOW, LOW, LOW, HIGH, LOW}}
-}
+};
+
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
+#define MAX_CHARACTERS  sizeof(characters) / sizeof(character_t)
 
 /*******************************************************************************
  ******************************************************************************/

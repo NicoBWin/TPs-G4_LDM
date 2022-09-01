@@ -1,6 +1,6 @@
 /***************************************************************************//**
-  @file     encoder.c
-  @brief    Driver encoder
+  @file     leds.c
+  @brief    Driver leds
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
@@ -15,11 +15,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
-//#define OFF 4
-//#define D1  1
-//#define D2  2
-//#define D3  3
+#define UPDATE_RATE 2
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -27,25 +23,18 @@ const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
 
 
 /*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: unsigned int anio_actual;+
-
-
-/*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-void ledSelect(int disp);
-// +ej: static void falta_envido (int);+
+// Update LEDs.
+static void ledsCallback();
 
+// MUX for leds
+bool ledSelect(int8_t disp);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
+const uint8_t LEDSELECTOR[2] = {PINA_LEDS, PINB_LEDS};
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -53,6 +42,11 @@ void ledSelect(int disp);
 //Timer para el los leds
 static tim_id_t leds_id;
 
+//LEDS array if is ON or OFF
+static bool leds[MAX_LEDS];
+
+//LED COUNTER
+static int ledCnt;
 
 /*******************************************************************************
  *******************************************************************************
@@ -66,12 +60,11 @@ void ledsInit() {
     gpioMode(PINA_LEDS, OUTPUT);
 	gpioMode(PINB_LEDS, OUTPUT);
 	//ledsClear(OFF);
-	int n;
-    for (int i=0;i<3;i++){
-    	ledClear(i);
+    for (int i=0;i<MAX_LEDS;i++){
+        leds[i]=false;
     }
-	//leds_id = timerGetId();
-	//timerStart(leds_id, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, &update_leds);
+	leds_id = timerGetId();
+	timerStart(leds_id, TIMER_MS2TICKS(UPDATE_RATE), TIM_MODE_PERIODIC, &ledsCallback);
 }
 
 /**
@@ -79,7 +72,7 @@ void ledsInit() {
  * @param n Index of LED to turn off
  */
 void ledClear(int n) {
-    ledSelect(OFF);
+	leds[n]=false;
 }
 
 /**
@@ -87,46 +80,64 @@ void ledClear(int n) {
  * @param n Index of LED to turn on
  */
 void ledSet(int n) {
-    ledSelect(n);
+    leds[n]=true;
 }   
 
+/**
+ * @brief Turn on a LED
+ * @param n Index of LED to turn on
+ */
+void ledToggle(int n) {
+    leds[n]=!leds[n];
+}
 
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+// Update LEDS
+static void ledsCallback() {
+	if(ledCnt == MAX_LEDS) {
+		ledCnt = 0;
+	}
+	if(leds[ledCnt])
+		ledSelect(ledCnt);
+	else
+		ledSelect(OFF);
+	ledCnt++;
+}
+
 // Selec the led to turn on
 // Case 0: D1
 // Case 1: D2
 // Case 2: D3
 // Case 3: OFF
-void ledSelect(int disp) {
-	int ret;
-	switch (disp)
-	{
-	case D1:
-		gpioWrite(PINA_SEG, HIGH);
-		gpioWrite(PINB_SEG, LOW);
-		ret = true;
-		break;
-	case D2:
-		gpioWrite(PINA_SEG, LOW);
-		gpioWrite(PINB_SEG, HIGH);
-		ret = true;
-		break;
-	case D3:
-		gpioWrite(PINA_SEG, HIGH);
-		gpioWrite(PINB_SEG, HIGH);
-		ret = true;
-		break;
-	case OFF:
-		gpioWrite(PINA_SEG, LOW);
-		gpioWrite(PINB_SEG, LOW);
-		ret = true;
-		break;
-	default:
-		ret = false;
+bool ledSelect(int8_t disp) {
+	int8_t ret;
+	switch (disp) {
+		case D1:
+			gpioWrite(PINA_LEDS, HIGH);
+			gpioWrite(PINB_LEDS, LOW);
+			ret = true;
+			break;
+		case D2:
+			gpioWrite(PINA_LEDS, LOW);
+			gpioWrite(PINB_LEDS, HIGH);
+			ret = true;
+			break;
+		case D3:
+			gpioWrite(PINA_LEDS, HIGH);
+			gpioWrite(PINB_LEDS, HIGH);
+			ret = true;
+			break;
+		case OFF:
+			gpioWrite(PINA_LEDS, LOW);
+			gpioWrite(PINB_LEDS, LOW);
+			ret = true;
+			break;
+		default:
+			ret = false;
 	}
-	//return ret;
+	return ret;
 }

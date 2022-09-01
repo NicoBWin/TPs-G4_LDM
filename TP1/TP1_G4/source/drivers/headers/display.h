@@ -16,11 +16,11 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  *****************************************************************************/
-#define MAX_CHARACTERS  4
+#define MAX_DISPLAY  4
 #define SEVEN_SEGMENTS_PINS 8
 
 #define MIN_BRIGHT 0
-#define MAX_BRIGHT 255
+#define MAX_BRIGHT 9
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -51,11 +51,15 @@ void dispSendWord(char* ch);
 void dispClearAll(void);
 
 /**
- * @brief dispBrightness: Changes the brightness of all displays.
+ * @brief SetdispBrightness: Changes the brightness of all displays.
  * @params brightness: the brightness value to be set.
- *
  */
-void dispBrightness(uint8_t brightness);
+void SetdispBrightness(int level);
+
+/**
+ * @brief GetdispBrightness: Gets the brightness of all displays.
+ */
+int GetdispBrightness();
 
 /*******************************************************************************
  ******************************************************************************/
