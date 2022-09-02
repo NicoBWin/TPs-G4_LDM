@@ -23,27 +23,27 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-enum status
+enum status   //estados de la interfaz principal 
 {
-  CHANGE_BRIGHT,
-  ID,
-  CHANGE_ID,
-  SUBMIT,
-  CANCEL,
-  PASSWORD,
-  OPEN,
-  BLOCK,
-  CHANGE_PW,
-  CHECK_ID_PW,
-  ADMIN,
-  ADD,
-  DELETE
+  CHANGE_BRIGHT, //cambia el indicador del brillo de 0 a 9
+  ID,             // menu principal donde se ingresa el ID 
+  CHANGE_ID,      // cambia de a un numero del ID
+  SUBMIT,         // submit despues de cargar el ID, pasa a PASSWORD
+  CANCEL,         // vuelve al estado ID y cancela la entrada de datos
+  PASSWORD,       // menu de ingreso del PIN una vez que se ingreso el ID
+  OPEN,           // si el ID y el PIN son correctos abre la puerta por 5 segundos
+  BLOCK,          // si el PIN es erroneo bloquea el ingreso exponencialmente
+  CHANGE_PW,       // cambia cada digito del PIN
+  CHECK_ID_PW,      // chequea que el ID y el PIN si es correcto o no
+  ADMIN,            // menu de administrador para poder agregar o borrar usuarios
+  ADD,              // agrega usuarios
+  DELETE            // borra usuarios
 };
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static int compare_array(char arr1[], char arr2[], int size);
+static int compare_array(char arr1[], char arr2[], int size); 
 static void write_array(char arr[], char arr_copy[], int size);
 static int user_verify(char id[], char password[], User *ptr_user, int cant_user);
 static int admin_verify(char id[], char password[], User* ptr_admin);
@@ -61,15 +61,15 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static encResult_t encoderState;
-static int flag_add = 0;
-static int cant_admin = 2;
+
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 // +ej: static int temperaturas_actuales[4];+
-
+static encResult_t encoderState;
+static int flag_add = 0;
+static int cant_admin = 2;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -90,6 +90,7 @@ void App_Run(void) {
   User *ptr_administradores;
   int cant_user = 1;
 
+//incializa usuarios y administradores 
   ptr_user = user_init(cant_user, ptr_user);
   ptr_administradores = admin_init(ptr_administradores);
   SetdispBrightness(7);
@@ -99,9 +100,9 @@ void App_Run(void) {
   static int status = ID;
   // int status_number = CERO;
   // int status_bright = NINE;
-  char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=7";
-  char array_pw[SIZE_DISPLAY_PW] = "PD=_____SC";
-  char array_pw_number[SIZE_PW] = "0000_";
+  char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=7"; //arreglo del menu del ID
+  char array_pw[SIZE_DISPLAY_PW] = "PD=_____SC"; // arreglo del menu del PIN
+  char array_pw_number[SIZE_PW] = "0000_"; //arreglo solo con el PIN sin el menu y teniendo en cuenta el ultimo caracter si es de 4 o 5
   char array_admin[SIZE_DISPLAY_ADMIN] = "   ADO"; // ADD, DELETE, OUT
   
 
@@ -123,6 +124,7 @@ void App_Run(void) {
   while (1)
   {
     counter++;
+    // se comunica con e l encoder para saber si se acciono y que es lo que se acciono
     if(encGetStatus()) {
     	encoderState = encGetEvent();
     }
@@ -134,13 +136,15 @@ void App_Run(void) {
 
     }
     joystick_input= encoderState;
-
+    //se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
     if( mag_get_data_ready())
     {
     	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID);
     	status = PASSWORD;
     	printf("%s", mag_drv_read()+1+8);
     }
+
+    // maquina de estados 
     switch (status)
     {
 
@@ -181,7 +185,7 @@ void App_Run(void) {
     	ledSet(0);
     	ledSet(1);
     	ledSet(2);
-    	while ( !timerExpired(ID_LED) )
+    	while ( !timerExpired(ID_LED) ) // bloquea el programa por 5 segundos por la abertura de la puerta
     	{
     		print_display('O','P','E','N',joystick_input);
     	}
@@ -201,9 +205,9 @@ void App_Run(void) {
       	{
       		print_display('G','O','D',' ',joystick_input);
       	}
-    	ledClear(0);
-    	ledClear(1);
-		ledClear(2);
+    	  ledClear(0);
+    	  ledClear(1);
+		    ledClear(2);
     	status = ADMIN;
     	// Llamar a user add
       }
