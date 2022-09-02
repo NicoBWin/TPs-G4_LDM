@@ -60,9 +60,27 @@ enum {
     GPIO_IRQ_CANT_MODES
 };
 
+typedef enum
+{
+	PORT_eDisabled				= 0x00,
+	PORT_eDMARising				= 0x01,
+	PORT_eDMAFalling			= 0x02,
+	PORT_eDMAEither				= 0x03,
+	PORT_eInterruptDisasserted	= 0x08,
+	PORT_eInterruptRising		= 0x09,
+	PORT_eInterruptFalling		= 0x0A,
+	PORT_eInterruptEither		= 0x0B,
+	PORT_eInterruptAsserted		= 0x0C,
+} PORTEvent_t;
+
+/*******************************************************************************
+ * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+
 /**
  * @brief Configures the specified pin to behave either as an input or an output
  * @param pin the pin whose mode you wish to set (according PORTNUM2PIN)
@@ -84,6 +102,8 @@ bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun);
  * @param pin the pin to write (according PORTNUM2PIN)
  * @param val Desired value (HIGH or LOW)
  */
+
+
 void gpioWrite (pin_t pin, bool value);
 
 /**
@@ -98,7 +118,6 @@ void gpioToggle (pin_t pin);
  * @return HIGH or LOW
  */
 bool gpioRead (pin_t pin);
-
 
 /*******************************************************************************
  ******************************************************************************/

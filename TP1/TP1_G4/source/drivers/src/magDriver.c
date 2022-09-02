@@ -1,30 +1,25 @@
+/***************************************************************************//**
+  @file     magDriver.c
+  @brief    Driver de la lectora de banda magnética.
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
+ ******************************************************************************/
+
+/*******************************************************************************
+ * INCLUDE HEADER FILES
+ ******************************************************************************/
 #include "stdio.h"
 #include "stdbool.h"
 #include "../headers/magDriver.h"
 #include "../../MCAL/gpio.h"
 #include "../../timer/timer.h"
-//#include "SysTick.h"
-
 #include "../board.h"
 #include "hardware.h"
 #include "MK64F12.h"
 
 
-//ENUMS Y DEFINICIONES//
-enum {FALSE,TRUE};
-typedef enum
-{
-	PORT_eDisabled				= 0x00,
-	PORT_eDMARising				= 0x01,
-	PORT_eDMAFalling			= 0x02,
-	PORT_eDMAEither				= 0x03,
-	PORT_eInterruptDisasserted	= 0x08,
-	PORT_eInterruptRising		= 0x09,
-	PORT_eInterruptFalling		= 0x0A,
-	PORT_eInterruptEither		= 0x0B,
-	PORT_eInterruptAsserted		= 0x0C,
-} PORTEvent_t;
-
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
 #define ZERO	0b10000
 #define UNO		0b00001
 #define DOS		0b00010
@@ -36,76 +31,83 @@ typedef enum
 #define OCHO	0b01000
 #define NUEVE	0b11001
 #define STARTS	0b01011
-#define FIELDS	0b01101
-#define	ENDS	0b11111
-
+#define FIELDS	0b01101						// Tabla de conversion
+#define	ENDS	0b11111						// Ref. ISO 7811
 #define PORT_mGPIO 1
-
-
 #define TIMEOUT_SLEEP		1000			//Tiempo de timeout entre llamAdos, tiempo de bloqueo para lectura, en unidades*5ms
+#define CLOCK_PIN_NUMBER	11
+#define	ENA_ACTIVE	0						//Enable es activo bajo
+#define WRITING_MASK	0b00001				//Mascara utilizada para escribir (mag_data2bits)
+#define	NP_MASK			0b01111				//Mascara utilizada para borrar bit de paridad (bits2char)
+#define ASCII_CONV		48
+typedef struct
+{
+	char PAN[19];
+	char additional_data[8];
+}magcard_t;
 
-//FUNCIONES INTERNAS//
+typedef struct
+{
+	char bit0:1;
+	char bit1:1;
+}single_bit_t;
+
+typedef struct
+{
+	char ch:5;
+}single_char_t;
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
+enum {FALSE,TRUE};
+
+
+/*******************************************************************************
+ * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
+ ******************************************************************************/
 int  mag_drv_LIVE();
 bool mag_data2bits();
 bool mag_bitscheck();
 void mag_bitstochar();
-//
-typedef struct{
-char	PAN[19];
-char	additional_data[8];
-}magcard_t;
 
-typedef struct{
-	char bit0:1;
-	char bit1:1;
-}single_bit_t;
-typedef struct{
-	char ch:5;
-}single_char_t;
+/*******************************************************************************
+ * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
+ ******************************************************************************/
+static char	final_word[40];					//Aqui se guardara la palabra decodificada y convertida a decimal.
+static	single_char_t mag_word[40];			//Aqui se guardara la palabra decodificada en el formato recibido.
+static	single_bit_t data[200];				//Aqui se guardan los 400 bits recibidos, estructurados de a singlebits ya que 2x1.
+static	bool active_flag=TRUE,word_ready=FALSE, data_ready=FALSE;	//Flags
+static	tim_id_t ID_MAG_DRV_LIVE ;
+static	tim_id_t ID_MAG_DRV_KILL ;
 
+/*******************************************************************************
+ *******************************************************************************
+                        GLOBAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
 
-
-
-//Variables globales//
-static char	final_word[40];
-static single_char_t mag_word[40];
-	single_bit_t data[200];				//Aqui se guardan los 400 bits recibidos, estructurados de a singlebits ya que 2x1.
-static bool active_flag=TRUE,word_ready=FALSE, data_ready=FALSE;
-static tim_id_t ID_MAG_DRV_LIVE ;
-static tim_id_t ID_MAG_DRV_KILL ;
-
-//Definicion de funciones//
-
-void mag_drv_INIT()
+void mag_drv_INIT()						//"Constructor" del driver. Setea los puertos usados en su modo adecuado e inicia un polling en el pin enable
 {
 	gpioMode(ENABLE_PIN,INPUT_PULLUP);	//Preparo el pin para el enable.
 	gpioMode(CLOCK_PIN,INPUT_PULLUP);	//Preparo el pin para el clock.
 	gpioMode(DATA_PIN,INPUT_PULLUP);	//Preparo el pin para data.
-	ID_MAG_DRV_LIVE = timerGetId();
+	ID_MAG_DRV_LIVE = timerGetId();		//Defino Timer para realizar polling en el pin de input.
 	ID_MAG_DRV_KILL = timerGetId();
-	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(1), 1 , &mag_drv_LIVE);
-	//timerStart(ID_MAG_DRV_KILL, TIMER_MS2TICKS(1000), 0 , &mag_read_end);
+	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(1), 1 , &mag_drv_LIVE);	//Inicio el timer.
 
-	//systick_t mag_drv_SYST = {.speed = TSAMPLE, .periodic_Flag =TRUE , .funcallback = &mag_drv_LIVE,.kill_process = &mag_read_end };
-	//SysTick_Init (mag_drv_SYST);
 }
 
-int mag_drv_LIVE()
+int mag_drv_LIVE()					//Callback, se llama en caso de que se detecte una señal en enable y se prepara para leer los datos.
 {
-	if((gpioRead(ENABLE_PIN)==0) & (active_flag==TRUE))
+	if((gpioRead(ENABLE_PIN)==ENA_ACTIVE) & (active_flag==TRUE))
 	{
-		//gpioToggle(PIN_LED_GREEN);		//Aca iria el leer la tarjetra y blabla
 		NVIC_EnableIRQ(PORTC_IRQn);			//Seteo el puerto C como activo para recibir interrupciones
-		/////////// Set PD3 CLOCK_PIN as input and enable interrupt on this pin (SW3) -> Closest to RGB led on K64 board
-
-		PORTC->PCR[11]=0x0; //Clear
-		PORTC->PCR[11]|=PORT_PCR_MUX(PORT_mGPIO); 		       //Set MUX to GPIO
-		// Now set pin input properties
-		PORTC->PCR[11]|=PORT_PCR_PE(1);          		       //Pull UP/Down  Enable
-		PORTC->PCR[11]|=PORT_PCR_PS(1);          		       //Pull UP
-		// Enable interrupt on this pin (PTD3)
-		PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eInterruptEither);     		//Enable Rising edge interrupts
-
+		/////////// Seteo el  CLOCK_PIN (PC13) para recibir interrupciones cada flanco de clock
+		PORTC->PCR[CLOCK_PIN_NUMBER]=0x0; //Clear
+		PORTC->PCR[CLOCK_PIN_NUMBER]|=PORT_PCR_MUX(PORT_mGPIO); 		       //Set MUX to GPIO
+		PORTC->PCR[CLOCK_PIN_NUMBER]|=PORT_PCR_PE(TRUE);          		       //Pull UP/Down  Enable
+		PORTC->PCR[CLOCK_PIN_NUMBER]|=PORT_PCR_PS(TRUE);          		       //Pull UP
+		PORTC->PCR[CLOCK_PIN_NUMBER]|=PORT_PCR_IRQC(PORT_eInterruptEither);    //Enable Rising edge interrupts
 		timerStop(ID_MAG_DRV_LIVE);
 		return TIMEOUT_SLEEP;
 	}
@@ -116,9 +118,7 @@ int mag_drv_LIVE()
 
 }
 
-
-
-__ISR__ PORTC_IRQHandler (void)
+__ISR__ PORTC_IRQHandler (void)		//Se copian los datos recibidos a partir del primer 1 (inclusive), bit a bit y en el orden recibido.
 {
 	static int index=0, half_bit=1;
 	static bool	start_sentinel=FALSE;
@@ -128,8 +128,7 @@ __ISR__ PORTC_IRQHandler (void)
 		timerStart(ID_MAG_DRV_KILL, TIMER_MS2TICKS(1000), 0 , &mag_read_end);
 		timerStop(ID_MAG_DRV_LIVE);
 	}
-	PORTC->PCR[11] |= PORT_PCR_ISF_MASK; 	//Freno la interrupcion del pin 3.
-	//gpioToggle(PIN_LED_GREEN);
+	PORTC->PCR[CLOCK_PIN_NUMBER] |= PORT_PCR_ISF_MASK; 	//Freno la interrupcion.
 	if(data_ready==TRUE)
 	{
 		data_ready=FALSE;					//Seteo data_ready en 0, ya que voy a estar escribiendo una nueva palabra
@@ -148,7 +147,7 @@ __ISR__ PORTC_IRQHandler (void)
 			index=0;
 			data[0].bit0=1;									//Lo copio en la primera posicion
 			data[0].bit1=0;									//Voy a pisar los primeros ceros
-			start_sentinel=TRUE;										//Aviso que empieza la data real.
+			start_sentinel=TRUE;							//Aviso que empieza la data real.
 		}
 		index++;
 	}
@@ -164,12 +163,12 @@ __ISR__ PORTC_IRQHandler (void)
 
 	}
 }
-bool mag_get_data_ready()
+bool mag_get_data_ready()			//Getter del flag que se enciende al haber recibido todos los datos mediante un swipe (mag_drv_LIVE + PORTC_IRQHandler)
 {
 	return data_ready;
 }
 
-char* mag_drv_read()
+char* mag_drv_read()				//Funcion que se espera que se llame cuando se recibio la data y se desea convertir y extraerlos.
 {
 	if(data_ready==TRUE)
 	{
@@ -188,30 +187,29 @@ char* mag_drv_read()
 		return NULL;
 }
 
-bool mag_data2bits() //ya debbugeada
+bool mag_data2bits() //Funcion que convierte los bits recibidos en unidades de 5 bits en su orden correspondiente.
 {
-	static single_char_t	mask = {0b00001};	//Arranca en 00001
+	static single_char_t	mask = {WRITING_MASK};		//Arranca en 00001
 	static int index = 0, bitcounter=0, word_index=0;
 	while (index<200)
 	{
-		if (data[index].bit0==data[index].bit1)		//En este caso, el dato es un uno
+		if (data[index].bit0==data[index].bit1)			//En este caso, el dato es un cero
 		{
 			mask.ch= ~(mask.ch);						//Bit Flipping
-			mag_word[word_index].ch&=mask.ch;					// Hago una AND con un solo cero y el resto unos
+			mag_word[word_index].ch&=mask.ch;			// Hago una AND con un solo cero y el resto unos
 			mask.ch= ~(mask.ch);						//Bit Flipping
-			mask.ch=mask.ch<<1;								// Shifteo para la proxima iteracion
-			if(bitcounter==4)
+			mask.ch=mask.ch<<1;							// Shifteo para la proxima iteracion
+			if(bitcounter==4)							//Si termine de escribir de a 5 bits
 			{
 				word_index++;
 				bitcounter=-1;
-				mask.ch = 0b00001;
+				mask.ch = WRITING_MASK;
 			}
 			bitcounter++;
 			index++;
 
-			// Paso el indice al siguiente dato.
 		}
-		else if (data[index].bit0!=data[index].bit1)//En este caso, el dato es un uno
+		else if (data[index].bit0!=data[index].bit1)	//En este caso, el dato es un uno
 		{
 			mag_word[word_index].ch|=(mask.ch);
 			mask.ch=mask.ch<<1;
@@ -219,17 +217,17 @@ bool mag_data2bits() //ya debbugeada
 			{
 				word_index++;
 				bitcounter=-1;
-				mask.ch = 0b00001;
+				mask.ch = WRITING_MASK;
 			}
 			bitcounter++;
-			index++;								// Paso el indice al siguiente dato.
+			index++;
 
 		}
 	}
 	if (index==200)									//Si termine de procesar toda la data-
 	{
 		index=0;
-		mask.ch = 1;								//Reseteo variables locales estÃ¡ticas
+		mask.ch = WRITING_MASK;						//Reseteo variables locales estaticas
 		return	TRUE;								//Devuelvo true
 	}
 	else
@@ -238,9 +236,9 @@ bool mag_data2bits() //ya debbugeada
 	}
 }
 
-bool mag_bitscheck()														//Asumo palabra completa en mag_word
+bool mag_bitscheck()				//Funcion que verifica las palabras segun paridad y LRC.
 {																			//(es decir, previo a esto se leyo en data y se transformo
-	static int col[5];			//Guardo cuantos unos hay por columna (para el LRC)	//a mag_word mediante data2bits)
+	static int col[5];														//Guardo cuantos unos hay por columna (para el LRC)	//a mag_word mediante data2bits)
 	static int index=0,shifting=0, ones=0;
 	static bool LRC_check,parity_check=TRUE, returnvalue;
 	static single_char_t temp, mask={1};
@@ -311,33 +309,31 @@ bool mag_bitscheck()														//Asumo palabra completa en mag_word
 
 	return returnvalue;
 }
-void mag_bitstochar()				//Se asume que en mag_word hay una palabra ya checkeada.
+void mag_bitstochar()				//Funcion que convierte las palabras de 5 bits codificadas (con paridades) a su valor ASCII correspondiente.
 {
 	static single_char_t	temp,mask;
 	static int index;
-	for (index=0, mask.ch=0b01111; index<39; index++)		//(~16) = 01111
+	for (index=0, mask.ch=NP_MASK; index<39; index++)		//(~16) = 01111
 	{
 		temp.ch = (mag_word[index].ch & mask.ch);			//Borro los bits de paridad de todos los datos.
-		final_word[index]= ((char)temp.ch + 48);
+		final_word[index]= ((char)temp.ch + ASCII_CONV);
 	}
-
 }
 
-void mag_read_end()
+
+void mag_read_end()					//Funcion que frena las interrupciones de lectura, se llama desde ell timer 1 segundo despues de detectado el enable
 {
 	NVIC_DisableIRQ(PORTC_IRQn);							//
 	PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eDisabled);     		//Disable all interrupts
 	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(1), 1 , &mag_drv_LIVE);
 }
 
-void mag_set_active()
+void mag_set_active()				//Llave de control que habilita el driver. Encendido por default.
 {
 	active_flag = TRUE;
 }
 
-void mag_clear_active()
+void mag_clear_active()				//Llave de control que deshabilita el driver
 {
 	active_flag = FALSE;
 }
-
-
