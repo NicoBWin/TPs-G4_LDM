@@ -63,6 +63,7 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
  ******************************************************************************/
 static encResult_t encoderState;
 static int flag_add = 0;
+static int cant_admin = 2;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -88,6 +89,7 @@ void App_Run(void) {
   User *ptr_user;
   User *ptr_administradores;
   int cant_user = 1;
+
   ptr_user = user_init(cant_user, ptr_user);
   ptr_administradores = admin_init(ptr_administradores);
   SetdispBrightness(7);
@@ -135,9 +137,9 @@ void App_Run(void) {
 
     if( mag_get_data_ready())
     {
-    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1 , SIZE_ID);
+    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID);
     	status = PASSWORD;
-    	printf("%s", mag_drv_read()+1);
+    	printf("%s", mag_drv_read()+1+8);
     }
     switch (status)
     {
@@ -387,36 +389,43 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
 
 static User* admin_init( User* ptr_admin)
 {
-	ptr_admin = malloc(sizeof(User));
-    write_array(ptr_admin[0].id, "00000000", SIZE_ID);
-	write_array(ptr_admin[0].password, "0000_", SIZE_PASSWORD);
-	write_array(ptr_admin[0].name, "PORRAS", SIZE_NAME);
+	ptr_admin = malloc(2*sizeof(User));
+    write_array(ptr_admin[0].id, "34950962", SIZE_ID);
+	write_array(ptr_admin[0].password, "1959_", SIZE_PASSWORD);
+	write_array(ptr_admin[0].name, "ZANE", SIZE_NAME);
+
+    write_array(ptr_admin[1].id, "44546438", SIZE_ID);
+	write_array(ptr_admin[1].password, "1111_", SIZE_PASSWORD);
+	write_array(ptr_admin[1].name, "NACHIIINO", SIZE_NAME);
 	return ptr_admin;
 }
 static int admin_verify(char id[], char password[], User* ptr_admin)
 {
 	int size_pw = SIZE_PASSWORD;
-    if (compare_array(id, ptr_admin[0].id, SIZE_ID))
-    {
-      //printf("user correct \n");
-      if (password[SIZE_PASSWORD-1] == '_')
-    	 {
-          //printf("es de 4 \n");
-   	        size_pw--;
-   	        if(ptr_admin[0].password[SIZE_PASSWORD-1] != '_' )
-   	        {
-   	        	return INCORRECTO;
-    	    }
-    	 }
-      if (compare_array(password, ptr_admin[0].password, size_pw))
-      {
-        return CORRECTO;
-      }
-      else
-      {
-        return INCORRECTO;
-      }
-    }
+	for (int i = 0; i < cant_admin; i++)
+	  {
+		if (compare_array(id, ptr_admin[i].id, SIZE_ID))
+		{
+		  //printf("user correct \n");
+		  if (password[SIZE_PASSWORD-1] == '_')
+			 {
+			  //printf("es de 4 \n");
+				size_pw--;
+				if(ptr_admin[i].password[SIZE_PASSWORD-1] != '_' )
+				{
+					return INCORRECTO;
+				}
+			 }
+		  if (compare_array(password, ptr_admin[i].password, size_pw))
+		  {
+			return CORRECTO;
+		  }
+		  else
+		  {
+			return INCORRECTO;
+		  }
+		}
+	  }
     return INCORRECTO;
 }
 static int user_verify(char id[], char password[], User* ptr_user, int cant_user)
