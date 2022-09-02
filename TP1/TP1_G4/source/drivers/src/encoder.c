@@ -10,9 +10,7 @@
 #include "../../timer/timer.h"
 #include "../headers/encoder.h"
 #include "../../MCAL/gpio.h"
-#include "../../timer/timer.h"
 #include "../board.h"
-
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -28,25 +26,11 @@ enum states {START, CW, CW1, CW2, CCW, CCW1, CCW2};
 //Son 3 estados porque analizamos 3 flancos
 
 /*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: unsigned int anio_actual;+
-
-
-/*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static void encoCallback(void);
 static void readPins(void);
 static encResult_t encStatus(bool A, bool B, bool SW);
-
-/*******************************************************************************
- * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -55,7 +39,6 @@ static encResult_t encStatus(bool A, bool B, bool SW);
 static bool PINA;
 static bool PINB;
 static bool PINSW;
-
 
 //Data de encoder
 static bool status;
@@ -119,12 +102,14 @@ static void encoCallback(void){
   encEvent = encStatus(PINA, PINB, PINSW);
 }
 
+// Lee todos los pins
 static void readPins(void) {
   PINA = gpioRead(PIN_RCHA);
   PINB = gpioRead(PIN_RCHB);
   PINSW = gpioRead(PIN_SW);
 }
 
+// FSM para reconocer el giro del encoder y el SW
 static encResult_t encStatus(bool A, bool B, bool SW){
   encResult_t result = ENC_NONE;
   static enum states encFSM = START;

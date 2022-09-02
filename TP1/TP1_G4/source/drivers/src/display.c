@@ -8,14 +8,10 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "../headers/display.h"
+#include "../../timer/timer.h"
 #include "../headers/7seg.h"
 #include "../../MCAL/gpio.h"
-#include "../../timer/timer.h"
 #include "../board.h"
-
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -49,6 +45,7 @@ typedef struct {
 	char ch;
 } letter_t;
 
+// Displays - Indica si se muestra o no y que caracter
 static letter_t displays[4] = {{false, '0'}, {false, '0'}, {false, '0'}, {false, '0'}}; //{ON|OFF, CHAR}
 
 //Timer para el encoder
@@ -129,27 +126,25 @@ int GetdispBrightness(){
 }
 
 
-// Configuracion del punto decimal *****************************************************
+// Configuracion del punto decimal - Future Improvement *************************
 /**
  * @brief SetdispDP: Turns on DP.
  */
 void SetdispDP(){
-	DPstate = true;
 }
 
 /**
  * @brief CleardispDP: Turns off DP.
  */
 void CleardispDP(){
-	DPstate = false;
 }
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+// Update Display
 static void displayCallback(void){
-	// Update Display
 	static int i=0;
 	int n = 0;
 
@@ -176,14 +171,6 @@ static void displayCallback(void){
 			}
 			gpioWrite(SEGMENTS[PIN_SEG_DT], HIGH);
 			gpioWrite(SEGMENTS[PIN_SEG_D], HIGH);
-		}
-		if(i==3){
-			if (DPstate){	// HARCODEADO NO ANDA
-					gpioWrite(SEGMENTS[PIN_SEG_DT], HIGH);
-				}
-				else {
-					gpioWrite(SEGMENTS[PIN_SEG_DT], LOW);
-				}
 		}
 	}
 	else {

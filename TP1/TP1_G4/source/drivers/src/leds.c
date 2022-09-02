@@ -8,9 +8,8 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "../headers/leds.h"
-#include "../board.h"
 #include "../../timer/timer.h"
-
+#include "../board.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

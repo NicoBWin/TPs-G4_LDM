@@ -26,7 +26,6 @@
  ******************************************************************************/
 /**
  * @brief dispInit: Initializes the display
- *
  */
 void dispInit(void);
 
@@ -34,7 +33,6 @@ void dispInit(void);
  * @brief dispSendChar: sends to the selected 7 seg the character:
  * @param ch : character to be sent coded in ascii.
  * seven_seg_module: numer of seven segment, it ranges from 0 to 3
- *
  */
 void dispSendChar(char ch, uint8_t seven_seg_module);
 
@@ -46,7 +44,6 @@ void dispSendWord(char* ch);
 
 /**
  * @brief dispClearAll: Clears ALL the display.
- *
  */
 void dispClearAll(void);
 
