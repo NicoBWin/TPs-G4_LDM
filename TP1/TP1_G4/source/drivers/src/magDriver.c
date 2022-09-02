@@ -95,16 +95,16 @@ int mag_drv_LIVE()
 	if((gpioRead(ENABLE_PIN)==0) & (active_flag==TRUE))
 	{
 		//gpioToggle(PIN_LED_GREEN);		//Aca iria el leer la tarjetra y blabla
-		NVIC_EnableIRQ(PORTB_IRQn);			//Seteo el puerto D como activo para recibir interrupciones
+		NVIC_EnableIRQ(PORTC_IRQn);			//Seteo el puerto C como activo para recibir interrupciones
 		/////////// Set PD3 CLOCK_PIN as input and enable interrupt on this pin (SW3) -> Closest to RGB led on K64 board
 
-		PORTB->PCR[19]=0x0; //Clear
-		PORTB->PCR[19]|=PORT_PCR_MUX(PORT_mGPIO); 		       //Set MUX to GPIO
+		PORTC->PCR[11]=0x0; //Clear
+		PORTC->PCR[11]|=PORT_PCR_MUX(PORT_mGPIO); 		       //Set MUX to GPIO
 		// Now set pin input properties
-		PORTB->PCR[19]|=PORT_PCR_PE(1);          		       //Pull UP/Down  Enable
-		PORTB->PCR[19]|=PORT_PCR_PS(1);          		       //Pull UP
+		PORTC->PCR[11]|=PORT_PCR_PE(1);          		       //Pull UP/Down  Enable
+		PORTC->PCR[11]|=PORT_PCR_PS(1);          		       //Pull UP
 		// Enable interrupt on this pin (PTD3)
-		PORTB->PCR[19]|=PORT_PCR_IRQC(PORT_eInterruptEither);     		//Enable Rising edge interrupts
+		PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eInterruptEither);     		//Enable Rising edge interrupts
 
 		timerStop(ID_MAG_DRV_LIVE);
 		return TIMEOUT_SLEEP;
@@ -118,20 +118,17 @@ int mag_drv_LIVE()
 
 
 
-__ISR__ PORTB_IRQHandler (void)
+__ISR__ PORTC_IRQHandler (void)
 {
-
-	// IF I= 0 TERMINO INTERRUPCION PERIODICA CON CALLBACK QUE ACTIVE LA mag_drv_LIVE()
-	// ARRANCO NUEVI TIMER
-	// TIMER == TERMINO
-	static int i=0, half_bit=1;
-	if ((i == 0) && (half_bit==1))
+	static int index=0, half_bit=1;
+	static bool	start_sentinel=FALSE;
+	if ((index == 0) && (half_bit==1)&&(start_sentinel==FALSE))
 	{
-		data[i].bit0 = 1;
+		data[index].bit0=1;
 		timerStart(ID_MAG_DRV_KILL, TIMER_MS2TICKS(1000), 0 , &mag_read_end);
 		timerStop(ID_MAG_DRV_LIVE);
 	}
-	PORTB->PCR[19] |= PORT_PCR_ISF_MASK; 	//Freno la interrupcion del pin 3.
+	PORTC->PCR[11] |= PORT_PCR_ISF_MASK; 	//Freno la interrupcion del pin 3.
 	//gpioToggle(PIN_LED_GREEN);
 	if(data_ready==TRUE)
 	{
@@ -139,22 +136,30 @@ __ISR__ PORTB_IRQHandler (void)
 	}
 	if (half_bit == 0)
 	{
-		data[i].bit0 = gpioRead(DATA_PIN);
+		data[index].bit0 = gpioRead(DATA_PIN);
 		half_bit = 1;
 	}
 	else if (half_bit == 1)
 	{
-		data[i].bit1 = gpioRead(DATA_PIN);
+		data[index].bit1 = gpioRead(DATA_PIN);
 		half_bit = 0;
-		i++;
+		if((start_sentinel==FALSE)&((data[index].bit1)!=(data[index].bit0)))		//Cuando leo el PRIMER uno
+		{
+			index=0;
+			data[0].bit0=1;									//Lo copio en la primera posicion
+			data[0].bit1=0;									//Voy a pisar los primeros ceros
+			start_sentinel=TRUE;										//Aviso que empieza la data real.
+		}
+		index++;
 	}
-	if	(i == 200)
+	if	(index == 200)
 	{
-		i=0;
+		index=0;
 		half_bit=1;
+		start_sentinel=FALSE;
 		data_ready=TRUE;
-		//mag_read_end();
-		// REANUDO LA INTERRUPCION PERIODICA
+		NVIC_DisableIRQ(PORTC_IRQn);							//
+		PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eDisabled);     		//Disable all interrupts
 
 
 	}
@@ -170,12 +175,13 @@ char* mag_drv_read()
 	{
 		if(mag_data2bits())				//Data es enmascarado a mag_word.
 		{
-		//	if(mag_bitscheck())
-		//	{
+			//if(mag_bitscheck())
+			//{
 				mag_bitstochar();
-		//	}
+			//}
 		}
 		word_ready = FALSE;
+		data_ready=FALSE;
 		return &(final_word[0]);
 	}
 	else
@@ -185,49 +191,45 @@ char* mag_drv_read()
 bool mag_data2bits() //ya debbugeada
 {
 	static single_char_t	mask = {0b00001};	//Arranca en 00001
-	static int index = 0;
-	static char prev_char=1;			//
+	static int index = 0, bitcounter=0, word_index=0;
 	while (index<200)
 	{
 		if (data[index].bit0==data[index].bit1)		//En este caso, el dato es un uno
 		{
-
-
 			mask.ch= ~(mask.ch);						//Bit Flipping
-			mag_word[index].ch&=mask.ch;					// Hago una AND con un solo cero y el resto unos
+			mag_word[word_index].ch&=mask.ch;					// Hago una AND con un solo cero y el resto unos
 			mask.ch= ~(mask.ch);						//Bit Flipping
 			mask.ch=mask.ch<<1;								// Shifteo para la proxima iteracion
-			if(!(index%5))
+			if(bitcounter==4)
 			{
+				word_index++;
+				bitcounter=-1;
 				mask.ch = 0b00001;
 			}
+			bitcounter++;
 			index++;
-			//data[index].bit0=0;							// De a poco voy borrando data..
-			//data[index].bit1=0;
 
 			// Paso el indice al siguiente dato.
 		}
 		else if (data[index].bit0!=data[index].bit1)//En este caso, el dato es un uno
 		{
-
-			mag_word[index].ch|=(mask.ch);
+			mag_word[word_index].ch|=(mask.ch);
 			mask.ch=mask.ch<<1;
-			if(!(index%5))
+			if(bitcounter==4)
 			{
+				word_index++;
+				bitcounter=-1;
 				mask.ch = 0b00001;
 			}
-			index++;
-			//prev_char=1;							// Aviso que recien fue un uno para evitar doble bit flipping
-			//data[index].bit0=0;							// De a poco voy borrando data..
-			//data[index].bit1=0;
-											// Paso el indice al siguiente dato.
+			bitcounter++;
+			index++;								// Paso el indice al siguiente dato.
+
 		}
 	}
 	if (index==200)									//Si termine de procesar toda la data-
 	{
 		index=0;
-		prev_char=1;
-		mask.ch = 1;								//Reseteo variables locales estáticas
+		mask.ch = 1;								//Reseteo variables locales estÃ¡ticas
 		return	TRUE;								//Devuelvo true
 	}
 	else
@@ -316,16 +318,16 @@ void mag_bitstochar()				//Se asume que en mag_word hay una palabra ya checkeada
 	for (index=0, mask.ch=0b01111; index<39; index++)		//(~16) = 01111
 	{
 		temp.ch = (mag_word[index].ch & mask.ch);			//Borro los bits de paridad de todos los datos.
-		final_word[index]=(char)temp.ch;
+		final_word[index]= ((char)temp.ch + 48);
 	}
 
 }
 
 void mag_read_end()
 {
-	NVIC_DisableIRQ(PORTD_IRQn);							//
-	PORTB->PCR[19]|=PORT_PCR_IRQC(PORT_eDisabled);     		//Disable all interrupts
-	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(0.5), 1 , &mag_drv_LIVE);
+	NVIC_DisableIRQ(PORTC_IRQn);							//
+	PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eDisabled);     		//Disable all interrupts
+	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(1), 1 , &mag_drv_LIVE);
 }
 
 void mag_set_active()
