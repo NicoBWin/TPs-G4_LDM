@@ -232,18 +232,18 @@ void App_Run(void) {
       }
       //SetdispDP();
       break;
-    case CHANGE_PW:
+    case CHANGE_PW:	// Cambio el numero de la contraseña
       prueba = (int)(ptr_pw - (array_pw + LIMITE_IZQ_PW));
-      //printf("%c\n", *(array_pw_number + prueba) );
+      
       *ptr_pw = encoder_control(*(array_pw_number + prueba), joystick_input, &status);
       *(array_pw_number + prueba) = *ptr_pw;
       if (status == PASSWORD)
       {
-        *ptr_pw = '_';
+        *ptr_pw = '_';  // Vuelve a poner un guion si se hizo click, asi no se ve la contraseña ingresada
       }
       print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       break;
-    case CANCEL:
+    case CANCEL:	// Reinicia todo y vuelve al estado inicial
       status = ID;
       temporal = array_id[SIZE_DISPLAY_ID - 1];
       write_array(array_id, "ID=00000000SCB=0", SIZE_DISPLAY_ID);
@@ -252,16 +252,16 @@ void App_Run(void) {
       ptr_id = array_id + LIMITE_IZQ_ID;
       ptr_pw = array_pw + LIMITE_IZQ_PW;
       break;
-    case OPEN:
+    case OPEN:		// Se abrio la puerta
     	CleardispDP();
-    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);	// prende LEDs por 5 segundo
     	printf("PRENDER LED\n");
     	ledSet(0);
     	ledSet(1);
     	ledSet(2);
-    	while ( !timerExpired(ID_LED) )
+    	while ( !timerExpired(ID_LED) )			
     	{
-    		print_display('O','P','E','N',joystick_input);
+    		print_display('O','P','E','N',joystick_input);	
     	}
 
     	ledClear(0);
@@ -271,27 +271,26 @@ void App_Run(void) {
     	status = CANCEL;
     	SetdispDP();
     	break;
-    case ADMIN:
+    case ADMIN:		// Entra al modo Admin
     	ptr_admin = ADMIN_scroll( array_admin, ptr_admin, joystick_input, &status);
     	print_display(ptr_admin[-3], ptr_admin[-2], ptr_admin[-1], ptr_admin[0],joystick_input);
     	break;
 
-    case ADD:
+    case ADD:		// Añado el id y password ingresado
   	  cant_user++;
-  	  //printf("anadir usuario");
   	  ptr_user = user_add( cant_user,  ptr_user, array_id + LIMITE_IZQ_ID, array_pw_number);
   	  timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
   	  while ( !timerExpired(ID_LED) )
     	  {
-    	      print_display('U','A','D','D',joystick_input);
+    	      print_display('U','A','D','D',joystick_input); // user add
     	  }
   	  status = CANCEL;
   	  flag_add = 0;
 
     	break;
-    case DELETE:
+    case DELETE:	// Elimina usuario
     	if(cant_user>0)
-    		cant_user--;
+    		cant_user--; // Decremente la cantidad de usuarios
     	status = CANCEL;
     default:
       break;
@@ -299,7 +298,7 @@ void App_Run(void) {
     //print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
   }
   free(ptr_user);
-  free(ptr_administradores);
+  free(ptr_administradores);	// Libero la memoria dinamica
 }
 
 /*******************************************************************************
@@ -307,20 +306,15 @@ void App_Run(void) {
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input )
+static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input )	
 {
-  //if (joystick_input != ENC_NONE)
-  //{
-//	  printf("%c %c %c %c", first, second, third, fourth);
-	//  printf("\n");
-  //}
   dispSendChar(first, 0);
   dispSendChar(second, 1);
   dispSendChar(third, 2);
   dispSendChar(fourth, 3);
 }
 
-static char encoder_control(char number, int joystick_input, int *status)
+static char encoder_control(char number, int joystick_input, int *status) // Modifica los numeros del ID, PW
 {
 
   if (joystick_input == ENC_RIGHT){
@@ -380,7 +374,7 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
   return ptr_user;
 }
 
-static User* admin_init( User* ptr_admin)
+static User* admin_init( User* ptr_admin)	// Inicializa los primeros administradores con memoria dinamica 
 {
 	ptr_admin = malloc(2*sizeof(User));
     write_array(ptr_admin[0].id, "34950962", SIZE_ID);
@@ -392,7 +386,7 @@ static User* admin_init( User* ptr_admin)
 	write_array(ptr_admin[1].name, "NACHIIINO", SIZE_NAME);
 	return ptr_admin;
 }
-static int admin_verify(char id[], char password[], User* ptr_admin)
+static int admin_verify(char id[], char password[], User* ptr_admin)	// Verifico que sea administrador
 {
 	int size_pw = SIZE_PASSWORD;
 	for (int i = 0; i < cant_admin; i++)
@@ -421,7 +415,7 @@ static int admin_verify(char id[], char password[], User* ptr_admin)
 	  }
     return INCORRECTO;
 }
-static int user_verify(char id[], char password[], User* ptr_user, int cant_user)
+static int user_verify(char id[], char password[], User* ptr_user, int cant_user)	// Verifico que sea usuario
 {
   //printf("ID userver: %s\n", id);
   //printf("Paddword userveri: %s\n", password);
@@ -479,7 +473,7 @@ static void write_array(char arr[], char arr_copy[], int size)
     arr[i] = arr_copy[i];
   }
 }
-static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status)
+static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status)	// Menú del Admin 
 {
 	if (joystick_input == ENC_RIGHT)
 	  {
@@ -526,7 +520,7 @@ static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_inpu
 }
 
 
-static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status)
+static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status)	// Menú del ID
 {
 
   if (joystick_input == ENC_RIGHT)
@@ -593,7 +587,7 @@ static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *s
 
 
 
-static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status)
+static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status)	// Menu de password
 {
 
   if (joystick_input == ENC_RIGHT)
