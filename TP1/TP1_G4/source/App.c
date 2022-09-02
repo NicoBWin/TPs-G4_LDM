@@ -43,21 +43,21 @@ enum status   //estados de la interfaz principal
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static int compare_array(char arr1[], char arr2[], int size); 
-static void write_array(char arr[], char arr_copy[], int size);
-static int user_verify(char id[], char password[], User *ptr_user, int cant_user);
-static int admin_verify(char id[], char password[], User* ptr_admin);
-static User* user_init(int cant_user, User* ptr_user);
-static User* admin_init( User* ptr_admin);
-static char encoder_control(char number, int joystick_input, int *status);
-static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input );
-static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status);
-//static char *mag_get_ID(void); // devuelve un string del campo de datos PAN
+static int compare_array(char arr1[], char arr2[], int size); // Compara dos arreglos
+static void write_array(char arr[], char arr_copy[], int size);		// Copia un arreglo en otro
+static int user_verify(char id[], char password[], User *ptr_user, int cant_user); // Compara el ID y PASSWORD ingresadas con las de la base de datos existente de usuarios
+static int admin_verify(char id[], char password[], User* ptr_admin); // Compara el ID y PASSWORD ingresadas con las de la base de datos existente de administradores
+static User* user_init(int cant_user, User* ptr_user); // Inicializa la base de datos de usuarios 
+static User* admin_init( User* ptr_admin); // Inicializa base de datos de administradores 
+static char encoder_control(char number, int joystick_input, int *status); // Scrollea los numeros que se seleccionan tanto para el ID como la PASSWORD
+static void print_display(char first, char second, char third, char fourth,encResult_t joystick_input ); // Imprime los datos en los display de 7 segmentos
+static char *ID_scroll(char array_id[], char *ptr_id, int joystick_input, int *status); // Navega en el menu del ingreso de ID 
+//static char *mag_get_ID(void); // devuelve un string del campo de datos 
 
-static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status);
+static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *status); // Navega en el menu del ingreso de PASSWORD
 
-static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status);
-static User* user_add(int cant_user, User* ptr_user, char id[], char password[]);
+static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status); // Navega en el menu del administrador
+static User* user_add(int cant_user, User* ptr_user, char id[], char password[]); // Agrega el ID y contraseña ingresada a la base de datos dinámica de usuarios 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -67,9 +67,9 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 // +ej: static int temperaturas_actuales[4];+
-static encResult_t encoderState;
-static int flag_add = 0;
-static int cant_admin = 2;
+static encResult_t encoderState;	// 
+static int flag_add = 0;	// Indica que el administrador esta añadiendo un usuario a la base de datos
+static int cant_admin = 2;	// Indica la cantidad de administradores 
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -77,25 +77,25 @@ static int cant_admin = 2;
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init(void) {
-  timerInit();
-  encInit();
-  dispInit();
-  ledsInit();
-  mag_drv_INIT();
+  timerInit();		// Inicializa timers
+  encInit();		// Inicializa encoder
+  dispInit();		// Inicializa Display
+  ledsInit();		// Inicializa Leds
+  mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-  User *ptr_user;
-  User *ptr_administradores;
-  int cant_user = 1;
+  User *ptr_user;	// Apunta a la base de datos de usuarios
+  User *ptr_administradores;   // Apunta a la base de datos de administradores
+  int cant_user = 1;		// Cantidad de usuarios 
 
 //incializa usuarios y administradores 
   ptr_user = user_init(cant_user, ptr_user);
   ptr_administradores = admin_init(ptr_administradores);
   SetdispBrightness(7);
   
-  // MAIN PROGRAM
+  // Inicializa sistema con valores por defecto
   // dispInit();
   static int status = ID;
   // int status_number = CERO;
@@ -106,117 +106,106 @@ void App_Run(void) {
   char array_admin[SIZE_DISPLAY_ADMIN] = "   ADO"; // ADD, DELETE, OUT
   
 
-  char *ptr_id = array_id + LIMITE_IZQ_ID;
-  char *ptr_pw = array_pw + LIMITE_IZQ_PW;
-  char *ptr_admin = array_admin + LIMITE_DER_ADMIN;
+  char *ptr_id = array_id + LIMITE_IZQ_ID;	// Este puntero actuará como el cursor que el usuario utilizará. Este puntero siempre estará en el 4to display de 7 seg
+  char *ptr_pw = array_pw + LIMITE_IZQ_PW;	// Este puntero actuará como el cursor que el usuario utilizará. Este puntero siempre estará en el 4to display de 7 seg
+  char *ptr_admin = array_admin + LIMITE_DER_ADMIN; // Este puntero actuará como el cursor que el usuario utilizará. Este puntero siempre estará en el 4to display de 7 seg
   int prueba = 0;
-  int cant_try = 0;
+  int cant_try = 0;	// Variable que guarda la cantidad de errores seguidos que comete el usuario al ingresar la contraseña
   int temporal=0;
-  encResult_t joystick_input = ENC_NONE;
-  tim_id_t ID_LED = timerGetId();
+  encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder 
+  tim_id_t ID_LED = timerGetId(); // ID que se usará para el tiempo que estan prendidos los leds
 
-  //SetdispDP();
-
-
-  //printf("%c", *(array_pw_number + prueba));
 
   int counter = 0;
   while (1)
   {
     counter++;
-    // se comunica con e l encoder para saber si se acciono y que es lo que se acciono
+    // se comunica con el encoder para saber si se acciono y que es lo que se acciono
     if(encGetStatus()) {
-    	encoderState = encGetEvent();
+    	encoderState = encGetEvent();	// Cambio el encoder
     }
     else{
-    	encoderState = ENC_NONE;
+    	encoderState = ENC_NONE;        // El usuario no realizó movimiento
     }
-
-    if(encoderState == ENC_CLICK){
-
-    }
+	  
     joystick_input= encoderState;
     //se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
-    if( mag_get_data_ready())
+    if( mag_get_data_ready())	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
     {
-    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID);
-    	status = PASSWORD;
-    	printf("%s", mag_drv_read()+1+8);
+    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID); 
+    	status = PASSWORD;	// EL usuario debe ingresar la password 
     }
 
     // maquina de estados 
     switch (status)
     {
 
-    case CHANGE_BRIGHT:
-      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);
-      //printf(" Llamar funcion de Nico");
-      SetdispBrightness((int)*ptr_id - 48);
+    case CHANGE_BRIGHT:		// El usuario clickeo el cambio de brillo 
+      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);	// Modifico el numero del brillo y si clickea vuelvo a estado ID      
+      SetdispBrightness((int)*ptr_id - 48);	// Setea brillo
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input );
       break;
 
     case ID:
-      ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);
+      ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);	
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
 
       break;
 
     case CHANGE_ID:
-      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);
+      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);	// Cambio numero de ID
       print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
       break;
 
-    case SUBMIT:
+    case SUBMIT:				// Estado que al final no se utiliza ( no se lo elimina pues por el feriado no podemos testear ) 
       status = PASSWORD;
       print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       //dispSendWord(char* ch); //"ingresar pin"
       break;
-    case PASSWORD:
+    case PASSWORD:				// Ingresa contraseña
       ptr_pw= PW_scroll(array_pw, ptr_pw,joystick_input, &status);
       print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
       break;
-    case CHECK_ID_PW:
+    case CHECK_ID_PW:				// Se llama al ingresar un ID y Password
 
-      //CleardispDP();
-
-      if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))
+      if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))	// Se ingreso un ID y PW perteneciente a un usuario
       {
     	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
     	ledSet(0);
-    	ledSet(1);
+    	ledSet(1);		// Prende los LEDS
     	ledSet(2);
     	while ( !timerExpired(ID_LED) ) // bloquea el programa por 5 segundos por la abertura de la puerta
     	{
     		print_display('O','P','E','N',joystick_input);
     	}
     	ledClear(0);
-    	ledClear(1);
-		ledClear(2);
-    	status = CANCEL;
-        cant_try = 0;
+    	ledClear(1);		// Apaga LEDS
+	ledClear(2);
+    	status = CANCEL;	// Se reinicia y bloquea puerta de vuelta 
+        cant_try = 0;		// COmo hacerto se reinicia la variable de cantidad de intentos fallidos consecutivos
       }
-      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_administradores))
+      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_administradores)) // Se ingreso un ID y PW perteneciente a un administrador
       {
       	timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
       	ledSet(0);
-      	ledSet(1);
+      	ledSet(1); 		// Prende los LEDS
       	ledSet(2);
       	while ( !timerExpired(ID_LED) )
       	{
-      		print_display('G','O','D',' ',joystick_input);
+      		print_display('G','O','D',' ',joystick_input);	// Indica que entro al menú del adminitrador
       	}
-    	  ledClear(0);
-    	  ledClear(1);
-		    ledClear(2);
-    	status = ADMIN;
+    	ledClear(0);
+    	ledClear(1);		// Apaga los LEDS
+        ledClear(2);
+    	status = ADMIN;		// Ingresa al modo administrador
     	// Llamar a user add
       }
-      else
+      else			// No se a ingresado un ID y PASSWORD correspondiente a ningun usuario ni administrador
       {
-        cant_try++;
-        if (cant_try <= CANT_TRY_BLOCK)
+        cant_try++;		// Aumenta contador de intentos fallidos
+        if (cant_try <= CANT_TRY_BLOCK)		// Si no superó una cantidad de intentos determinados ( Se eligió CANT_TRY_BLOCK = 2 para poder testear rapidamente )
         {
-          timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+          timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL); // 
           status = CANCEL;
           ledSet(1);
           while ( !timerExpired(ID_LED) )
@@ -227,7 +216,7 @@ void App_Run(void) {
         }
         else
         {
-
+	// Si supero una cantidad de intentos determinados, blockea el ingreso por una cantidad de tiempo que aumento cuanto mas cantidad de veces falle
             timerStart(ID_LED, TIMER_MS2TICKS(cant_try*TIME_LED_BLOCK), 0 , NULL);
             status = CANCEL;
             ledSet(0);
