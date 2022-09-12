@@ -44,7 +44,7 @@
 /* Todos los init necesarios */
 void App_Init(void) {
   timerInit();		// Inicializa timers
-
+  	  	  	  	  	  // Vamos git
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
