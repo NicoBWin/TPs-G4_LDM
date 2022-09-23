@@ -40,7 +40,8 @@
  ******************************************************************************/
 typedef struct {
 	char buffer[BUFFER_SIZE];
-	char* bufferPtr;
+	int readIndex;
+	int writeIndex;
 	uint8_t size;
 	bool done;
 	bool read;
@@ -110,11 +111,14 @@ void uartInit (uint8_t id, uart_cfg_t config){
 	NVIC_EnableIRQ(IRQnUART[id]);
 
 	//BUFFER INIT
-	// init buffers
-	Rx[id].bufferPtr = Rx[id].buffer;
+	// Init buffers
 	Rx[id].size = 0;
-	Tx[id].bufferPtr = Tx[id].buffer;
+	Rx[id].readIndex = 0;
+	Rx[id].writeIndex = 0;
+
 	Tx[id].size = 0;
+	Tx[id].readIndex = 0;
+	Tx[id].writeIndex = 0;
 	Tx[id].done = true;
 }
 
@@ -144,15 +148,20 @@ uint8_t uartGetRxMsgLength(uint8_t id){
  * @return Real quantity of pasted bytes
 */
 uint8_t uartReadMsg(uint8_t id, char* msg, uint8_t cant){
-	//rx[id].read = false;
 	if (Rx[id].read == false) {
 		return 0;
 	}
 	uint8_t size = Rx[id].size;
 
-	//FINISH!
-
-	return size;
+	for(int i=0 ; i<cant && i<size; i++) {
+		*(msg+i) = Rx[id].buffer[Rx[id].readIndex];
+		Rx[id].readIndex = (Rx[id].readIndex+1 == BUFFER_SIZE) ? 0 : Rx[id].readIndex+1;
+		Rx[id].size--;
+		if(Rx[id].readIndex == Rx[id].writeIndex) {
+			Rx[id].size = 0;
+		}
+	}
+	return (cant < size) ? cant : size;
 }
 
 /**
@@ -163,15 +172,15 @@ uint8_t uartReadMsg(uint8_t id, char* msg, uint8_t cant){
  * @return Real quantity of bytes to be transfered
 */
 uint8_t uartWriteMsg(uint8_t id, const char* msg, uint8_t cant){
-	if(cant > BUFFER_SIZE) {
+	if(cant > BUFFER_SIZE - Tx[id].size) {
 		return 1;
 	}
 	Tx[id].done = false;
 
-	//	Copy the message to buffer REVISAR
+	//	Copy the message to buffer
 	copyMsg_buffer(id, msg, cant);
 
-	//enable transmission
+	// Enable transmission
 	UART_NUM[id]->C2 |= UART_C2_TIE_MASK;
 	return 0;
 }
@@ -207,12 +216,10 @@ void UART_SetBaudRate(UART_Type *uart, uint32_t baudrate){
 void copyMsg_buffer(uint8_t id, const char * msg, uint32_t len) {
 	uint32_t i;
 	for (i = 0; i < len; i++) {
-		Tx[id].buffer[i] = msg[i];
-		//if (i < BUFFER_SIZE - 1) {
-		//	Tx[id].bufferPtr; //if not finished move one position
-		//} else
-		//	Tx[id].bufferPtr = Tx[id].buffer; //finished
-		(Tx[id].size)++;
+		Tx[id].buffer[Tx[id].writeIndex] = msg[i];
+
+		Tx[id].writeIndex = (Tx[id].writeIndex+1 == BUFFER_SIZE) ? 0 : Tx[id].writeIndex+1;
+		Tx[id].size++;
 	}
 }
 
@@ -222,11 +229,11 @@ void UART_IQRHandler(uint8_t id){
 	// Interrupt by transmitter
 	if(UARTN->S1 & UART_S1_TDRE_MASK){
 		if(Tx[id].size > 0){
-			UARTN->D = *Tx[id].bufferPtr; // Send data
-			Tx[id].bufferPtr++;
+			UARTN->D = Tx[id].buffer[Tx[id].readIndex]; // Send data
+			Tx[id].readIndex = (Tx[id].readIndex+1 == BUFFER_SIZE) ? 0 : Tx[id].readIndex+1;
 			Tx[id].size--;
-			if(Tx[id].bufferPtr - Tx[id].buffer == BUFFER_SIZE) {	//Circular
-				Tx[id].bufferPtr = Tx[id].buffer;
+			if(Tx[id].writeIndex == Tx[id].readIndex) {	// Cola empty
+				Tx[id].size = 0; // Just in case
 			}
 		}
 		else {
@@ -237,12 +244,10 @@ void UART_IQRHandler(uint8_t id){
 
 	// Interrupt by receiver
 	if (UARTN->S1 & UART_S1_RDRF_MASK) {
-		*Rx[id].bufferPtr = UARTN->D; // Guardo lo recibido
-		Rx[id].bufferPtr++;
-		Rx[id].size++;
-		if(Rx[id].size == BUFFER_SIZE) {	//Si se lleno el buffer
-			Rx[id].bufferPtr = Rx[id].buffer;	//Vuelvo el ptr al inicio
-			Rx[id].size = 0;
+		if(Rx[id].size < BUFFER_SIZE) {	//Si se lleno el buffer no guardo nada
+			Rx[id].buffer[Tx[id].writeIndex] = UARTN->D; 	// Guardo lo recibido
+			Rx[id].writeIndex = (Rx[id].writeIndex+1 == BUFFER_SIZE) ? 0 : Rx[id].writeIndex+1;
+			Rx[id].size++;
 		}
 		Rx[id].read = true;
 	}
