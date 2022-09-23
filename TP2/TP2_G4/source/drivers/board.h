@@ -33,12 +33,23 @@
 #define UART0_TX   PORTNUM2PIN(PB,17)	//ALT3
 #define UART0_RX   PORTNUM2PIN(PB,16) 	//ALT3
 
-/***** I2C ***************************************************************/
-#define I2C0_DATA   PORTNUM2PIN(PB,1)	//ALT2
-#define I2C0_CLOCK   PORTNUM2PIN(PB,2) 	//ALT2
+#define UART1_TX   PORTNUM2PIN(PC,4)	//ALT3
+#define UART1_RX   PORTNUM2PIN(PC,3) 	//ALT3
 
-/***** SPI ***************************************************************/
-//COMPLETAR
+#define UART2_TX   PORTNUM2PIN(PD,3)	//ALT3
+#define UART2_RX   PORTNUM2PIN(PD,2) 	//ALT3
+
+#define UART3_TX   PORTNUM2PIN(PC,17)	//ALT3
+#define UART3_RX   PORTNUM2PIN(PC,16) 	//ALT3
+
+#define UART4_TX   PORTNUM2PIN(PE,24)	//ALT3
+#define UART4_RX   PORTNUM2PIN(PE,25) 	//ALT3
+
+#define UART5_TX   PORTNUM2PIN(PE,8)	//ALT3
+#define UART5_RX   PORTNUM2PIN(PE,9) 	//ALT3
+
+
+
 
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
