@@ -40,8 +40,8 @@
  ******************************************************************************/
 typedef struct {
 	char buffer[BUFFER_SIZE];
-	int readIndex;
-	int writeIndex;
+	uint8_t readIndex;
+	uint8_t writeIndex;
 	uint8_t size;
 	bool done;
 	bool read;
@@ -155,7 +155,7 @@ uint8_t uartReadMsg(uint8_t id, char* msg, uint8_t cant){
 
 	for(int i=0 ; i<cant && i<size; i++) {
 		*(msg+i) = Rx[id].buffer[Rx[id].readIndex];
-		Rx[id].readIndex = (Rx[id].readIndex+1 == BUFFER_SIZE) ? 0 : Rx[id].readIndex+1;
+		Rx[id].readIndex = ((Rx[id].readIndex)+1 == BUFFER_SIZE) ? 0 : (Rx[id].readIndex)+1;
 		Rx[id].size--;
 		if(Rx[id].readIndex == Rx[id].writeIndex) {
 			Rx[id].size = 0;
@@ -245,7 +245,7 @@ void UART_IQRHandler(uint8_t id){
 	// Interrupt by receiver
 	if (UARTN->S1 & UART_S1_RDRF_MASK) {
 		if(Rx[id].size < BUFFER_SIZE) {	//Si se lleno el buffer no guardo nada
-			Rx[id].buffer[Tx[id].writeIndex] = UARTN->D; 	// Guardo lo recibido
+			Rx[id].buffer[Rx[id].writeIndex] = UARTN->D; 	// Guardo lo recibido
 			Rx[id].writeIndex = (Rx[id].writeIndex+1 == BUFFER_SIZE) ? 0 : Rx[id].writeIndex+1;
 			Rx[id].size++;
 		}

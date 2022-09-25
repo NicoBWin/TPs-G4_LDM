@@ -8,13 +8,18 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 // Drivers
-
+#include "drivers/headers/uart.h"
 
 // Timer
 #include "timer/timer.h"
 
 // App
 #include "App.h"
+
+// Standar libs
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -44,7 +49,10 @@
 /* Todos los init necesarios */
 void App_Init(void) {
   timerInit();		// Inicializa timers
-  	  	  	  	  	  // Vamos git
+
+  // UART inits
+  uart_cfg_t config = {.id = UARTID, .baudrate = UARTBAUDRATE};
+  uartInit(id, config);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
