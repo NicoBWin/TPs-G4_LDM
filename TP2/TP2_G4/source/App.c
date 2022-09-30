@@ -51,7 +51,8 @@ void App_Init(void) {
   timerInit();		// Inicializa timers
 
   // UART inits
-  uart_cfg_t config = {.id = UARTID, .baudrate = UARTBAUDRATE};
+  int id = UARTID;
+  uart_cfg_t config = {.baudrate = UARTBAUDRATE};
   uartInit(id, config);
 }
 

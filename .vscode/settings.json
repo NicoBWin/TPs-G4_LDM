@@ -4,6 +4,9 @@
         "encoder.h": "c",
         "display.h": "c",
         "card_reader.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "timer.h": "c",
+        "uart.h": "c",
+        "app.h": "c"
     }
 }
