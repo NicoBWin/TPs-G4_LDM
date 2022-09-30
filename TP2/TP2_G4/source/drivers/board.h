@@ -29,7 +29,7 @@
 /*******************************************************************************
  * PIN ASSIGNMENT
  ******************************************************************************/
-/************** UART **********************************************************/
+/***** USB UART **********************************************************/
 #define UART0_TX   PORTNUM2PIN(PB,17)	//ALT3
 #define UART0_RX   PORTNUM2PIN(PB,16) 	//ALT3
 
@@ -42,17 +42,25 @@
 #define UART3_TX   PORTNUM2PIN(PC,17)	//ALT3
 #define UART3_RX   PORTNUM2PIN(PC,16) 	//ALT3
 
-#define UART4_TX   PORTNUM2PIN(PE,24)	//ALT3
-#define UART4_RX   PORTNUM2PIN(PE,25) 	//ALT3
+#define UART4_TX   PORTNUM2PIN(PC,15)	//ALT3
+#define UART4_RX   PORTNUM2PIN(PC,14) 	//ALT3
 
 #define UART5_TX   PORTNUM2PIN(PE,8)	//ALT3
 #define UART5_RX   PORTNUM2PIN(PE,9) 	//ALT3
+
 
 /*************** SPI **********************************************************/
 
 
 /*************** I2C **********************************************************/
+#define I2C0_DATA 	PORTNUM2PIN(PE, 25) // ALT5		SDA
+#define I2C0_CLK	PORTNUM2PIN(PE, 24)	// ALT5	SCL
 
+#define I2C1_DATA 	PORTNUM2PIN(PC, 11) // ALT2
+#define I2C1_CLK 	PORTNUM2PIN(PC, 10) // ALT2
+
+#define I2C2_DATA 	PORTNUM2PIN(PA, 11) // ALT5
+#define I2C2_CLK	PORTNUM2PIN(PA, 12) // ALT5
 
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
