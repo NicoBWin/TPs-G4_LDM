@@ -99,7 +99,7 @@ void App_Run(void) {
 		}
 	}
 
-	char UART_TXmsg[20] = "104R0000C0000\r\n"; //String a transmitir
+	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n"; //String a transmitir
 
 	// Acomodo los datos para enviarlos como char
 	RollPitch = get_process_data();

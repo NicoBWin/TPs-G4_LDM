@@ -199,8 +199,10 @@ void proccess_data(SRAWDATA Data_Accel_Mag )
 
 	// Saco angulo del eje c con el accel_x, asen(accel_x)
 	//angle.angle_x = (asin(argx)*180)/pi;
-	Accel_Mag_Process.pitch = (atan2(argx, sqrt(argz*argz + argy*argy)))*180/pi;
-	Accel_Mag_Process.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;
+	Accel_Mag_Process.roll = (atan2(argx, sqrt(argz*argz + argy*argy)))*180/pi;	//Estan mal
+	//Accel_Mag_Process.pitch = (asinf(argx))*180/pi;
+	//Accel_Mag_Process.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;	//Estan mal
+	Accel_Mag_Process.pitch = (atan2(argy, argz))*180/pi;
 	Accel_Mag_Process.theta = atan2( sqrt(argx*argx + argy*argy),argz )*180/pi;
 
 	//printf("\n el pitch es: %d", Accel_Mag_Process.pitch);
