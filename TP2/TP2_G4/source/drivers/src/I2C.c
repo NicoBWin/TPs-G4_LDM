@@ -1,56 +1,26 @@
 /***************************************************************************//**
-  @file     display.c
-  @brief    Driver display
+  @file     I2C.c
+  @brief    Driver I2C
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
+// Main lib
+#include "../headers/I2C.h"
 
-//#include "../../MCAL/gpio.h"
-
-
+// Internal libs
+#include "../../MCAL/gpio.h"
 #include "../board.h"
 
+// MCU libs
 #include "MK64F12.h"
-
-#include "../headers/I2C.h"
+#include "hardware.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-/*
-#define I2C0_PORT 4
-#define I2C1_PORT 2
-#define I2C2_PORT 0
-
-#define I2C0_SDA_PIN 25 // PTE25
-#define I2C0_SCL_PIN 24 // PTE24
-#define I2C1_SDA_PIN 11 // PTC11
-#define I2C1_SCL_PIN 10 // PTC10
-#define I2C2_SDA_PIN 13 // PTA13	
-#define I2C2_SCL_PIN 14 // PTA14	
-
-#define I2C0_ALT 5
-#define I2C1_ALT 2
-#define I2C2_ALT 5
-*/
-//#define PORTNUM2PIN(p, n) (((p) << 5) + (n))
-//#define PIN2PORT(p) (((p) >> 5) & 0x07)
-//#define PIN2NUM(p) ((p)&0x1F)
-
-#define I2C0_DATA PORTNUM2PIN(PE, 25) // ALT5		SDA
-#define I2C0_CLK PORTNUM2PIN(PE, 24)	 // ALT5	SCL
-
-#define I2C1_DATA PORTNUM2PIN(PC, 11) // ALT2
-#define I2C1_CLK PORTNUM2PIN(PC, 10)  // ALT2
-
-#define I2C2_DATA PORTNUM2PIN(PA, 11) // ALT5
-#define I2C2_CLK PORTNUM2PIN(PA, 12)  // ALT5
-
-#define I2C_INTERRUPT PORTNUM2PIN(PD,1) // Interrupción
-
 #define I2C0_ALT 5
 #define I2C1_ALT 2
 #define I2C2_ALT 5
@@ -354,7 +324,7 @@ void i2c_irq_handler(uint32_t i2cnum)
 					cant_read++;
 				}
 			}
-			else if (cant_read == (i2c_data_pointer[i2cnum].cantread-1)) // Si termino de leer
+			else if (cant_read == (i2c_data_pointer[i2cnum].cantread)) // Si termino de leer
 			{
 
 				//i2c->C1 |= I2C_C1_TX_MASK; // Cambio a modo Tx para que no me mande otro dato lueego de leer
@@ -394,10 +364,11 @@ void i2c_irq_handler(uint32_t i2cnum)
 				}
 				*/
 			}
-			else if(cant_read == (i2c_data_pointer[i2cnum].cantread))
+			else if(cant_read == (i2c_data_pointer[i2cnum].cantread+1))
 			{
 				//i2c->C1 |= I2C_C1_TX_MASK; 						  // Cambio a modo Tx
 				i2c->C1 &= ~(I2C_C1_MST_MASK); // genero STOPF, deshabilito interrupciones, Saque esto para prbar | I2C_C1_IICIE_MASK
+				i2c_data_pointer[i2cnum].readbuffer[cant_read] = i2c->D;
 				start_count = 0;								  // ZERO START COUNT
 				cant_read = -1;									  // Reinicio contadores
 				cant_write = 0;

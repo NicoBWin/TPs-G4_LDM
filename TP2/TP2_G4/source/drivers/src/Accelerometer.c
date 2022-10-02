@@ -1,16 +1,24 @@
-/*
- * Accelerometer.c
- *
- *  Created on: 21 sep. 2022
- *      Author: User
- */
+/***************************************************************************//**
+  @file     Accelerometer.c
+  @brief    Driver Accelerometer
+  @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
+ ******************************************************************************/
+
+/*******************************************************************************
+ * INCLUDE HEADER FILES
+ ******************************************************************************/
+// Main lib
+#include "../headers/Accelerometer.h"
+#include "../headers/I2C.h"
+
+// Internal libs
+#include "../../MCAL/gpio.h"
 #include "../board.h"
 
+// MCU libs
 #include "MK64F12.h"
+#include "hardware.h"
 
-#include "../headers/Accelerometer.h"
-
-#include "../headers/I2C.h"
 
 #include <math.h>
 
@@ -187,9 +195,9 @@ void proccess_data(SRAWDATA Data_Accel_Mag )
 	angle.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;
 	angle.theta = atan2( sqrt(argx*argx + argy*argy),argz )*180/pi;
 
-	//printf("\n el pitch es: %d", angle.pitch);
-	//printf("\n el roll es: %d", angle.roll);
-	//printf("\n el theta es: %d", angle.theta);
+	printf("\n el pitch es: %d", angle.pitch);
+	printf("\n el roll es: %d", angle.roll);
+	printf("\n el theta es: %d", angle.theta);
 	//return 1;
 
 }
@@ -207,5 +215,3 @@ SRAWDATA get_aceleration()
 {
 	return Data_Accel_Mag;
 }
-
-

@@ -62,6 +62,8 @@
 #define I2C2_DATA 	PORTNUM2PIN(PA, 11) // ALT5
 #define I2C2_CLK	PORTNUM2PIN(PA, 12) // ALT5
 
+#define I2C_INTERRUPT PORTNUM2PIN(PD,1) // Interrupción
+
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
 

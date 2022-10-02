@@ -1,12 +1,29 @@
-/*
- * Accelerometer.h
- *
- *  Created on: 21 sep. 2022
- *      Author: User
- */
+/***************************************************************************//**
+  @file     Accelerometer.h
+  @brief    Driver Accelerometer header
+  @author   Nicolás Magliola
+ ******************************************************************************/
 
 #ifndef DRIVERS_HEADERS_ACCELEROMETER_H_
 #define DRIVERS_HEADERS_ACCELEROMETER_H_
+
+/*******************************************************************************
+ * INCLUDE HEADER FILES
+ ******************************************************************************/
+#include "../../MCAL/gpio.h"
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
+#define I2C_ERROR 0
+#define I2C_OK 1
+
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
 typedef struct
 {
 int16_t Accel_x;
@@ -35,8 +52,5 @@ void set_alreadyread_AccelMagnData(bool already);
 bool get_alreadyread_AccelMagnData();
 void proccess_data(SRAWDATA Data_Accel_Mag );
 
-
-#define I2C_ERROR 0
-#define I2C_OK 1
 
 #endif /* DRIVERS_HEADERS_ACCELEROMETER_H_ */

@@ -1,6 +1,6 @@
 /***************************************************************************//**
-  @file     UART.c
-  @brief    UART Driver for K64F. Non-Blocking and using FIFO feature
+  @file     I2C.h
+  @brief    Driver I2C header
   @author   Nicolás Magliola
  ******************************************************************************/
 
