@@ -77,6 +77,7 @@ void App_Init(void) {
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
 
+	// Integracion I2C con UART basica
 	if ( xd == 0) {
 		initAccelerometer();
 		xd = 1;
@@ -97,19 +98,20 @@ void App_Run(void) {
 			set_alreadyread_AccelMagnData(0);
 		}
 	}
+
+	char UART_TXmsg[20] = "104R0000C0000\r\n"; //String a transmitir
+
 	// Acomodo los datos para enviarlos como char
-	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
 	RollPitch = get_process_data();
 	char PitchNum[4];
 	intochar(RollPitch.pitch, PitchNum);
 	char RollNum[4];
 	intochar(RollPitch.roll, RollNum);
 
-	for(int i=0;i<4;i++){
+	for(int i=0;i<4;i++){	//Acomoda los CHARs de pitch y roll dentro del string
 		UART_TXmsg[i+4] = RollNum[i];
 		UART_TXmsg[i+9] = PitchNum[i];
 	}
-	//RollPitch.roll;
 	uartWriteMsg(UARTID, UART_TXmsg, 15);
 }
 
