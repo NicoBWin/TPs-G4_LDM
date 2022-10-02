@@ -324,50 +324,20 @@ void i2c_irq_handler(uint32_t i2cnum)
 					cant_read++;
 				}
 			}
-			else if (cant_read == (i2c_data_pointer[i2cnum].cantread)) // Si termino de leer
+			else if (cant_read == (i2c_data_pointer[i2cnum].cantread-1)) // Si termino de leer
 			{
 
 				//i2c->C1 |= I2C_C1_TX_MASK; // Cambio a modo Tx para que no me mande otro dato lueego de leer
 				i2c->C1 |= I2C_C1_TXAK_MASK; // Genero un NACK
 				i2c_data_pointer[i2cnum].readbuffer[cant_read] = i2c->D; // Leo ultimo dato del registro
 
-				// Genero STOPF con un notack OBS falta implementar
-				//| I2C_C1_TXAK_MASK
-
-				//
-				//i2c->C1 &= ~(I2C_C1_MST_MASK  ); // genero STOPF, deshabilito interrupciones, | I2C_C1_IICIE_MASK
 				cant_read++;
-				/* Test Ojala funcione
-				start_count = 0;			 // ZERO START COUNT
-				cant_read = -1;				// Reinicio contadores
-				cant_write = 0;
-				i2c_data_pointer[i2cnum].status = NOT_BUSY; // libero el canal
-				// Aviso que se termino la transmición de datos
-				if (i2c_data_pointer[i2cnum].callback_fn)	// Indico que se termino la transmición
-				{
-					(i2c_data_pointer[i2cnum].callback_fn)(); // Se completo la transacción exitosamente
-				}
-				ready = 1; // Exito
-				*/
 
-
-				/*
-				i2c->C1 |= I2C_C1_TX_MASK;						  // Cambio a modo Tx
-				i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_TXAK_MASK ); // genero STOPF, deshabilito interrupciones, Saque esto para prbar | I2C_C1_IICIE_MASK
-				start_count = 0;								  // ZERO START COUNT
-				cant_read = -1;									  // Reinicio contadores
-				cant_write = 0;
-				i2c_data_pointer[i2cnum].status = NOT_BUSY; // libero el canal
-				if (i2c_data_pointer[i2cnum].callback_fn)	// Indico que se termino la transmición
-				{
-					(i2c_data_pointer[i2cnum].callback_fn)(); // Se completo la transacción exitosamente
-				}
-				*/
 			}
-			else if(cant_read == (i2c_data_pointer[i2cnum].cantread+1))
+			else if(cant_read == (i2c_data_pointer[i2cnum].cantread))
 			{
 				//i2c->C1 |= I2C_C1_TX_MASK; 						  // Cambio a modo Tx
-				i2c->C1 &= ~(I2C_C1_MST_MASK); // genero STOPF, deshabilito interrupciones, Saque esto para prbar | I2C_C1_IICIE_MASK
+				i2c->C1 &= ~(I2C_C1_MST_MASK | I2C_C1_TXAK_MASK); // genero STOPF, deshabilito interrupciones, Saque esto para prbar | I2C_C1_IICIE_MASK
 				i2c_data_pointer[i2cnum].readbuffer[cant_read] = i2c->D;
 				start_count = 0;								  // ZERO START COUNT
 				cant_read = -1;									  // Reinicio contadores

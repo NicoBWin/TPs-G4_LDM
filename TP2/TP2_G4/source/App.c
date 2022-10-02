@@ -79,7 +79,7 @@ void App_Run(void) {
 		initAccelerometer();
 		xd = 1;
 		timerStart(id_polling, TIMER_MS2TICKS(TIME_POLLING), 0 , NULL);
-		 // ID que se usará para el polling de la petición de datos al acelerometro
+		// ID que se usará para el polling de la petición de datos al acelerometro
 	}
 	//tim_id_t id_polling = timerGetId();
 	if(get_alreadyInit())
@@ -97,7 +97,7 @@ void App_Run(void) {
 		if (  get_alreadyread_AccelMagnData() )
 		{
 			SRAWDATA aceleration = get_aceleration();
-			proccess_data(aceleration );
+			proccess_data(aceleration);
 			data_already_proccess = true;
 			set_alreadyread_AccelMagnData(0);
 		}

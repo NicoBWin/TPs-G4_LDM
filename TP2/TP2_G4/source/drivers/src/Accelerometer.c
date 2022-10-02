@@ -195,9 +195,9 @@ void proccess_data(SRAWDATA Data_Accel_Mag )
 	angle.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;
 	angle.theta = atan2( sqrt(argx*argx + argy*argy),argz )*180/pi;
 
-	printf("\n el pitch es: %d", angle.pitch);
-	printf("\n el roll es: %d", angle.roll);
-	printf("\n el theta es: %d", angle.theta);
+	//printf("\n el pitch es: %d", angle.pitch);
+	//printf("\n el roll es: %d", angle.roll);
+	//printf("\n el theta es: %d", angle.theta);
 	//return 1;
 
 }
