@@ -103,13 +103,13 @@ void App_Run(void) {
 
 	// Acomodo los datos para enviarlos como char
 	RollPitch = get_process_data();
-	char PitchNum[4];
-	intochar(RollPitch.pitch, PitchNum);
 	char RollNum[4];
 	intochar(RollPitch.roll, RollNum);
+	char PitchNum[4];
+	intochar(RollPitch.pitch, PitchNum);
 
 	for(int i=0;i<4;i++){	//Acomoda los CHARs de pitch y roll dentro del string
-		UART_TXmsg[i+4] = RollNum[i];
+		UART_TXmsg[i+4] = RollNum[i];	//ESTA MAL PERO ROLL Y PTCH ESTAN INVERTIDOS
 		UART_TXmsg[i+9] = PitchNum[i];
 	}
 	uartWriteMsg(UARTID, UART_TXmsg, 15);
