@@ -44,6 +44,9 @@ int16_t Magn_y;
 int16_t Magn_z;
 } SPROCESSDATA;
 
+/*******************************************************************************
+ * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
 bool get_alreadyInit();
 void initAccelerometer();
 void ReadAccelMagnData();
@@ -52,5 +55,6 @@ void set_alreadyread_AccelMagnData(bool already);
 bool get_alreadyread_AccelMagnData();
 void proccess_data(SRAWDATA Data_Accel_Mag );
 
+SPROCESSDATA get_process_data();
 
 #endif /* DRIVERS_HEADERS_ACCELEROMETER_H_ */

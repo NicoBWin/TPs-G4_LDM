@@ -22,7 +22,9 @@
 
 #include <math.h>
 
-
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
 // FXOS8700CQ I2C address
 #define FXOS8700CQ_SLAVE_ADDR	0x1D // with pins SA0=1, SA1=0
 
@@ -34,8 +36,6 @@
 #define FXOS8700CQ_M_CTRL_REG1 	0x5B	// Configuración generales  -> en ctrl_reg1 Primero mando 0x0 para poner en standby y luego le saco ese modo
 #define FXOS8700CQ_M_CTRL_REG2 	0x5C    // Configuración generales
 #define FXOS8700CQ_WHOAMI_VAL 	0xC7
-
-
 
 #define FXOS8700CQ_OUT_X_MSB	0x01
 #define FXOS8700CQ_OUT_Y_MSB	0x03
@@ -49,14 +49,24 @@
 #define SENSIBILITY  0.25 //  mg/LSB
 #define pi 3.14159265359
 
+/*******************************************************************************
+ * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
+ ******************************************************************************/
 static bool alreadyInit;
 static bool alreadyread;
 
 static SRAWDATA Data_Accel_Mag;
+static SPROCESSDATA Accel_Mag_Process;
 //static SRAWDATA pAccelData;
 
 static uint8_t* Buffer;
 
+
+/*******************************************************************************
+ *******************************************************************************
+                        GLOBAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
 void initAccelerometer(){
 
 	static int status_config = 0;
@@ -178,8 +188,6 @@ else
 
 void proccess_data(SRAWDATA Data_Accel_Mag )
 {
-	SPROCESSDATA angle;
-
 	// MULTIPLICO POR SENSIBILIDAD
 	double argx = Data_Accel_Mag.Accel_x*SENSIBILITY* 0.001 * 0.5; // Multiplico por la sensibilidad, paso a g y divido por 2g para normalizar
 	double argy = Data_Accel_Mag.Accel_y*SENSIBILITY* 0.001 * 0.5;
@@ -191,15 +199,14 @@ void proccess_data(SRAWDATA Data_Accel_Mag )
 
 	// Saco angulo del eje c con el accel_x, asen(accel_x)
 	//angle.angle_x = (asin(argx)*180)/pi;
-	angle.pitch = (atan2(argx, sqrt(argz*argz + argy*argy)))*180/pi;
-	angle.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;
-	angle.theta = atan2( sqrt(argx*argx + argy*argy),argz )*180/pi;
+	Accel_Mag_Process.pitch = (atan2(argx, sqrt(argz*argz + argy*argy)))*180/pi;
+	Accel_Mag_Process.roll = (atan2(argy, sqrt(argz*argz + argx*argx)))*180/pi;
+	Accel_Mag_Process.theta = atan2( sqrt(argx*argx + argy*argy),argz )*180/pi;
 
-	//printf("\n el pitch es: %d", angle.pitch);
-	//printf("\n el roll es: %d", angle.roll);
-	//printf("\n el theta es: %d", angle.theta);
+	//printf("\n el pitch es: %d", Accel_Mag_Process.pitch);
+	//printf("\n el roll es: %d", Accel_Mag_Process.roll);
+	//printf("\n el theta es: %d", Accel_Mag_Process.theta);
 	//return 1;
-
 }
 
 bool get_alreadyread_AccelMagnData()
@@ -214,4 +221,8 @@ void set_alreadyread_AccelMagnData(bool already)
 SRAWDATA get_aceleration()
 {
 	return Data_Accel_Mag;
+}
+
+SPROCESSDATA get_process_data() {
+	return Accel_Mag_Process;
 }

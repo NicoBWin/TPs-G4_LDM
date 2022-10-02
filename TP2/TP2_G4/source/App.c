@@ -26,7 +26,8 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define TIME_POLLING  1000 // en ms
+#define NUMOFFSET       '0'     // Offset de numero entero a char
+#define LENG_SC         4
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -36,7 +37,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static void intochar(unsigned long int num, char chscore[LENG_SC]);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -46,11 +47,8 @@
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static int xd = 0;
-static test = 0;
-static data_already_proccess = true;
-static tim_id_t id_polling;
-
+static SPROCESSDATA RollPitch;
+//static char UART_TXmsg[BUFFER_SIZE];
 
 /*******************************************************************************
  *******************************************************************************
@@ -71,37 +69,39 @@ void App_Init(void) {
   test = 0;
   id_polling = timerGetId();
 
+  // SPI init
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	if ( xd == 0){
+
+	if ( xd == 0) {
 		initAccelerometer();
 		xd = 1;
 		timerStart(id_polling, TIMER_MS2TICKS(TIME_POLLING), 0 , NULL);
 		// ID que se usará para el polling de la petición de datos al acelerometro
 	}
-	//tim_id_t id_polling = timerGetId();
-	if(get_alreadyInit())
-	{
-		if(data_already_proccess && timerExpired(id_polling)) // && timerExpired(id_polling)
-		{
-			//SRAWDATA mag;
-			//SRAWDATA acel;
-			//printf("me inicialice carajo");
+	if(get_alreadyInit()) {
+		if(data_already_proccess && timerExpired(id_polling)) { // && timerExpired(id_polling)
 			ReadAccelMagnData();
 			test = 1;
 			data_already_proccess = false;
 			timerStart(id_polling, TIMER_MS2TICKS(TIME_POLLING), 0 , NULL);
 		}
-		if (  get_alreadyread_AccelMagnData() )
-		{
+		if (  get_alreadyread_AccelMagnData() )	{
 			SRAWDATA aceleration = get_aceleration();
 			proccess_data(aceleration);
 			data_already_proccess = true;
 			set_alreadyread_AccelMagnData(0);
 		}
 	}
+	// Acomodo los datos para enviarlos como char
+	RollPitch = get_process_data();
+	RollPitch.pitch;
+	RollPitch.roll;
+	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
+	uartWriteMsg(UARTID, UART_TXmsg, 15);
 }
 
 /*******************************************************************************
@@ -109,3 +109,33 @@ void App_Run(void) {
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+/**
+ * @brief Transforma un entero no signado a un string.
+ * @param num Recibe el numero a transformar.
+ * @param chscore[] Recibe el string dode transformara el numero a char
+ * @return Devulve el string ya transformado.
+*/
+static void intochar(unsigned long int num, char chscore[LENG_SC]) {
+    unsigned long int a = 0;
+
+    if(num==0) {
+        chscore[0]='0';           // Escribo el 0 en el al principio.
+    }
+    else if (num > 0) {
+    	chscore[0]='+';           // Escribo el + si el numero es positivo.
+    }
+    else {
+    	chscore[0]='-';           // Escribo el - si el numero es negativo.
+    }
+	for(int i=LENG_SC-1;i>0;i--) {
+		a = num % 10;                   // Tomo un digito a mostrar.
+		if(num>0) {
+			chscore[i]=a+NUMOFFSET;     // Si sigo teniendo parte del numero disponible para mostrar
+										//muestro el nuevo digito.
+			num = num / 10;             // Recorto el número para mostrar el nuevo digito.
+		}
+		else {
+			chscore[i]='0';              // Si el numero que queda es = a 0, muestro espacios.
+		}
+	}
+}
