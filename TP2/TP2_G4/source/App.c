@@ -37,7 +37,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static void intochar(unsigned long int num, char chscore[LENG_SC]);
+static void intochar(int16_t num, char chscore[LENG_SC]);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -98,10 +98,11 @@ void App_Run(void) {
 	}
 	// Acomodo los datos para enviarlos como char
 	RollPitch = get_process_data();
-	RollPitch.pitch;
-	RollPitch.roll;
-	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
-	uartWriteMsg(UARTID, UART_TXmsg, 15);
+	char CharNum[4];
+	intochar(RollPitch.pitch, CharNum);
+	//RollPitch.roll;
+	//char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
+	uartWriteMsg(UARTID, CharNum, 4);
 }
 
 /*******************************************************************************
@@ -115,7 +116,7 @@ void App_Run(void) {
  * @param chscore[] Recibe el string dode transformara el numero a char
  * @return Devulve el string ya transformado.
 */
-static void intochar(unsigned long int num, char chscore[LENG_SC]) {
+static void intochar(int16_t num, char chscore[LENG_SC]) {
     unsigned long int a = 0;
 
     if(num==0) {
@@ -126,6 +127,7 @@ static void intochar(unsigned long int num, char chscore[LENG_SC]) {
     }
     else {
     	chscore[0]='-';           // Escribo el - si el numero es negativo.
+    	num = -num;
     }
 	for(int i=LENG_SC-1;i>0;i--) {
 		a = num % 10;                   // Tomo un digito a mostrar.
