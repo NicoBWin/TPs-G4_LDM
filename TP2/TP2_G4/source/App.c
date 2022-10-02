@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -97,12 +98,19 @@ void App_Run(void) {
 		}
 	}
 	// Acomodo los datos para enviarlos como char
+	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
 	RollPitch = get_process_data();
-	char CharNum[4];
-	intochar(RollPitch.pitch, CharNum);
+	char PitchNum[4];
+	intochar(RollPitch.pitch, PitchNum);
+	char RollNum[4];
+	intochar(RollPitch.roll, RollNum);
+
+	for(int i=0;i<4;i++){
+		UART_TXmsg[i+4] = RollNum[i];
+		UART_TXmsg[i+9] = PitchNum[i];
+	}
 	//RollPitch.roll;
-	//char UART_TXmsg[20] = "104RxxxxCxxxx\r\n";
-	uartWriteMsg(UARTID, CharNum, 4);
+	uartWriteMsg(UARTID, UART_TXmsg, 15);
 }
 
 /*******************************************************************************
