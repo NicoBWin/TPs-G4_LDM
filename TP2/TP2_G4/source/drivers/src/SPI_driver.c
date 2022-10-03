@@ -9,7 +9,7 @@
  ******************************************************************************/
 
 // +Incluir el header propio (ej: #include "template.h")+
-#include "../headers/SPI_driver.h"
+#include "SPI_driver.h"
 #include "MK64F12.h"
 
 
@@ -47,7 +47,7 @@ void portsetSPI(int PORTn,int pin);
  ******************************************************************************/
 void SPI_MSTR_init(SPI_t mySPI);//framesize a uint8
 //void SPI_transfer_enqueue(int txdata);
-//char SPI_read_transfer();
+void SPI_read_transfer();
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -122,9 +122,9 @@ void SPI_transfer_enqueue(int txdata, _Bool ACSCONT )	// Recibe los datos a envi
 //y ademas un flag que indica si el usuario quiere que una vez enviado el mensaje si el CS queda ACtivado o no
 {
 	SPI_ptr->MCR |=SPI_MCR_HALT(1);
-	SPI_ptr->PUSHR = (SPI_ptr->PUSHR | SPI_PUSHR_CONT(ACSCONT) | SPI_PUSHR_PCS(1)) & ~SPI_PUSHR_TXDATA(0b1111111111111111); //Mantengo el CSCONT, pero borro los datos previos del registro
-	SPI_ptr->MCR |= SPI_MCR_CLR_TXF(1);
-	SPI_ptr->PUSHR = (SPI_ptr->PUSHR | SPI_PUSHR_CONT(ACSCONT) | SPI_PUSHR_PCS(1)) | SPI_PUSHR_TXDATA(txdata);	//escribo los datos en el registro para transmitir.
+	SPI_ptr->PUSHR = ((((((SPI_ptr->PUSHR )& ~SPI_PUSHR_CONT(1))| SPI_PUSHR_CONT(ACSCONT)) | SPI_PUSHR_PCS(1)) & ~SPI_PUSHR_TXDATA(0xFF)) | SPI_PUSHR_TXDATA(txdata)); //Mantengo el CSCONT, pero borro los datos previos del registro
+	//SPI_ptr->MCR |= SPI_MCR_CLR_TXF(1);
+	//SPI_ptr->PUSHR = (SPI_ptr->PUSHR | SPI_PUSHR_CONT(ACSCONT) | SPI_PUSHR_PCS(1)) | SPI_PUSHR_TXDATA(txdata);	//escribo los datos en el registro para transmitir.
 	SPI_ptr->MCR  &= ~SPI_MCR_HALT(1);
 }
 
@@ -134,11 +134,10 @@ void SPI_PCS_dis()
 	SPI_ptr->PUSHR &= ~SPI_PUSHR_PCS(1);
 	SPI_ptr->MCR &= ~SPI_MCR_HALT(1);
 }
-//char SPI_read_transfer() {
-//  receivedMSG=0;
-//  receivedMSG = SPI_ptr->POPR;
-//  return receivedMSG;
-//}
+void SPI_read_transfer()
+{
+  SPI_ptr->POPR;
+}
 
 void SPI_halt(){
 
