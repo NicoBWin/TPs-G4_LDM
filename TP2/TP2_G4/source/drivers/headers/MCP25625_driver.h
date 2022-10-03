@@ -14,26 +14,19 @@
 #include <stdbool.h>
 
 
+
+
+
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 void MCP_init();
-
-void MCP_sendMSG(int txdata, _Bool ACSCONT);
-
 void MCP_control(char instruction,char address,char txdata);
-
-void MCP_SEND_MESSAGE(int myID,int dataNUM, int data);
-
-void MCP_RECEIVE_MESSAGE();
-
-int MCP_polltxbuffer();
-
-void MCP_fillID(int myID);
-
-void MCP_transferdata(int bytecount, char* d0);
-
+void MCP_sendMSG(int txdata, _Bool ACSCONT);
 void MCP_endTX();
+void MCP_send_message(int myID,int dataNUM, int data);
+void MCP_RECEIVE_MESSAGE();
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -74,7 +67,7 @@ void MCP_endTX();
 #define MCP_CNF3_SOFSHIFT	7
 #define MCP_CNF3_SOF(x)             (((char)(((char)(x)) << MCP_CNF3_SOFSHIFT)))
 #define MCP_CNF3_WAKFILSHIFT	6
-#define MCP_CNF3_WAKFILL(x)             (((char)(((char)(x)) << MCP_CNF3_WAKFILSHIFT)))
+#define MCP_CNF3_WAKFIL(x)             (((char)(((char)(x)) << MCP_CNF3_WAKFILSHIFT)))
 #define MCP_CNF3_PHSEG2SHIFT	0
 #define MCP_CNF3_PHSEG2(x)             (((char)(((char)(x)) << MCP_CNF3_PHSEG2SHIFT)))
 
@@ -150,7 +143,7 @@ void MCP_endTX();
 #define MCP_TXB1SIDH_ADDRESS  0x41
 #define MCP_TXB1SIDL_ADDRESS  0x42
 #define MCP_TXB2SIDH_ADDRESS  0x51
-#define MCP_TXB2SIDL_ADDRESS  0x52 
+#define MCP_TXB2SIDL_ADDRESS  0x52
 
 #define MCP_TXB0DLC_ADDRESS  0x35
 #define MCP_TXB1DLC_ADDRESS  0x45
@@ -184,6 +177,35 @@ void MCP_endTX();
 #define MCP_TXB0CTRL_ADDRESS    0x30
 #define MCP_TXB1CTRL_ADDRESS    0x40
 #define MCP_TXB2CTRL_ADDRESS    0x50
+
+
+#define MCP_RXB0SIDH_ADDRESS  0x61
+#define MCP_RXB0SIDL_ADDRESS  0x62
+#define MCP_RXB1SIDH_ADDRESS  0x71
+#define MCP_RXB1SIDL_ADDRESS  0x72
+
+#define MCP_RXB0DLC_ADDRESS  0x65
+#define MCP_RXB1DLC_ADDRESS  0x75
+
+#define MCP_RXB0D0_ADDRESS    0x66
+#define MCP_RXB0D1_ADDRESS    0x67
+#define MCP_RXB0D2_ADDRESS    0x68
+#define MCP_RXB0D3_ADDRESS    0x69
+#define MCP_RXB0D4_ADDRESS    0x6A
+#define MCP_RXB0D5_ADDRESS    0x6B
+#define MCP_RXB0D6_ADDRESS    0x6C
+#define MCP_RXB0D7_ADDRESS    0x6D
+#define MCP_RXB1D0_ADDRESS    0x76
+#define MCP_RXB1D1_ADDRESS    0x77
+#define MCP_RXB1D2_ADDRESS    0x78
+#define MCP_RXB1D3_ADDRESS    0x79
+#define MCP_RXB1D4_ADDRESS    0x7A
+#define MCP_RXB1D5_ADDRESS    0x7B
+#define MCP_RXB1D6_ADDRESS    0x7C
+#define MCP_RXB1D7_ADDRESS    0x7D
+
+
+
 /*******************************************************************************
  ******************************************************************************/
  #endif // _CARD_READER_H_

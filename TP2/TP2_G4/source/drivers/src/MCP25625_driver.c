@@ -136,17 +136,29 @@ void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
 	MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_ADDRESS,0b00001000);
 }
 
-void MCP_RECEIVE_MESSAGE() {
-	//Verifico que llego un mensaje en los flags 
+void MCP_RECEIVE_MESSAGE()
+{
+	static _Bool hitRx=false;
+	static int datanum=0;
+	//Verifico que llego un mensaje en los flags
+	//hitRX = MCP_control(MCP_INST_READ,MCP_CANINTF_ADDRESS,0xFF);
+
 	//Leo la informacion de los buffers
+	datanum = MCP_control(MCP_INST_READ,MCP_RXB0DLC_ADDRESS,0xFF);
+	rawdata = MCP_control(MCP_INST_READ,MCP_RXB0D0,0xFF);
 	//Borro el flag de rx lleno
+	MCP_control(MCP_INST_WRITE,MCP_CANINTF_ADDRESS,0x01);
 }
-int MCP_polltxbuffer() {//WIP
-	for (int i=0; i<3; i++)	{
-		MCP_control(MCP_INST_READ,MCP_TXB0CTRL_ADDRESS,0);
+/*int MCP_polltxbuffer() //WIP
+{
+	int i=0;
+	for(i=0; i<3; i++)
+	{
+		(MCP_INST_READ,MCP_TXREQ0_ADDRESS,0);
 		//SPI POPR
+		if((MCP_INST_READ,MCP_TXREQ0_ADDRESS,0));
 	}
-}
+}*/
 
 void MCP_fillID(int myID) {
 	char idH, idL;
