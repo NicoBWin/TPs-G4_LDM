@@ -65,7 +65,7 @@ void MCP_init(){
 
 	// 2° Configuro el tiempo de bit	CHK
 	char CNF1=0,CNF2=0,CNF3=0;
-	CNF1 = (MCP_CNF1_SJW(0b11)|MCP_CNF1_BRP(0b00000));
+	CNF1 = (MCP_CNF1_SJW(0b00)|MCP_CNF1_BRP(0b00111));
 	MCP_control(MCP_INST_WRITE, MCP_CNF1_ADDRESS, CNF1);
 
 	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b100)|MCP_CNF2_PRSEG2(0b111));
@@ -76,14 +76,14 @@ void MCP_init(){
 
 
 	// 3° Configuro los filtros de recepcion
-	//MCP_TXRTSCTRL_ADDRESS // Configurar para utilizar uno solo de los 3 buffers de TX
+	MCP_control(MCP_INST_WRITE, MCP_TXRTSCTRL_ADDRESS, 0x01); // Configurar para utilizar uno solo de los 3 buffers de TX
+
 	// Aparte de configurar los filtros
-	/*
-	setear -> MCP_RXF0SIDH_ADDRESS, 0x20 // Seteo el filtro (H)
-	setear -> MCP_RXF0SIDL_ADDRESS, 0x00 // Seteo el filtro (L)
-	setear -> MCP_RXM0SIDH_ADDRESS, 0xFF // Seteo la mask (H)
-	setear -> MCP_RXM0SIDL_ADDRESS, 0x00 // Seteo la mask (L)
-	 */
+	MCP_control(MCP_INST_WRITE, MCP_RXF0SIDH_ADDRESS, 0x20);	// Seteo el filtro (H)
+	MCP_control(MCP_INST_WRITE, MCP_RXF0SIDL_ADDRESS, 0x00);	// Seteo el filtro (L)
+	MCP_control(MCP_INST_WRITE, MCP_RXM0SIDH_ADDRESS, 0xFF);	// Seteo la mask (H)
+	MCP_control(MCP_INST_WRITE, MCP_RXM0SIDL_ADDRESS, 0x00);	// Seteo la mask (L)
+
 
 	// 4° Configurar modo de recepción (RXB0CTRL y RXB1CTRL, chapter 4.2) CHWCK
 	char RXB0CTRL=0, RXB1CTRL=0;
