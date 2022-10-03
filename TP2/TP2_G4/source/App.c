@@ -70,8 +70,8 @@ void App_Init(void) {
   test = 0;
   id_polling = timerGetId();
 
-  // SPI init
-
+  // MCP-CAN init
+  MCP_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */

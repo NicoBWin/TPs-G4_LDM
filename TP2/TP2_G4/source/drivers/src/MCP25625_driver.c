@@ -71,13 +71,13 @@ void MCP_init(){
 	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b100)|MCP_CNF2_PRSEG2(0b111));
 	MCP_control(MCP_INST_WRITE, MCP_CNF2_ADDRESS, CNF2);
 
-	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFIL(1)|MCP_CNF3_PHSEG2(0b100));
+	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFILL(1)|MCP_CNF3_PHSEG2(0b100));
 	MCP_control(MCP_INST_WRITE, MCP_CNF3_ADDRESS, CNF3);
 
 
 	// 3° Configuro los filtros de recepcion
 	//MCP_TXRTSCTRL_ADDRESS // Configurar para utilizar uno solo de los 3 buffers de TX
-// Aparte de configurar los filtros
+	// Aparte de configurar los filtros
 	/*
 	setear -> MCP_RXF0SIDH_ADDRESS, 0x20 // Seteo el filtro (H)
 	setear -> MCP_RXF0SIDL_ADDRESS, 0x00 // Seteo el filtro (L)
@@ -119,6 +119,7 @@ void MCP_control(char instruction,char address,char txdata){
 	SPI_transfer_enqueue(address, true);
 	SPI_transfer_enqueue(txdata, false);
 }
+
 void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
 {
 	static TXn=0;
@@ -130,49 +131,40 @@ void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
 	//Lleno la cantidad de bytes a enviar
 	MCP_control(MCP_INST_WRITE,MCP_TXB0DLC_ADDRESS,dataNUM);
 	//Lleno los datos a enviar
-	MCP_control(MCP_INST_WRITE,MCP_TXB0D0_ADDRESS,data0);
+	MCP_control(MCP_INST_WRITE,MCP_TXB0D0_ADDRESS,dataNUM);
 	//Solicito el envío del mensaje	
 	MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_ADDRESS,0b00001000);
 }
 
-void MCP_RECEIVE_MESSAGE()
-{
+void MCP_RECEIVE_MESSAGE() {
 	//Verifico que llego un mensaje en los flags 
 	//Leo la informacion de los buffers
 	//Borro el flag de rx lleno
 }
-int MCP_polltxbuffer() //WIP
-{
-	int i=0;
-	for (i=0; i<3, i++)
-	{
-		(MCP_INST_READ,MCP_TXREQ0_ADDRESS,0) 
+int MCP_polltxbuffer() {//WIP
+	for (int i=0; i<3; i++)	{
+		MCP_control(MCP_INST_READ,MCP_TXB0CTRL_ADDRESS,0);
 		//SPI POPR
-		if((MCP_INST_READ,MCP_TXREQ0_ADDRESS,0))
 	}
 }
-void MCP_fillID(int myID)
-{
+
+void MCP_fillID(int myID) {
 	char idH, idL;
-	idH = myID 
-	MCP_control(MCP_INST_WRITE,MCP_ TXB0SIDH_ADDRESS,idH);
+	idH = myID;
+	MCP_control(MCP_INST_WRITE,MCP_TXB0SIDH_ADDRESS,idH);
 	MCP_control(MCP_INST_WRITE,MCP_TXB0SIDL_ADDRESS,idL);
 }
 
-
-void MCP_transferdata(int bytecount, char* d0){
+void MCP_transferdata(int bytecount, char* d0) {
 	static int i=0;
-	if(bytecount<9)
-	{
-		if(i=0)
-		{
-		MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_TXB0DLC_ADDRESS,MCP_TXB0CTRL_TXB0DLC);
-		MCP_control(MCP_INST_WRITE,MCP_TXBxCTRL_ADDRESS,);
-
+	if(bytecount<9)	{
+		if(i=0)	{
+			MCP_control(MCP_INST_WRITE ,MCP_TXB0CTRL_TXB0DLC_ADDRESS ,MCP_TXB0CTRL_TXB0DLC);
+			MCP_control(MCP_INST_WRITE ,MCP_TXBxCTRL_ADDRESS,);
 		}
 	}
 }
-void MCP_endTX(){
+void MCP_endTX() {
 	SPI_PCS_dis();
 }
 /*******************************************************************************
