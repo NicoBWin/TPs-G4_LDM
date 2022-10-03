@@ -7,14 +7,10 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-// +Incluir el header propio (ej: #include "template.h")+
 #include "../headers/MCP25625_driver.h"
 #include "../headers/SPI_driver.h"
 #include "MK64F12.h"
 #include <stdbool.h>
-
-
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -71,7 +67,7 @@ void MCP_init(){
 	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b100)|MCP_CNF2_PRSEG2(0b111));
 	MCP_control(MCP_INST_WRITE, MCP_CNF2_ADDRESS, CNF2);
 
-	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFILL(1)|MCP_CNF3_PHSEG2(0b100));
+	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFIL(1)|MCP_CNF3_PHSEG2(0b100));
 	MCP_control(MCP_INST_WRITE, MCP_CNF3_ADDRESS, CNF3);
 
 
@@ -114,15 +110,17 @@ void MCP_sendMSG(int txdata, _Bool ACSCONT){
 	SPI_transfer_enqueue(txdata, ACSCONT);
 }
 
-void MCP_control(char instruction,char address,char txdata){
+void MCP_control(char instruction,char address,char txdata) 
+{
 	SPI_transfer_enqueue(instruction, true);
 	SPI_transfer_enqueue(address, true);
 	SPI_transfer_enqueue(txdata, false);
 }
 
-void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
+void MCP_SEND_MESSAGE(int myID,char dataNUM, char data[4])
 {
-	static TXn=0;
+	int TXn=0;
+
 	//Solicito un buffer de TX
 	//MCP_polltxbuffer(); ESTA PREGUNTARIA SI HAY UNO LIBRE.
 	
@@ -131,24 +129,50 @@ void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
 	//Lleno la cantidad de bytes a enviar
 	MCP_control(MCP_INST_WRITE,MCP_TXB0DLC_ADDRESS,dataNUM);
 	//Lleno los datos a enviar
-	MCP_control(MCP_INST_WRITE,MCP_TXB0D0_ADDRESS,dataNUM);
+	if(dataNUM<2)
+	{
+	MCP_control(MCP_INST_WRITE,MCP_TXB0D0_ADDRESS,data[TXn]);
+	TXn++;
+		if(dataNUM<3)
+		{
+			MCP_control(MCP_INST_WRITE,MCP_TXB0D1_ADDRESS,data[TXn]);
+			TXn++;
+		}
+		if(dataNUM<4)
+		{
+			MCP_control(MCP_INST_WRITE,MCP_TXB0D2_ADDRESS,data[TXn]);
+			TXn++;
+		}
+		if(dataNUM<5)
+		{
+			MCP_control(MCP_INST_WRITE,MCP_TXB0D3_ADDRESS,data[TXn]);
+			TXn++;
+		}
+	}
 	//Solicito el envío del mensaje	
 	MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_ADDRESS,0b00001000);
 }
 
-void MCP_RECEIVE_MESSAGE()
+char* MCP_RECEIVE_MESSAGE()
 {
 	static _Bool hitRx=false;
 	static int datanum=0;
+	static char	returnvalues[5];
 	//Verifico que llego un mensaje en los flags
 	//hitRX = MCP_control(MCP_INST_READ,MCP_CANINTF_ADDRESS,0xFF);
 
 	//Leo la informacion de los buffers
-	datanum = MCP_control(MCP_INST_READ,MCP_RXB0DLC_ADDRESS,0xFF);
-	rawdata = MCP_control(MCP_INST_READ,MCP_RXB0D0,0xFF);
+	MCP_control(MCP_INST_READ,MCP_RXB0DLC_ADDRESS,0xFF);
+	datanum = MCP_reqread();
+	returnvalues[2]=datanum;
+	MCP_control(MCP_INST_READ,MCP_RXB0D0_ADDRESS,0xFF);
+	char rawdata = MCP_reqread();
+	returnvalues[3]=rawdata;
+	
 	//Borro el flag de rx lleno
 	MCP_control(MCP_INST_WRITE,MCP_CANINTF_ADDRESS,0x01);
 }
+
 /*int MCP_polltxbuffer() //WIP
 {
 	int i=0;
@@ -159,26 +183,34 @@ void MCP_RECEIVE_MESSAGE()
 		if((MCP_INST_READ,MCP_TXREQ0_ADDRESS,0));
 	}
 }*/
-
+char MCP_reqread()
+{
+	char rval=0;
+	rval = SPI_read_transfer();
+	return rval;
+}
 void MCP_fillID(int myID) {
 	char idH, idL;
-	idH = myID;
+	idL = (char)myID;
+	idH = (char)((myID<<4));
 	MCP_control(MCP_INST_WRITE,MCP_TXB0SIDH_ADDRESS,idH);
 	MCP_control(MCP_INST_WRITE,MCP_TXB0SIDL_ADDRESS,idL);
+
 }
 
-void MCP_transferdata(int bytecount, char* d0) {
-	static int i=0;
-	if(bytecount<9)	{
-		if(i=0)	{
-			MCP_control(MCP_INST_WRITE ,MCP_TXB0CTRL_TXB0DLC_ADDRESS ,MCP_TXB0CTRL_TXB0DLC);
-			MCP_control(MCP_INST_WRITE ,MCP_TXBxCTRL_ADDRESS,);
-		}
-	}
-}
+// void MCP_transferdata(int bytecount, char* d0) {
+// 	static int i=0;
+// 	if(bytecount<9)	{
+// 		if(i=0)	{
+// 			MCP_control(MCP_INST_WRITE , MCP_TXB0CTRL_TXB0DLC_ADDRESS ,MCP_TXB0CTRL_TXB0DLC);
+// 			MCP_control(MCP_INST_WRITE , MCP_TXB0CTRL_ADDRESS,);
+// 		}
+// 	}
+// }
 void MCP_endTX() {
 	SPI_PCS_dis();
 }
+
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS

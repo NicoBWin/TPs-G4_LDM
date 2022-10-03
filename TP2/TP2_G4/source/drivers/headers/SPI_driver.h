@@ -46,7 +46,7 @@ typedef struct {
  ******************************************************************************/
 void SPI_MSTR_init(SPI_t mySPI);//framesize a uint8
 void SPI_transfer_enqueue(int txdata, _Bool ACSCONT);
-void SPI_read_transfer();
+char SPI_read_transfer();
 void SPI_halt();
 void SPI_resumeHalt();
 void SPI_PCS_dis();

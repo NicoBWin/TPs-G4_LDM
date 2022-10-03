@@ -47,7 +47,7 @@ void portsetSPI(int PORTn,int pin);
  ******************************************************************************/
 void SPI_MSTR_init(SPI_t mySPI);//framesize a uint8
 //void SPI_transfer_enqueue(int txdata);
-void SPI_read_transfer();
+//char SPI_read_transfer();
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -134,10 +134,11 @@ void SPI_PCS_dis()
 	SPI_ptr->PUSHR &= ~SPI_PUSHR_PCS(1);
 	SPI_ptr->MCR &= ~SPI_MCR_HALT(1);
 }
-void SPI_read_transfer()
-{
-  SPI_ptr->POPR;
-}
+//char SPI_read_transfer() {
+//  receivedMSG=0;
+//  receivedMSG = SPI_ptr->POPR;
+//  return receivedMSG;
+//}
 
 void SPI_halt(){
 

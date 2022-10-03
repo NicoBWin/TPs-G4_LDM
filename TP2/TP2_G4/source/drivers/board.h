@@ -36,8 +36,8 @@
 #define UART1_TX   PORTNUM2PIN(PC,4)	//ALT3
 #define UART1_RX   PORTNUM2PIN(PC,3) 	//ALT3
 
-#define UART2_TX   PORTNUM2PIN(PD,3)	//ALT3
-#define UART2_RX   PORTNUM2PIN(PD,2) 	//ALT3
+#define UART2_TX   PORTNUM2PIN(PD,20)	//ALT3
+#define UART2_RX   PORTNUM2PIN(PD,21) 	//ALT3
 
 #define UART3_TX   PORTNUM2PIN(PC,17)	//ALT3
 #define UART3_RX   PORTNUM2PIN(PC,16) 	//ALT3
@@ -62,7 +62,7 @@
 #define I2C2_DATA 	PORTNUM2PIN(PA, 11) // ALT5
 #define I2C2_CLK	PORTNUM2PIN(PA, 12) // ALT5
 
-#define I2C_INTERRUPT PORTNUM2PIN(PD,1) // Interrupción
+#define I2C_INTERRUPT PORTNUM2PIN(PB,20) // Interrupción
 
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)

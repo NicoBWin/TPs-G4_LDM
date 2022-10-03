@@ -14,19 +14,28 @@
 #include <stdbool.h>
 
 
-
-
-
-
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 void MCP_init();
-void MCP_control(char instruction,char address,char txdata);
+
 void MCP_sendMSG(int txdata, _Bool ACSCONT);
+
+void MCP_control(char instruction,char address,char txdata);
+
+void MCP_SEND_MESSAGE(int myID,char dataNUM, char data[4]);
+
+char* MCP_RECEIVE_MESSAGE();
+
+int MCP_polltxbuffer();
+
+char MCP_reqread();
+
+void MCP_fillID(int myID);
+
+void MCP_transferdata(int bytecount, char* d0);
+
 void MCP_endTX();
-void MCP_send_message(int myID,int dataNUM, int data);
-void MCP_RECEIVE_MESSAGE();
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
