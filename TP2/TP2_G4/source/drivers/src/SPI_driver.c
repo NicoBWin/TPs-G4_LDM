@@ -9,7 +9,7 @@
  ******************************************************************************/
 
 // +Incluir el header propio (ej: #include "template.h")+
-#include "SPI_driver.h"
+#include "../headers/SPI_driver.h"
 #include "MK64F12.h"
 
 

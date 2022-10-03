@@ -71,7 +71,7 @@ void MCP_init(){
 	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b100)|MCP_CNF2_PRSEG2(0b111));
 	MCP_control(MCP_INST_WRITE, MCP_CNF2_ADDRESS, CNF2);
 
-	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFILL(1)|MCP_CNF3_PHSEG2(0b100));
+	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFIL(1)|MCP_CNF3_PHSEG2(0b100));
 	MCP_control(MCP_INST_WRITE, MCP_CNF3_ADDRESS, CNF3);
 
 
@@ -170,7 +170,7 @@ char* MCP_RECEIVE_MESSAGE()
 	datanum = MCP_reqread();
 	returnvalues[2]=datanum;
 	MCP_control(MCP_INST_READ,MCP_RXB0D0_ADDRESS,0xFF);
-	rawdata = MCP_reqread();
+	char rawdata=MCP_reqread();
 	returnvalues[3]=rawdata;
 	
 	//Borro el flag de rx lleno
@@ -189,7 +189,7 @@ char* MCP_RECEIVE_MESSAGE()
 char MCP_reqread()
 {
 	char rval=0;
-	rval = SPI_read_transfer();
+	//rval = SPI_read_transfer();
 	return rval;
 }
 void MCP_fillID(int myID) {
