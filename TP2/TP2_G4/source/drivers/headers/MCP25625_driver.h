@@ -64,8 +64,8 @@ void MCP_endTX();
 #define MCP_CNF2_PRSEG0(x)             (((char)(((char)(x)) << MCP_CNF2_PRSEG0SHIFT)))
 #define MCP_CNF3_SOFSHIFT	7
 #define MCP_CNF3_SOF(x)             (((char)(((char)(x)) << MCP_CNF3_SOFSHIFT)))
-#define MCP_CNF3_WAKFILLSHIFT	6
-#define MCP_CNF3_WAKFILL(x)             (((char)(((char)(x)) << MCP_CNF3_WAKFILLSHIFT)))
+#define MCP_CNF3_WAKFILSHIFT	6
+#define MCP_CNF3_WAKFILL(x)             (((char)(((char)(x)) << MCP_CNF3_WAKFILSHIFT)))
 #define MCP_CNF3_PHSEG2SHIFT	0
 #define MCP_CNF3_PHSEG2(x)             (((char)(((char)(x)) << MCP_CNF3_PHSEG2SHIFT)))
 
@@ -136,7 +136,45 @@ void MCP_endTX();
 #define MCP_CANCTRL_CLKPRESHIFT	0
 #define MCP_CANCTRL_CLKPRE(x)             (((char)(((char)(x)) << MCP_CANCTRL_CLKPRESHIFT)))
 
+#define MCP_TXB0SIDH_ADDRESS  0x31
+#define MCP_TXB0SIDL_ADDRESS  0x32
+#define MCP_TXB1SIDH_ADDRESS  0x41
+#define MCP_TXB1SIDL_ADDRESS  0x42
+#define MCP_TXB2SIDH_ADDRESS  0x51
+#define MCP_TXB2SIDL_ADDRESS  0x52 
 
+#define MCP_TXB0DLC_ADDRESS  0x35
+#define MCP_TXB1DLC_ADDRESS  0x45
+#define MCP_TXB2DLC_ADDRESS  0x55
+
+#define MCP_TXB0D0_ADDRESS    0x36
+#define MCP_TXB0D1_ADDRESS    0x37
+#define MCP_TXB0D2_ADDRESS    0x38
+#define MCP_TXB0D3_ADDRESS    0x39
+#define MCP_TXB0D4_ADDRESS    0x3A
+#define MCP_TXB0D5_ADDRESS    0x3B
+#define MCP_TXB0D6_ADDRESS    0x3C
+#define MCP_TXB0D7_ADDRESS    0x3D
+#define MCP_TXB1D0_ADDRESS    0x46
+#define MCP_TXB1D1_ADDRESS    0x47
+#define MCP_TXB1D2_ADDRESS    0x48
+#define MCP_TXB1D3_ADDRESS    0x49
+#define MCP_TXB1D4_ADDRESS    0x4A
+#define MCP_TXB1D5_ADDRESS    0x4B
+#define MCP_TXB1D6_ADDRESS    0x4C
+#define MCP_TXB1D7_ADDRESS    0x4D
+#define MCP_TXB2D0_ADDRESS    0x56
+#define MCP_TXB2D1_ADDRESS    0x57
+#define MCP_TXB2D2_ADDRESS    0x58
+#define MCP_TXB2D3_ADDRESS    0x59
+#define MCP_TXB2D4_ADDRESS    0x5A
+#define MCP_TXB2D5_ADDRESS    0x5B
+#define MCP_TXB2D6_ADDRESS    0x5C
+#define MCP_TXB2D7_ADDRESS    0x5D
+
+#define MCP_TXB0CTRL_ADDRESS    0x30
+#define MCP_TXB1CTRL_ADDRESS    0x40
+#define MCP_TXB2CTRL_ADDRESS    0x50
 /*******************************************************************************
  ******************************************************************************/
  #endif // _CARD_READER_H_

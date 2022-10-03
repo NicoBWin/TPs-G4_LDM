@@ -63,15 +63,15 @@ void MCP_init(){
 	// 1° RESETEO el controlador
 	SPI_transfer_enqueue(MCP_INST_RESET, false);
 
-	// 2° Configuro el tiempo de bit
+	// 2° Configuro el tiempo de bit	CHK
 	char CNF1=0,CNF2=0,CNF3=0;
-	CNF1 = (MCP_CNF1_SJW(0b01)|MCP_CNF1_BRP(0b10001));
+	CNF1 = (MCP_CNF1_SJW(0b11)|MCP_CNF1_BRP(0b00000));
 	MCP_control(MCP_INST_WRITE, MCP_CNF1_ADDRESS, CNF1);
 
-	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b010)|MCP_CNF2_PRSEG2(0)|MCP_CNF2_PRSEG1(0)|MCP_CNF2_PRSEG0(0));
+	CNF2 = (MCP_CNF2_BTL(1)|MCP_CNF2_SAM(1)|MCP_CNF2_PHSEG1(0b100)|MCP_CNF2_PRSEG2(0b111));
 	MCP_control(MCP_INST_WRITE, MCP_CNF2_ADDRESS, CNF2);
 
-	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFILL(1)|MCP_CNF3_PHSEG2(0b111));
+	CNF3 = (MCP_CNF3_SOF(1)|MCP_CNF3_WAKFIL(1)|MCP_CNF3_PHSEG2(0b100));
 	MCP_control(MCP_INST_WRITE, MCP_CNF3_ADDRESS, CNF3);
 
 
@@ -85,11 +85,11 @@ void MCP_init(){
 	setear -> MCP_RXM0SIDL_ADDRESS, 0x00 // Seteo la mask (L)
 	 */
 
-	// 4° Configurar modo de recepción (RXB0CTRL y RXB1CTRL, chapter 4.2)
+	// 4° Configurar modo de recepción (RXB0CTRL y RXB1CTRL, chapter 4.2) CHWCK
 	char RXB0CTRL=0, RXB1CTRL=0;
-	RXB0CTRL = (MCP_RXB0CTRL_RXM(0b00)|MCP_RXB0CTRL_BUKT(0));
+	RXB0CTRL = (MCP_RXB0CTRL_RXM(0b00)|MCP_RXB0CTRL_BUKT(1));
 	MCP_control(MCP_INST_WRITE, MCP_RXB0CTRL_ADDRESS, RXB0CTRL);
-	RXB1CTRL = (MCP_RXB1CTRL_RXM(0b00));
+	RXB1CTRL = (MCP_RXB1CTRL_RXM(0b11));
 	MCP_control(MCP_INST_WRITE, MCP_RXB1CTRL_ADDRESS, RXB1CTRL);
 
 	// 5° Borrar flags y habilitar interrupciones (CANINTF y CANINTE, chapter 4.7)
@@ -104,7 +104,7 @@ void MCP_init(){
 
 	// 6° Ponerlo en Normal Mode o Loopback
 	char CANCTRL=0;
-	CANCTRL = (MCP_CANCTRL_REQOP(0b000)|MCP_CANCTRL_ABAT(0)|MCP_CANCTRL_OSM(0)|MCP_CANCTRL_CLKEN(0)|MCP_CANCTRL_CLKPRE(0b00));
+	CANCTRL = (MCP_CANCTRL_REQOP(0b000)|MCP_CANCTRL_ABAT(1)|MCP_CANCTRL_OSM(1)|MCP_CANCTRL_CLKEN(1)|MCP_CANCTRL_CLKPRE(0b00));
 	MCP_control(MCP_INST_WRITE, MCP_CANCTRL_ADDRESS, CANCTRL);
 }
 
@@ -119,7 +119,59 @@ void MCP_control(char instruction,char address,char txdata){
 	SPI_transfer_enqueue(address, true);
 	SPI_transfer_enqueue(txdata, false);
 }
+void MCP_SEND_MESSAGE(int myID,int dataNUM, int data)
+{
+	static TXn=0;
+	//Solicito un buffer de TX
+	//MCP_polltxbuffer(); ESTA PREGUNTARIA SI HAY UNO LIBRE.
+	
+	//Lleno los datos de ID
+	MCP_fillID(myID);
+	//Lleno la cantidad de bytes a enviar
+	MCP_control(MCP_INST_WRITE,MCP_TXB0DLC_ADDRESS,dataNUM);
+	//Lleno los datos a enviar
+	MCP_control(MCP_INST_WRITE,MCP_TXB0D0_ADDRESS,data0);
+	//Solicito el envío del mensaje	
+	MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_ADDRESS,0b00001000);
+}
 
+void MCP_RECEIVE_MESSAGE()
+{
+	//Verifico que llego un mensaje en los flags 
+	//Leo la informacion de los buffers
+	//Borro el flag de rx lleno
+}
+int MCP_polltxbuffer() //WIP
+{
+	int i=0;
+	for (i=0; i<3, i++)
+	{
+		(MCP_INST_READ,MCP_TXREQ0_ADDRESS,0) 
+		//SPI POPR
+		if((MCP_INST_READ,MCP_TXREQ0_ADDRESS,0))
+	}
+}
+void MCP_fillID(int myID)
+{
+	char idH, idL;
+	idH = myID 
+	MCP_control(MCP_INST_WRITE,MCP_ TXB0SIDH_ADDRESS,idH);
+	MCP_control(MCP_INST_WRITE,MCP_TXB0SIDL_ADDRESS,idL);
+}
+
+
+void MCP_transferdata(int bytecount, char* d0){
+	static int i=0;
+	if(bytecount<9)
+	{
+		if(i=0)
+		{
+		MCP_control(MCP_INST_WRITE,MCP_TXB0CTRL_TXB0DLC_ADDRESS,MCP_TXB0CTRL_TXB0DLC);
+		MCP_control(MCP_INST_WRITE,MCP_TXBxCTRL_ADDRESS,);
+
+		}
+	}
+}
 void MCP_endTX(){
 	SPI_PCS_dis();
 }
