@@ -9,8 +9,6 @@
  ******************************************************************************/
 // Drivers
 #include "drivers/headers/uart.h"
-#include "drivers/headers/I2C.h"
-#include "drivers/headers/Accelerometer.h"
 
 // Timer
 #include "timer/timer.h"
@@ -48,8 +46,7 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static SPROCESSDATA RollPitch;
-//static char UART_TXmsg[BUFFER_SIZE];
+
 
 /*******************************************************************************
  *******************************************************************************
@@ -65,54 +62,13 @@ void App_Init(void) {
   uart_cfg_t config = {.baudrate = UARTBAUDRATE};
   uartInit(id, config);
 
-  // I2C init
-  I2C_init(i2c_baudrate_111607Hz, 0); //  INICIALIZO EL I2C i2c_baudrate_111607Hz
-  test = 0;
-  id_polling = timerGetId();
-
-  // MCP-CAN init
-  MCP_init();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
 
-	// Integracion I2C con UART basica
-	if ( xd == 0) {
-		initAccelerometer();
-		xd = 1;
-		timerStart(id_polling, TIMER_MS2TICKS(TIME_POLLING), 0 , NULL);
-		// ID que se usará para el polling de la petición de datos al acelerometro
-	}
-	if(get_alreadyInit()) {
-		if(data_already_proccess && timerExpired(id_polling)) { // && timerExpired(id_polling)
-			ReadAccelMagnData();
-			test = 1;
-			data_already_proccess = false;
-			timerStart(id_polling, TIMER_MS2TICKS(TIME_POLLING), 0 , NULL);
-		}
-		if (  get_alreadyread_AccelMagnData() )	{
-			SRAWDATA aceleration = get_aceleration();
-			proccess_data(aceleration);
-			data_already_proccess = true;
-			set_alreadyread_AccelMagnData(0);
-		}
-	}
+	// DO ALGO
 
-	char UART_TXmsg[20] = "104RxxxxCxxxx\r\n"; //String a transmitir
-
-	// Acomodo los datos para enviarlos como char
-	RollPitch = get_process_data();
-	char RollNum[4];
-	intochar(RollPitch.roll, RollNum);
-	char PitchNum[4];
-	intochar(RollPitch.pitch, PitchNum);
-
-	for(int i=0;i<4;i++){	//Acomoda los CHARs de pitch y roll dentro del string
-		UART_TXmsg[i+4] = RollNum[i];	//ESTA MAL PERO ROLL Y PTCH ESTAN INVERTIDOS
-		UART_TXmsg[i+9] = PitchNum[i];
-	}
-	uartWriteMsg(UARTID, UART_TXmsg, 15);
 }
 
 /*******************************************************************************
