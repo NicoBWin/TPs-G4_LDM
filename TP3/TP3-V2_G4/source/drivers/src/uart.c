@@ -96,7 +96,6 @@ void uartInit (uint8_t id, uart_cfg_t config){
 		SIM->SCGC1 |= SCGC_CONFIG(id);
 	}
 
-
 	PORT_TYPE[id]->PCR[PIN2NUM(UART_TX_PIN[id])] = 0x0; //Clear all bits
 	PORT_TYPE[id]->PCR[PIN2NUM(UART_TX_PIN[id])] = PORT_PCR_MUX(PORT_Alt3); //Set MUX to Alt3 in UART4
 	//----------------------------------
@@ -105,6 +104,23 @@ void uartInit (uint8_t id, uart_cfg_t config){
 
 	UARTN->C5 &= ~UART_C5_TDMAS_MASK;
 	UARTN->C2 = UART_C2_TE_MASK | UART_C2_RE_MASK | UART_C2_RIE_MASK;
+
+	switch (id.parity) {
+		case ODD_PARITY_UART:
+			uart_p->C1 |= UART_C1_PE_MASK;
+			uart_p->C1 |= UART_C1_PT_MASK;
+			uart_p->C1 |= UART_C1_M_MASK; //parity
+			break;
+		case EVEN_PARITY_UART:
+			uart_p->C1 |= UART_C1_PE_MASK;
+			uart_p->C1 &= (~UART_C1_PT_MASK);
+			uart_p->C1 |= UART_C1_M_MASK;
+			break;
+		case NO_PARITY_UART:
+			uart_p->C1 &= ~UART_C1_M_MASK;
+			uart_p->C1 &= (~UART_C1_PE_MASK);
+			break;
+	}
 
 	UART_SetBaudRate(UARTN, config.baudrate);
 
