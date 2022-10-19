@@ -683,7 +683,7 @@ typedef struct {
 /** Peripheral ADC0 base address */
 #define ADC0_BASE                                (0x4003B000u)
 /** Peripheral ADC0 base pointer */
-#define ADC0                                     ((ADC_Type *)ADC0_BASE)
+#define DAC0                                     ((ADC_Type *)ADC0_BASE)
 /** Peripheral ADC1 base address */
 #define ADC1_BASE                                (0x400BB000u)
 /** Peripheral ADC1 base pointer */
