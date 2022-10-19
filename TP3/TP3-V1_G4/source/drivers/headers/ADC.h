@@ -45,26 +45,40 @@ typedef enum {
 	ADC_mB,
 } ADCMux_t;
 
+typedef enum {
+	ADC_0,
+	ADC_1,
+} ADC_n;
+
+typedef enum {
+	input_clock,
+	input_clock2,	// Clock/2
+	input_clock4,	// Clock/4
+	input_clock8,	// Clock/8
+} ADCClock_Divide;
+
 typedef ADC_Type *ADC_t;
 typedef uint8_t ADCChannel_t; /* Channel 0-23 */
 typedef uint16_t ADCData_t;
+
+typedef void (*adcCallback_t)(void);
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-void 		ADC_Init(void);
+void 		ADC_Init (ADC_n, ADCBits_t, ADCCycles_t, ADCClock_Divide, ADCMux_t, ADCChannel_t);
+void 		ADC_SetResolution(ADC_t, ADCBits_t);
+ADCBits_t 	ADC_GetResolution(ADC_t);
 
 void 		ADC_SetInterruptMode(ADC_t, bool);
 bool 		ADC_IsInterruptPending(ADC_t);
 void 		ADC_ClearInterruptFlag(ADC_t);
 
-void 		ADC_SetResolution(ADC_t, ADCBits_t);
-ADCBits_t 	ADC_GetResolution(ADC_t);
-void 		ADC_SetCycles(ADC_t, ADCCycles_t);
 ADCCycles_t ADC_GetCycles(ADC_t);
-void 		ADC_SetHardwareAverage(ADC_t, ADCTaps_t);
 ADCTaps_t   ADC_GetHardwareAverage(ADC_t);
+void 		ADC_SetHardwareAverage(ADC_t, ADCTaps_t);
+void 		ADC_SetCycles(ADC_t, ADCCycles_t);
 
 bool 		ADC_Calibrate(ADC_t);
 
@@ -74,7 +88,7 @@ bool 		ADC_IsReady(ADC_t);
 
 ADCData_t 	ADC_getData(ADC_t);
 
-
+void ADC_SetInterruptCallback(ADC_n, adc_callback_t);
 /*******************************************************************************
  ******************************************************************************/
 

@@ -31,32 +31,20 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+typedef ADC_Type *ADC_t;	//Puntero para trabajar con un ADC o el otro
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
 bool ADC_interrupt[2] = {false, false};
 
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static void falta_envido (int);+
-
-
-/*******************************************************************************
- * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
-
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
+static ADCData_t currentValue[2] = {0, 0};
+static ADCChannel_t channels[2]= {0, 0};
 
-// +ej: static int temperaturas_actuales[4];+
+static adc_callback_t adcCallbacks[2];
 
 
 /*******************************************************************************
@@ -64,103 +52,102 @@ bool ADC_interrupt[2] = {false, false};
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+//**************** INIT CONFIG ***************************
+void ADC_Init (ADC_n adcN, ADCBits_t resolution, ADCCycles_t cycles, ADCClock_Divide divide_select, ADCMux_t mux, ADCChannel_t channel) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 
-void ADC_Init (void)
-{
-	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
-	SIM->SCGC3 |= SIM_SCGC3_ADC1_MASK;
+	if(adcN == ADC_0){
+		SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
+		NVIC_EnableIRQ(ADC0_IRQn);
+	}
+	else {
+		SIM->SCGC3 |= SIM_SCGC3_ADC1_MASK;
+		ADC1->CFG1 = ADC_CFG1_ADIV(divide_select);
+		NVIC_EnableIRQ(ADC1_IRQn);
+	}
 
-	NVIC_EnableIRQ(ADC0_IRQn);
-	NVIC_EnableIRQ(ADC1_IRQn);
-
-	ADC0->CFG1 = ADC_CFG1_ADIV(0x00);
-	ADC1->CFG1 = ADC_CFG1_ADIV(0x00);
-
-	ADC_SetResolution(ADC0, ADC_b12);
-	ADC_SetCycles(ADC0, ADC_c4);
-	ADC_Calibrate(ADC0);
-
-
+	// Bus Clock
+	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_ADICLK_MASK) | ADC_CFG1_ADICLK(bus_clock) ;
+	adc->CFG1 = ADC_CFG1_ADIV(divide_select);
+	ADC_SetResolution(adcN, resolution);
+	ADC_SetCycles(adcN, cycles);
+	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
+	channels[adcN] = channel;
 }
 
-
-void ADC_SetResolution (ADC_t adc, ADCBits_t bits)
-{
+void ADC_SetResolution (ADC_n adcN, ADCBits_t bits) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_MODE_MASK) | ADC_CFG1_MODE(bits);
 }
 
-void ADC_SetCycles (ADC_t adc, ADCCycles_t cycles)
-{
-	if (cycles & ~ADC_CFG2_ADLSTS_MASK)
-	{
+void ADC_SetCycles (ADC_n adcN, ADCCycles_t cycles) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+	if (cycles & ~ADC_CFG2_ADLSTS_MASK)	{
 		adc->CFG1 &= ~ADC_CFG1_ADLSMP_MASK;
 	}
-	else
-	{
+	else {
 		adc->CFG1 |= ADC_CFG1_ADLSMP_MASK;
 		adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_ADLSTS_MASK) | ADC_CFG2_ADLSTS(cycles);
 	}
 }
 
 
-
-void ADC_SetInterruptMode (ADC_t adc, bool mode)
-{
-	if (adc == ADC0)
+//**************** INTERRUPT Fn ***************************
+void ADC_SetInterruptMode (ADC_n adcN, bool mode) {
+	if (adcN == ADC_0)
 		ADC_interrupt[0] = mode;
-	else if (adc == ADC1)
+	else if (adcN == ADC_1)
 		ADC_interrupt[1] = mode;
 }
 
-bool ADC_IsInterruptPending (ADC_t adc)
-{
+bool ADC_IsInterruptPending (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	return adc->SC1[0] & ADC_SC1_COCO_MASK;
 }
 
-void ADC_ClearInterruptFlag (ADC_t adc)
-{
+void ADC_ClearInterruptFlag (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	adc->SC1[0] = 0x00;
 }
 
 
-
-ADCBits_t ADC_GetResolution (ADC_t adc)
-{
+//**************** Getters ***************************
+ADCBits_t ADC_GetResolution (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	return adc->CFG1 & ADC_CFG1_MODE_MASK;
 }
 
-
-
-ADCCycles_t ADC_GetSCycles (ADC_t adc)
-{
+ADCCycles_t ADC_GetSCycles (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	if (adc->CFG1 & ADC_CFG1_ADLSMP_MASK)
 		return ADC_c4;
 	else
 		return adc->CFG2 & ADC_CFG2_ADLSTS_MASK;
 }
 
-void ADC_SetHardwareAverage (ADC_t adc, ADCTaps_t taps)
-{
-	if (taps & ~ADC_SC3_AVGS_MASK)
-	{
-		adc->SC3 &= ~ADC_SC3_AVGE_MASK;
-	}
-	else
-	{
-		adc->SC3 |= ADC_SC3_AVGE_MASK;
-		adc->SC3 = (adc->SC3 & ~ADC_SC3_AVGS_MASK) | ADC_SC3_AVGS(taps);
-	}
-}
-ADCTaps_t ADC_GetHardwareAverage (ADC_t adc)
-{
+ADCTaps_t ADC_GetHardwareAverage (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	if (adc->SC3 & ADC_SC3_AVGE_MASK)
 		return ADC_t1;
 	else
 		return adc->SC3 & ADC_SC3_AVGS_MASK;
 }
 
-bool ADC_Calibrate (ADC_t adc)
-{
+//**************** Setter ***************************
+void ADC_SetHardwareAverage (ADC_n adcN, ADCTaps_t taps) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+	if (taps & ~ADC_SC3_AVGS_MASK)	{
+		adc->SC3 &= ~ADC_SC3_AVGE_MASK;
+	}
+	else {
+		adc->SC3 |= ADC_SC3_AVGE_MASK;
+		adc->SC3 = (adc->SC3 & ~ADC_SC3_AVGS_MASK) | ADC_SC3_AVGS(taps);
+	}
+}
+
+//**************** Calibration ***************************
+bool ADC_Calibrate (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	int32_t  Offset		= 0;
 	uint32_t Minus	[7] = {0,0,0,0,0,0,0};
 	uint32_t Plus	[7] = {0,0,0,0,0,0,0};
@@ -235,29 +222,48 @@ bool ADC_Calibrate (ADC_t adc)
 	return true;
 }
 
-void ADC_Start (ADC_t adc, ADCChannel_t channel, ADCMux_t mux)
-{
-	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
+//**************** ADC ***************************
+void ADC_Start (ADC_n adcN, ADCChannel_t channel, ADCMux_t mux) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+	//adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
+	adc->SC1[adcN] = ADC_SC1_AIEN(ADC_interrupt[adcN]) | ADC_SC1_ADCH(channel);
 
-	if (adc == ADC0)
-		adc->SC1[0] = ADC_SC1_AIEN(ADC_interrupt[0]) | ADC_SC1_ADCH(channel);
-	else if (adc == ADC1)
-		adc->SC1[0] = ADC_SC1_AIEN(ADC_interrupt[1]) | ADC_SC1_ADCH(channel);
 }
 
-bool ADC_IsReady (ADC_t adc)
-{
-	return adc->SC1[0] & ADC_SC1_COCO_MASK;
-}
-
-ADCData_t ADC_getData (ADC_t adc)
-{
+ADCData_t ADC_getData (ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	return adc->R[0];
 }
 
+ADCData_t ADC_getValue(ADC_n adcN){
+	return currentValue[adcN];
+}
+
+//bool ADC_IsReady (ADC_t adc) {
+//	return adc->SC1[0] & ADC_SC1_COCO_MASK;
+//}
 
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn){
+	adcCallbacks[adcN] = callback_fn;
+}
+
+__ISR__ ADC0_IRQHandler(void){
+	currentValue[ADC_0] = ADC_getData(ADC_0);
+
+	if(adcCallbacks[ADC_0]){
+		adcCallbacks[ADC_0]();
+	}
+}
+
+__ISR__ ADC1_IRQHandler(void){
+	currentValue[ADC_1] = ADC_getData(ADC_1);
+
+	if(adcCallbacks[ADC_1]){
+		adcCallbacks[ADC_1]();
+	}
+}
