@@ -16,27 +16,10 @@
 #define DAC_DATL_DATA0_WIDTH 8
 
 /*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-
-/*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-
-/*******************************************************************************
- * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-
-/*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-
 void DAC_Init (DAC_n dacN) {
 	DAC_t dac = (dacN == DAC_0) ? DAC0 : DAC1;
 
@@ -48,9 +31,10 @@ void DAC_Init (DAC_n dacN) {
 	dac->C0 = DAC_C0_DACEN_MASK | DAC_C0_DACRFS_MASK | DAC_C0_DACTRGSEL_MASK;
 }
 
-void DAC_SetData (DAC_t dac, DACData_t data)
-{
+//USE DMA?
+
+void DAC_SetData (DAC_n dacN, DACData_t data) {
+	DAC_t dac = (dacN == DAC_0) ? DAC0 : DAC1;
 	dac->DAT[0].DATL = DAC_DATL_DATA0(data);
 	dac->DAT[0].DATH = DAC_DATH_DATA1(data >> DAC_DATL_DATA0_WIDTH);
 }
-
