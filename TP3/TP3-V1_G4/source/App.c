@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-
+#include "drivers/headers/FSKd.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -61,11 +61,22 @@ void App_Init(void) {
   int id = UARTID;
   uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = ODD_PARITY_UART};
   uartInit(id, config);
+  setup_params(1200, 2200, 10);
+  int bitstream = 0b0110010001;
+  float *test_modulate = modulate(bitstream);
+  FILE *fp;
+  fp = fopen("modulate.txt", "w");
+  for (int i; i < 5500; i++)
+ {
+    fprintf(fp, "%f", test_modulate[i]);
+    fprintf(fp, "%s", "\n");
+ }
 
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
+
 
 	// DO ALGO
 

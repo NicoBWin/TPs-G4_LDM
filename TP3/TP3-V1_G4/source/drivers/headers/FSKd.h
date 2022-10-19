@@ -10,13 +10,15 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-
+#include <stdint.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
+#define TBIT 833 // en micro sec
+#define SIZE-BITSTREAM 11 // START + 8Bitdata + PAR + STOP 
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -43,7 +45,8 @@
 */
 // +ej: char lcd_goto (int fil, int col);+
 
-
+void setup_params(uint32_t f1_xd, uint32_t f2_xd, uint16_t resolución);
+float* modulate(uint32_t bitstream);
 /*******************************************************************************
  ******************************************************************************/
 
