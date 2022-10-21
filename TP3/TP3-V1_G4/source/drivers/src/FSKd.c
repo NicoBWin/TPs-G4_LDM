@@ -13,7 +13,7 @@
 #include "math.h"
 #include "../headers/FSKd.h"
 /*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ * CONSTANT AND MACRO DEFINITIONS USING DEFINE
  ******************************************************************************/
 
 
