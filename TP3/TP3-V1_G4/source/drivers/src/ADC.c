@@ -44,7 +44,7 @@ bool ADC_interrupt[2] = {false, false};
 static ADCData_t currentValue[2] = {0, 0};
 static ADCChannel_t channels[2]= {0, 0};
 
-static adc_callback_t adcCallbacks[2];
+static adcCallback_t adcCallbacks[2];
 
 
 /*******************************************************************************
@@ -53,31 +53,33 @@ static adc_callback_t adcCallbacks[2];
  *******************************************************************************
  ******************************************************************************/
 //**************** INIT CONFIG ***************************
-void ADC_Init (ADC_n adcN, ADCBits_t resolution, ADCCycles_t cycles, ADCClock_Divide divide_select, ADCMux_t mux, ADCChannel_t channel) {
-	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+// Channel -> 12 | Es el PB2
+void ADC_Init (ADC_Config_t adcCon) {
+	ADC_t adc = (adcCon.adcN == ADC_0) ? ADC0 : ADC1;
 
-	if(adcN == ADC_0){
+	if(adcCon.adcN == ADC_0){
 		SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 		NVIC_EnableIRQ(ADC0_IRQn);
 	}
 	else {
 		SIM->SCGC3 |= SIM_SCGC3_ADC1_MASK;
-		ADC1->CFG1 = ADC_CFG1_ADIV(divide_select);
 		NVIC_EnableIRQ(ADC1_IRQn);
 	}
 
-	// Bus Clock
-	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_ADICLK_MASK) | ADC_CFG1_ADICLK(bus_clock) ;
-	adc->CFG1 = ADC_CFG1_ADIV(divide_select);
-	ADC_SetResolution(adcN, resolution);
-	ADC_SetCycles(adcN, cycles);
-	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
-	channels[adcN] = channel;
+	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_ADICLK_MASK) | ADC_CFG1_ADICLK(00); // Bus Clock
+	adc->CFG1 |= ADC_CFG1_ADIV(adcCon.divide_select);
+
+	ADC_SetResolution(adcCon.adcN, adcCon.resolution);
+	ADC_SetCycles(adcCon.adcN, adcCon.cycles);
+
+	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(adcCon.mux);
+
+	channels[adcCon.adcN] = adcCon.channel;
 }
 
 void ADC_SetResolution (ADC_n adcN, ADCBits_t bits) {
 	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
-	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_MODE_MASK) | ADC_CFG1_MODE(bits);
+	adc->CFG1 |= (adc->CFG1 & ~ADC_CFG1_MODE_MASK) | ADC_CFG1_MODE(bits);
 }
 
 void ADC_SetCycles (ADC_n adcN, ADCCycles_t cycles) {
@@ -87,7 +89,7 @@ void ADC_SetCycles (ADC_n adcN, ADCCycles_t cycles) {
 	}
 	else {
 		adc->CFG1 |= ADC_CFG1_ADLSMP_MASK;
-		adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_ADLSTS_MASK) | ADC_CFG2_ADLSTS(cycles);
+		adc->CFG2 |= (adc->CFG2 & ~ADC_CFG2_ADLSTS_MASK) | ADC_CFG2_ADLSTS(cycles);
 	}
 }
 
@@ -223,11 +225,9 @@ bool ADC_Calibrate (ADC_n adcN) {
 }
 
 //**************** ADC ***************************
-void ADC_Start (ADC_n adcN, ADCChannel_t channel, ADCMux_t mux) {
+void ADC_Start (ADC_n adcN, ADCMux_t mux) {
 	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
-	//adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(mux);
-	adc->SC1[adcN] = ADC_SC1_AIEN(ADC_interrupt[adcN]) | ADC_SC1_ADCH(channel);
-
+	adc->SC1[adcN] = ADC_SC1_AIEN(ADC_interrupt[adcN]) | ADC_SC1_ADCH(channels[adcN]);
 }
 
 ADCData_t ADC_getData (ADC_n adcN) {
@@ -243,15 +243,14 @@ ADCData_t ADC_getValue(ADC_n adcN){
 //	return adc->SC1[0] & ADC_SC1_COCO_MASK;
 //}
 
+void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn){
+	adcCallbacks[adcN] = callback_fn;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn){
-	adcCallbacks[adcN] = callback_fn;
-}
-
 __ISR__ ADC0_IRQHandler(void){
 	currentValue[ADC_0] = ADC_getData(ADC_0);
 

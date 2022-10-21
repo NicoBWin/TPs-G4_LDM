@@ -105,20 +105,20 @@ void uartInit (uint8_t id, uart_cfg_t config){
 	UARTN->C5 &= ~UART_C5_TDMAS_MASK;
 	UARTN->C2 = UART_C2_TE_MASK | UART_C2_RE_MASK | UART_C2_RIE_MASK;
 
-	switch (id.parity) {
+	switch (config.parity) {
 		case ODD_PARITY_UART:
-			uart_p->C1 |= UART_C1_PE_MASK;
-			uart_p->C1 |= UART_C1_PT_MASK;
-			uart_p->C1 |= UART_C1_M_MASK; //parity
+			UARTN->C1 |= UART_C1_PE_MASK;
+			UARTN->C1 |= UART_C1_PT_MASK;
+			UARTN->C1 |= UART_C1_M_MASK; //parity
 			break;
 		case EVEN_PARITY_UART:
-			uart_p->C1 |= UART_C1_PE_MASK;
-			uart_p->C1 &= (~UART_C1_PT_MASK);
-			uart_p->C1 |= UART_C1_M_MASK;
+			UARTN->C1 |= UART_C1_PE_MASK;
+			UARTN->C1 &= (~UART_C1_PT_MASK);
+			UARTN->C1 |= UART_C1_M_MASK;
 			break;
 		case NO_PARITY_UART:
-			uart_p->C1 &= ~UART_C1_M_MASK;
-			uart_p->C1 &= (~UART_C1_PE_MASK);
+			UARTN->C1 &= ~UART_C1_M_MASK;
+			UARTN->C1 &= (~UART_C1_PE_MASK);
 			break;
 	}
 
