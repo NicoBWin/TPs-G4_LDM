@@ -57,38 +57,54 @@ typedef enum {
 	input_clock8,	// Clock/8
 } ADCClock_Divide;
 
+
 typedef ADC_Type *ADC_t;
 typedef uint8_t ADCChannel_t; /* Channel 0-23 */
 typedef uint16_t ADCData_t;
+
+typedef struct{
+	ADC_n adcN;
+	ADCBits_t resolution;
+	ADCCycles_t cycles;
+	ADCClock_Divide divide_select;
+	ADCMux_t mux;
+	ADCChannel_t channel;	// 12 -> A0 = PTB2
+} ADC_Config_t;
 
 typedef void (*adcCallback_t)(void);
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+void 		ADC_Init (ADC_Config_t);
+void 		ADC_SetResolution(ADC_n adcN, ADCBits_t bits);
+void 		ADC_SetCycles(ADC_n adcN, ADCCycles_t cycles);
 
-void 		ADC_Init (ADC_n, ADCBits_t, ADCCycles_t, ADCClock_Divide, ADCMux_t, ADCChannel_t);
-void 		ADC_SetResolution(ADC_t, ADCBits_t);
-ADCBits_t 	ADC_GetResolution(ADC_t);
+void ADC_SetInterruptMode (ADC_n adcN, bool mode);
+bool ADC_IsInterruptPending (ADC_n adcN);
+void ADC_ClearInterruptFlag (ADC_n adcN);
 
-void 		ADC_SetInterruptMode(ADC_t, bool);
-bool 		ADC_IsInterruptPending(ADC_t);
-void 		ADC_ClearInterruptFlag(ADC_t);
+ADCBits_t ADC_GetResolution (ADC_n adcN);
+ADCCycles_t ADC_GetSCycles (ADC_n adcN);
+ADCTaps_t ADC_GetHardwareAverage (ADC_n adcN);
 
-ADCCycles_t ADC_GetCycles(ADC_t);
-ADCTaps_t   ADC_GetHardwareAverage(ADC_t);
-void 		ADC_SetHardwareAverage(ADC_t, ADCTaps_t);
-void 		ADC_SetCycles(ADC_t, ADCCycles_t);
+void ADC_SetHardwareAverage (ADC_n adcN, ADCTaps_t taps);
 
-bool 		ADC_Calibrate(ADC_t);
+bool ADC_Calibrate (ADC_n adcN);
 
-void 		ADC_Start(ADC_t, ADCChannel_t, ADCMux_t);
+void ADC_Start (ADC_n adcN, ADCMux_t mux);
+ADCData_t ADC_getData (ADC_n adcN);
+ADCData_t ADC_getValue(ADC_n adcN);
 
+<<<<<<< HEAD
 bool 		ADC_IsReady(ADC_t);
 
 ADCData_t 	ADC_getData(ADC_t);
 
 void ADC_SetInterruptCallback(ADC_n, adcCallback_t);
+=======
+void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn);
+>>>>>>> cffd2e897963a796856b0ae73b098ca37f95f064
 /*******************************************************************************
  ******************************************************************************/
 

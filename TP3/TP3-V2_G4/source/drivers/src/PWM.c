@@ -56,7 +56,42 @@
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+void PWM_Init (void) {
 
+	// PTC 1 as PWM
+		PCRstr UserPCR;
+
+		UserPCR.PCR=false;			// Default All false, Set only those needed
+
+		UserPCR.FIELD.DSE=true;
+		UserPCR.FIELD.MUX=PORT_mAlt4;
+		UserPCR.FIELD.IRQC=PORT_eDisabled;
+
+		PORT_Configure2 (PORTC,1,UserPCR);
+
+	// PTC 8 as GPIO
+		UserPCR.PCR=false;			// Default All false, Set only those needed
+
+		UserPCR.FIELD.DSE=true;
+		UserPCR.FIELD.MUX=PORT_mGPIO;
+		UserPCR.FIELD.IRQC=PORT_eDisabled;
+
+		PORT_Configure2 (PORTC,8,UserPCR);
+
+		GPIO_SetDirection(PTC, 8, GPIO__OUT);
+
+
+
+
+
+	FTM_SetPrescaler(FTM0, FTM_PSC_x32);
+	FTM_SetModulus(FTM0, PWM_modulus);
+	FTM_SetOverflowMode(FTM0, true);
+	FTM_SetWorkingMode(FTM0, 0, FTM_mPulseWidthModulation);			// MSA  / B
+	FTM_SetPulseWidthModulationLogic(FTM0, 0, FTM_lAssertedHigh);   // ELSA / B
+	FTM_SetCounter(FTM0, 0, PWM_duty);
+	FTM_StartClock(FTM0);
+}
 
 
 /*******************************************************************************

@@ -30,7 +30,7 @@ typedef enum {
  ******************************************************************************/
 void DAC_Init	 (void);
 
-void DAC_SetData (DAC_t, DACData_t);
+void DAC_SetData (DAC_n dacN, DACData_t data);
 
 void DAC_PISR (void);
 
