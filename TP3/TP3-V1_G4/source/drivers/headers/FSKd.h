@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -45,8 +46,8 @@
 */
 // +ej: char lcd_goto (int fil, int col);+
 
-void setup_params(uint32_t f1_xd, uint32_t f2_xd, uint16_t resolución);
-float* modulate(uint32_t bitstream);
+void setup_params(uint32_t f1_xd, uint32_t f2_xd, uint16_t resolucion, uint16_t scaling_factor);
+void modulate(int bitstream);
 /*******************************************************************************
  ******************************************************************************/
 

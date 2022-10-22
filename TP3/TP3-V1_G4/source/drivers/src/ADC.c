@@ -44,7 +44,7 @@ bool ADC_interrupt[2] = {false, false};
 static ADCData_t currentValue[2] = {0, 0};
 static ADCChannel_t channels[2]= {0, 0};
 
-static adc_callback_t adcCallbacks[2];
+static adcCallback_t adcCallbacks[2];
 
 
 /*******************************************************************************
@@ -54,7 +54,7 @@ static adc_callback_t adcCallbacks[2];
  ******************************************************************************/
 //**************** INIT CONFIG ***************************
 void ADC_Init (ADC_n adcN, ADCBits_t resolution, ADCCycles_t cycles, ADCClock_Divide divide_select, ADCMux_t mux, ADCChannel_t channel) {
-	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+	ADC_t adc = (adcN == ADC_0) ? ADC_0 : ADC_1;
 
 	if(adcN == ADC_0){
 		SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;

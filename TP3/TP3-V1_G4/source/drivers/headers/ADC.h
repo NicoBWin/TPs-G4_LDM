@@ -88,7 +88,7 @@ bool 		ADC_IsReady(ADC_t);
 
 ADCData_t 	ADC_getData(ADC_t);
 
-void ADC_SetInterruptCallback(ADC_n, adc_callback_t);
+void ADC_SetInterruptCallback(ADC_n, adcCallback_t);
 /*******************************************************************************
  ******************************************************************************/
 

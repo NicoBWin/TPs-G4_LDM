@@ -62,7 +62,7 @@ static int nsamples_base;
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-void setup_params(uint32_t f1_xd, uint32_t f0_xd, uint16_t resolucion)
+void setup_params(uint32_t f1_xd, uint32_t f0_xd, uint16_t resolucion, uint16_t scaling_factor)
 {
   int fmax=0;
   int fmin = 0;
@@ -79,22 +79,22 @@ void setup_params(uint32_t f1_xd, uint32_t f0_xd, uint16_t resolucion)
     fmin = f0;
   }
   fs = resolucion * fmax;
-  fb = fmin * maximo_comun_divisor(f1,f0);
+  fb = maximo_comun_divisor(f1,f0);
   delta0 = f0 / fb;
   delta1 = f1 / fb;
   nsamples_base = (1 / fb) * fs;
   Ts = 1 / fs;
-  *seno_base = malloc(nsamples_base * sizeof( float ));
+  seno_base = (float*)malloc(nsamples_base * sizeof( float ));
   for( int i = 0; i < nsamples_base; i++)
   {
-    seno_base[i] = sin(2 * M_PI * fb * Ts * i);
+    seno_base[i] = (float)scaling_factor*sin(2 * M_PI * fb * Ts * i);
   }
 
 }
-float* modulate(int bitstream)
+void modulate(int bitstream)
 {
   int nsample = fs * TBIT*pow(10, -6) * 8 ;
-  float *fsk_msg = malloc(nsample * sizeof(float));
+  float *fsk_msg = (float*)malloc(nsample * sizeof(float));
   int i = 0, deltatemp;
   int counter = 0;
   
