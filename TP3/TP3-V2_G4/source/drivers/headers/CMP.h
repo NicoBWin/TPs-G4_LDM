@@ -1,15 +1,16 @@
 /***************************************************************************/ /**
-  @file     template.h
-  @brief    template
+  @file     CMP.h
+  @brief    CMP
   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
  ******************************************************************************/
-#ifndef _TEMPLATE_H_
-#define _TEMPLATE_H_
+#ifndef _CMP_H_
+#define _CMP_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
+#include <stdint.h>
+#include <stdbool.h>
 
 
 /*******************************************************************************
@@ -35,16 +36,16 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-/**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
-*/
-// +ej: char lcd_goto (int fil, int col);+
+
 
 
 /*******************************************************************************
  ******************************************************************************/
 
-#endif // _TEMPLATE_H_
+#endif // _CMP_H_
+
+
+
+
+
+
