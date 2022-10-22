@@ -9,6 +9,7 @@
  ******************************************************************************/
 // Drivers
 #include "drivers/headers/uart.h"
+#include "drivers/headers/ADC.h"
 
 // Timer
 #include "timer/timer.h"
@@ -61,16 +62,12 @@ void App_Init(void) {
   int id = UARTID;
   uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = ODD_PARITY_UART};
   uartInit(id, config);
-  setup_params(1200, 2200, 10);
-  int bitstream = 0b0110010001;
-  float *test_modulate = modulate(bitstream);
-  FILE *fp;
-  fp = fopen("modulate.txt", "w");
-  for (int i; i < 5500; i++)
- {
-    fprintf(fp, "%f", test_modulate[i]);
-    fprintf(fp, "%s", "\n");
- }
+
+  ADC_Config_t adcConfig = {.adcN = ADC_0, .resolution = ADC_b16, .cycles = ADC_c16, .divide_select = input_clock, .mux = ADC_mA, .channel = 12};
+  ADC_Init (adcConfig);
+
+
+
 
 }
 
@@ -78,8 +75,20 @@ void App_Init(void) {
 void App_Run(void) {
 
 
+
 	// DO ALGO
 
+
+	setup_params(1200, 2200, 10);
+	  int bitstream = 0b0110010001;
+	  float *test_modulate = modulate(bitstream);
+	  FILE *fp;
+	  fp = fopen("modulate.txt", "w");
+	  for (int i; i < 5500; i++)
+	 {
+	    fprintf(fp, "%f", test_modulate[i]);
+	    fprintf(fp, "%s", "\n");
+	 }
 }
 
 /*******************************************************************************
