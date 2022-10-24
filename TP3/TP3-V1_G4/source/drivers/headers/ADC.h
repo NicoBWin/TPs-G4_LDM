@@ -92,19 +92,14 @@ void ADC_SetHardwareAverage (ADC_n adcN, ADCTaps_t taps);
 
 bool ADC_Calibrate (ADC_n adcN);
 
-void ADC_Start (ADC_n adcN, ADCMux_t mux);
+void ADC_Start (ADC_n adcN);
 ADCData_t ADC_getData (ADC_n adcN);
 ADCData_t ADC_getValue(ADC_n adcN);
 
-<<<<<<< HEAD
-bool 		ADC_IsReady(ADC_t);
+bool ADC_IsReady(ADC_n adcN);
 
-ADCData_t 	ADC_getData(ADC_t);
-
-void ADC_SetInterruptCallback(ADC_n, adcCallback_t);
-=======
 void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn);
->>>>>>> cffd2e897963a796856b0ae73b098ca37f95f064
+
 /*******************************************************************************
  ******************************************************************************/
 

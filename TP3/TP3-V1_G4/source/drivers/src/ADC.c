@@ -53,15 +53,8 @@ static adcCallback_t adcCallbacks[2];
  *******************************************************************************
  ******************************************************************************/
 //**************** INIT CONFIG ***************************
-<<<<<<< HEAD
-void ADC_Init (ADC_n adcN, ADCBits_t resolution, ADCCycles_t cycles, ADCClock_Divide divide_select, ADCMux_t mux, ADCChannel_t channel) {
-	ADC_t adc = (adcN == ADC_0) ? ADC_0 : ADC_1;
-=======
-// Channel -> 12 | Es el PB2
 void ADC_Init (ADC_Config_t adcCon) {
 	ADC_t adc = (adcCon.adcN == ADC_0) ? ADC0 : ADC1;
->>>>>>> cffd2e897963a796856b0ae73b098ca37f95f064
-
 	if(adcCon.adcN == ADC_0){
 		SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 		NVIC_EnableIRQ(ADC0_IRQn);
@@ -71,12 +64,14 @@ void ADC_Init (ADC_Config_t adcCon) {
 		NVIC_EnableIRQ(ADC1_IRQn);
 	}
 
-	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_ADICLK_MASK) | ADC_CFG1_ADICLK(00); // Bus Clock
-	adc->CFG1 |= ADC_CFG1_ADIV(adcCon.divide_select);
+	adc->CFG1 = (adc->CFG1 & ~ADC_CFG1_ADICLK_MASK) | ADC_CFG1_ADICLK(00) ; //Use bus clock
+	adc->CFG1 |= ADC_CFG1_ADIV(adcCon.divide_select);        //Clock Divide Select
 
 	ADC_SetResolution(adcCon.adcN, adcCon.resolution);
 	ADC_SetCycles(adcCon.adcN, adcCon.cycles);
+	ADC_Calibrate (adcCon.adcN);
 
+	adc->SC3 |= ADC_SC3_ADCO(true) ;  //Continous mode & ADC_SC3_AVGE(false)
 	adc->CFG2 = (adc->CFG2 & ~ADC_CFG2_MUXSEL_MASK) | ADC_CFG2_MUXSEL(adcCon.mux);
 
 	channels[adcCon.adcN] = adcCon.channel;
@@ -230,9 +225,14 @@ bool ADC_Calibrate (ADC_n adcN) {
 }
 
 //**************** ADC ***************************
-void ADC_Start (ADC_n adcN, ADCMux_t mux) {
+void ADC_Start (ADC_n adcN) {
 	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
 	adc->SC1[adcN] = ADC_SC1_AIEN(ADC_interrupt[adcN]) | ADC_SC1_ADCH(channels[adcN]);
+}
+
+bool ADC_IsReady(ADC_n adcN) {
+	ADC_t adc = (adcN == ADC_0) ? ADC0 : ADC1;
+	return adc->SC1[0] & ADC_SC1_COCO_MASK;
 }
 
 ADCData_t ADC_getData (ADC_n adcN) {
@@ -243,10 +243,6 @@ ADCData_t ADC_getData (ADC_n adcN) {
 ADCData_t ADC_getValue(ADC_n adcN){
 	return currentValue[adcN];
 }
-
-//bool ADC_IsReady (ADC_t adc) {
-//	return adc->SC1[0] & ADC_SC1_COCO_MASK;
-//}
 
 void ADC_SetInterruptCallback(ADC_n adcN, adcCallback_t callback_fn){
 	adcCallbacks[adcN] = callback_fn;

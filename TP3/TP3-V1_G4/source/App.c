@@ -73,22 +73,20 @@ void App_Init(void) {
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
+	uint8_t data;
 
+	if (!startConv) {
+		//PTB12
+		ADC_Start(ADC_0);
+		startConv = true;
+	}
 
-
-	// DO ALGO
-
-
-	setup_params(1200, 2200, 10);
-	  int bitstream = 0b0110010001;
-	  float *test_modulate = modulate(bitstream);
-	  FILE *fp;
-	  fp = fopen("modulate.txt", "w");
-	  for (int i; i < 5500; i++)
-	 {
-	    fprintf(fp, "%f", test_modulate[i]);
-	    fprintf(fp, "%s", "\n");
-	 }
+	if (ADC_IsReady(ADC_0)) {
+		startConv = false;
+		data = ADC_getData(ADC_0);
+		char UartData = (char) data;
+		uartWriteMsg(UARTID, &UartData, sizeof(data));
+	}
 }
 
 /*******************************************************************************
