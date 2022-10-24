@@ -16,7 +16,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DAC_VIN 3.3
+#define DAC_VIN 3.33
 #define DAC_VOUT 1.65
 #define VOUT_SELECT (DAC_VOUT/(DAC_VIN/64)-1)
 
@@ -77,7 +77,7 @@ typedef enum{
 typedef struct{
   bool DACEN;
   DAC_Vref_t VRSEL; //Vref
-  bool VOSEL;
+  uint8_t VOSEL;
 }CMP_DACCR_t;
 
 typedef enum{
@@ -128,10 +128,10 @@ typedef enum{
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n);
+void CMP_init(CMP_X_t n);
 void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n);
 void CMP_set_output(CMP_output output);
-
+void Prueba_CMP(void);
 
 
 

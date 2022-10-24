@@ -55,13 +55,13 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init(void) {
-  timerInit();		// Inicializa timers
+ // timerInit();		// Inicializa timers
 
   // UART init
-  int id = UARTID;
-  uart_cfg_t config = {.baudrate = UARTBAUDRATE};
-  uartInit(id, config);
-
+  //int id = UARTID;
+  //uart_cfg_t config = {.baudrate = UARTBAUDRATE};
+  //uartInit(id, config);
+	Prueba_CMP();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */

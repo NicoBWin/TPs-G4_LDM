@@ -37,7 +37,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-void Prueba_CMP(void);
+
 void CMP_IRQ(bool en, CMP_X_t n);
 
 /*******************************************************************************
@@ -64,15 +64,25 @@ static IRQn_Type IRQ_ptr[] = CMP_IRQS;
 
 
 
-CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n)
+void CMP_init(CMP_X_t n)
 {
-    CMP[n].CR_0.Hyst_CTR = HYSTCTR_3;
-    CMP[n].CR_1.Power_Mode = true;
-    CMP[n].CR_1.Invert = false;
-    CMP[n].CR_1.Output_Pin_Enable = true;
-    CMP[n].DAC_CR.DACEN = true;
-    CMP[n].DAC_CR.VRSEL= Vin2;
-    CMP[n].DAC_CR.VOSEL = VOUT_SELECT;
+	CMP_config_t CMP_c;
+	CMP_c.CR_0.Filter_CNT = FILTER_SAMPLE_1;
+    CMP_c.CR_0.Hyst_CTR = HYSTCTR_3;
+	CMP_c.CR_1.Sample_Enable = false;
+	CMP_c.CR_1.Windowig_Enable = false;
+    CMP_c.CR_1.Power_Mode = true;
+    CMP_c.CR_1.Invert = false;
+    CMP_c.CR_1.Output = false;
+    CMP_c.CR_1.Output_Pin_Enable = true;
+    CMP_c.CR_1.Module_Enable = true;
+
+    CMP_c.DAC_CR.DACEN = true;
+    CMP_c.DAC_CR.VRSEL= Vin2;
+    CMP_c.DAC_CR.VOSEL = VOUT_SELECT;
+
+
+
 
   //PORT IN
     SIM->SCGC5 |= 1<<(PIN2PORT(CMP0_IN)+ CLK_GATING_OFFSET );	// Prendo el clock del puerto a configurar
@@ -86,20 +96,23 @@ CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n)
 	//CLK Enable
     SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
 
-	  CMP_ptr[n]->CR0 = CMP_CR0_HYSTCTR(CMP[n].CR_0.Hyst_CTR);
+	CMP_ptr[n]->CR0 = CMP_CR0_HYSTCTR(CMP_c.CR_0.Hyst_CTR);
     CMP_ptr[n]->CR0 |= CMP_CR0_FILTER_CNT(FILTER_SAMPLE_1);   
 
-    CMP_ptr[n]->CR1 |= CMP_CR1_EN_MASK;
+    if( CMP_c.CR_1.Module_Enable)
+    {
+    	CMP_ptr[n]->CR1 |= CMP_CR1_EN_MASK;
+    }
 
-    if(CMP[n].CR_1.Output_Pin_Enable){
+    if(CMP_c.CR_1.Output_Pin_Enable){
         CMP_ptr[n]->CR1 |= CMP_CR1_OPE_MASK; 
     }
 
-    if(CMP[n].CR_1.Invert){
+    if(CMP_c.CR_1.Invert){
         CMP_ptr[n]->CR1 |= CMP_CR1_INV_MASK;
     }
 
-    if(CMP[n].CR_1.Power_Mode){
+    if(CMP_c.CR_1.Power_Mode){
         CMP_ptr[n]->CR1 |= CMP_CR1_PMODE_MASK;
     }
 
@@ -108,12 +121,12 @@ CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n)
 
 
     //DACCR
-    if(CMP[n].DAC_CR.DACEN){
+    if(CMP_c.DAC_CR.DACEN){
         CMP_ptr[n]->DACCR = CMP_DACCR_DACEN_MASK;
-        CMP_ptr[n]->DACCR |= CMP_DACCR_VRSEL(CMP[n].DAC_CR.VRSEL);
-        CMP_ptr[n]->DACCR |= CMP_DACCR_VOSEL(CMP[n].DAC_CR.VOSEL);
+        CMP_ptr[n]->DACCR |= CMP_DACCR_VRSEL(CMP_c.DAC_CR.VRSEL);
+        CMP_ptr[n]->DACCR |= CMP_DACCR_VOSEL(CMP_c.DAC_CR.VOSEL);
     } 
-  return CMP;       
+
 }
 
 
@@ -157,8 +170,8 @@ void CMP_set_output(CMP_output output)
 
 void Prueba_CMP(void)
 {
-    CMP_config_t *ptr_CMP=NULL;
-    ptr_CMP = CMP_init(ptr_CMP,CMP_0);
+
+    CMP_init(CMP_0);
 
 
     CMP_set_MUXinput(IN1,IN7,CMP_0);
