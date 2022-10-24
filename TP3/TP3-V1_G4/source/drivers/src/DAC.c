@@ -31,7 +31,10 @@ void DAC_Init (DAC_n dacN) {
 	dac->C0 = DAC_C0_DACEN_MASK | DAC_C0_DACRFS_MASK | DAC_C0_DACTRGSEL_MASK;
 }
 
-//USE DMA?
+void dacEnableDMA(DAC_n dacN){
+	DAC_t dac = (dacN == DAC_0) ? DAC0 : DAC1;
+	dac->C1 = DAC_C1_DMAEN_MASK;	// Enable DMA
+}
 
 void DAC_SetData (DAC_n dacN, DACData_t data) {
 	DAC_t dac = (dacN == DAC_0) ? DAC0 : DAC1;
