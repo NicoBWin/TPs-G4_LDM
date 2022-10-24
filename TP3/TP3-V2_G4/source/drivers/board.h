@@ -67,5 +67,10 @@
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
 
+/***** CMP *******************************************************************/
+#define CMP0_IN PORTNUM2PIN(PC, 7)
+#define CMP0_OUT PORTNUM2PIN(PC, 5)
+
+
 
 #endif // _BOARD_H_
