@@ -128,6 +128,9 @@ typedef enum{
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n);
+void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n);
+void CMP_set_output(CMP_output output);
 
 
 

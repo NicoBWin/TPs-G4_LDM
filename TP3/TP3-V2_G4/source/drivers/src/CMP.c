@@ -37,7 +37,8 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+void Prueba (void);
+void CMP_IRQ(bool en, CMP_X_t n);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -111,7 +112,8 @@ CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n)
 
 
 
-void CMP_IRQ(bool en, CMP_X_t n){
+void CMP_IRQ(bool en, CMP_X_t n)
+{
     if (en){
         CMP_ptr[n]->SCR = (CMP_SCR_IEF_MASK | CMP_SCR_IER_MASK);
         if( (CMP_ptr[n]->SCR  & (CMP_SCR_IEF_MASK | CMP_SCR_IER_MASK)) !=0 ){
@@ -127,14 +129,16 @@ void CMP_IRQ(bool en, CMP_X_t n){
     }
 }
 
-void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n){
+void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n)
+{
     
     CMP_ptr[n]->MUXCR = (CMP_ptr[n]->MUXCR & ~CMP_MUXCR_PSEL_MASK) | CMP_MUXCR_PSEL(p_input);
    
     CMP_ptr[n]->MUXCR = (CMP_ptr[n]->MUXCR & ~CMP_MUXCR_MSEL_MASK) | CMP_MUXCR_MSEL(m_input);
 }
 
-void CMP_set_output(CMP_output output){
+void CMP_set_output(CMP_output output)
+{
     if(output == FTM1_CH0){
         SIM->SOPT4 &= ~(SIM_SOPT4_FTM1CH0SRC_MASK);
 		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(true);
@@ -153,7 +157,7 @@ void Prueba (void)
 
     CMP_set_MUXinput(IN1,IN7,CMP_0);
     CMP_set_output(FTM1_CH0);
-    
+
 
     
 
