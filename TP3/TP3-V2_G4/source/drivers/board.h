@@ -69,7 +69,7 @@
 
 /***** CMP *******************************************************************/
 #define CMP0_IN PORTNUM2PIN(PC, 7)
-#define CMP0_OUT PORTNUM2PIN(PC, 5)
+#define CMP0_OUT PORTNUM2PIN(PB, 20)
 
 
 

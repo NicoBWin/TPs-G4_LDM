@@ -37,7 +37,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-void Prueba (void);
+void Prueba_CMP(void);
 void CMP_IRQ(bool en, CMP_X_t n);
 
 /*******************************************************************************
@@ -74,8 +74,14 @@ CMP_config_t* CMP_init(CMP_config_t* CMP, CMP_X_t n)
     CMP[n].DAC_CR.VRSEL= Vin2;
     CMP[n].DAC_CR.VOSEL = VOUT_SELECT;
 
-  gpioMode(CMP0_IN,INPUT);	//Preparo el pin para entrada
-	gpioMode(CMP0_OUT,OUTPUT);	//Preparo el pin para salida
+  //PORT IN
+    SIM->SCGC5 |= 1<<(PIN2PORT(CMP0_IN)+ CLK_GATING_OFFSET );	// Prendo el clock del puerto a configurar
+    PORTC->PCR[PIN2NUM(CMP0_IN)]=0;
+    PORTC->PCR[PIN2NUM(CMP0_IN)] |= PORT_PCR_MUX(0);
+  //PORT OUT
+    SIM->SCGC5 |= 1<<(PIN2PORT(CMP0_OUT)+ CLK_GATING_OFFSET );	// Prendo el clock del puerto a configurar
+    PORTB->PCR[PIN2NUM(CMP0_OUT)]=0;
+    PORTB->PCR[PIN2NUM(CMP0_OUT)] |= PORT_PCR_MUX(6);
 
 	//CLK Enable
     SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
@@ -149,7 +155,7 @@ void CMP_set_output(CMP_output output)
     }
 }
 
-void Prueba (void)
+void Prueba_CMP(void)
 {
     CMP_config_t *ptr_CMP=NULL;
     ptr_CMP = CMP_init(ptr_CMP,CMP_0);
