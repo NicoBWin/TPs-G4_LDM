@@ -33,8 +33,8 @@
 						((id==4)?(SIM_SCGC1_UART4(1)): \
 						((id==5)?(SIM_SCGC1_UART5(1)):0))))))
 
-#define PORT_Alt3	0b11
-
+#define PORT_Alt3	0b011
+#define PORT_Alt6	0b110
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -105,20 +105,20 @@ void uartInit (uint8_t id, uart_cfg_t config){
 	UARTN->C5 &= ~UART_C5_TDMAS_MASK;
 	UARTN->C2 = UART_C2_TE_MASK | UART_C2_RE_MASK | UART_C2_RIE_MASK;
 
-	switch (id.parity) {
+	switch (config.parity) {
 		case ODD_PARITY_UART:
-			uart_p->C1 |= UART_C1_PE_MASK;
-			uart_p->C1 |= UART_C1_PT_MASK;
-			uart_p->C1 |= UART_C1_M_MASK; //parity
+			UARTN->C1 |= UART_C1_PE_MASK;
+			UARTN->C1 |= UART_C1_PT_MASK;
+			UARTN->C1 |= UART_C1_M_MASK; //parity
 			break;
 		case EVEN_PARITY_UART:
-			uart_p->C1 |= UART_C1_PE_MASK;
-			uart_p->C1 &= (~UART_C1_PT_MASK);
-			uart_p->C1 |= UART_C1_M_MASK;
+			UARTN->C1 |= UART_C1_PE_MASK;
+			UARTN->C1 &= (~UART_C1_PT_MASK);
+			UARTN->C1 |= UART_C1_M_MASK;
 			break;
 		case NO_PARITY_UART:
-			uart_p->C1 &= ~UART_C1_M_MASK;
-			uart_p->C1 &= (~UART_C1_PE_MASK);
+			UARTN->C1 &= ~UART_C1_M_MASK;
+			UARTN->C1 &= (~UART_C1_PE_MASK);
 			break;
 	}
 
@@ -209,6 +209,7 @@ uint8_t uartWriteMsg(uint8_t id, const char* msg, uint8_t cant){
 uint8_t uartIsTxMsgComplete(uint8_t id){
 	return Tx[id].done;
 }
+
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -275,3 +276,4 @@ __ISR__ UART2_RX_TX_IRQHandler(void) {UART_IQRHandler(2);}
 __ISR__ UART3_RX_TX_IRQHandler(void) {UART_IQRHandler(3);}
 __ISR__ UART4_RX_TX_IRQHandler(void) {UART_IQRHandler(4);}
 __ISR__ UART5_RX_TX_IRQHandler(void) {UART_IQRHandler(5);}
+
