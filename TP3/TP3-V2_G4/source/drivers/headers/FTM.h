@@ -114,7 +114,7 @@ void FTM_stop(FTM_n FTMn);
 uint16_t FTM_getCounter(FTM_n FTMn);
 
 //DC de 0% a 100%
-void FTM_modifyDC(FTM_n FTMn, uint8_t DC);
+void FTM_modifyDC(FTM_n FTMn, uint16_t DC);
 
 /*******************************************************************************
  ******************************************************************************/

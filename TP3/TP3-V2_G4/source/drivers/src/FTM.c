@@ -261,14 +261,14 @@ uint16_t FTM_getCounter(FTM_n FTMn) {
 	return FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
 }
 
-void FTM_modifyDC(FTM_n FTMn, uint8_t DC) {
+void FTM_modifyDC(FTM_n FTMn, uint16_t DC) {
 	// Enable FTM register write
 	FTM_PTRS[FTMn]->MODE = FTM_MODE_WPDIS(1);
 
     if(ftmconfig[FTMn].mode == FTM_mPWM) {
     	// Turn percentage duty cycle to counter value
-    	ftmconfig[FTMn].counter = (uint16_t)((DC / 100) * ftmconfig[FTMn].modulo);
-    	FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
+    	ftmconfig[FTMn].counter = (uint16_t)((DC / 100.0) * ftmconfig[FTMn].modulo);
+    	FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter); //ftmconfig[FTMn].counter
     }
 
     // Disable FTM register write

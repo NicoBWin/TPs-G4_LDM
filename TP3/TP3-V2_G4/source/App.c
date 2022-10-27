@@ -70,7 +70,7 @@ void App_Init(void) {
 	// FTMs init -> DO NOT USE FTM0 & CH5!
 	// PWM Config
 	FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_6, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
-						  .PWM_logic=FTM_High, .modulo=0xFFFF, .PWM_DC=0x7FFF, .active_low=false, .DMA_on=false, .interrupt_on=false};
+						  .PWM_logic=FTM_High, .modulo=0xFFFF, .PWM_DC=0x0032, .active_low=false, .DMA_on=false, .interrupt_on=false};
 	FTM_Init (FTM_0, FTMConfigPWM);
 	FTM_start(FTM_0);
 
@@ -83,8 +83,11 @@ void App_Init(void) {
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	FTM_modifyDC(FTM_0, 50);
-
+	for(int i=0; i<=100; i++){
+		for(int j=0; j<5000;j++){
+			FTM_modifyDC(FTM_0, i); // Sale por PTA1
+		}
+	}
 }
 
 /*******************************************************************************
