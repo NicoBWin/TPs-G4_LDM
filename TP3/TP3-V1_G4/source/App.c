@@ -10,6 +10,9 @@
 // Drivers
 #include "drivers/headers/uart.h"
 #include "drivers/headers/ADC.h"
+#include "drivers/headers/DAC.h"
+#include "drivers/headers/FSKd.h"
+#include "drivers/headers/circularbuffer.h"
 
 // Timer
 #include "timer/timer.h"
@@ -38,7 +41,7 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static void intochar(int16_t num, char chscore[LENG_SC]);
-
+static void send_uart();
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -54,39 +57,46 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-/* Todos los init necesarios */
 void App_Init(void) {
   timerInit();		// Inicializa timers
-
-  // UART init
-  int id = UARTID;
-  uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = ODD_PARITY_UART};
-  uartInit(id, config);
-
-  ADC_Config_t adcConfig = {.adcN = ADC_0, .resolution = ADC_b16, .cycles = ADC_c16, .divide_select = input_clock, .mux = ADC_mA, .channel = 12};
+	 // UART init
+  uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = EVEN_PARITY_UART};
+  uartInit(UARTID_R, config);
+  uartInit(UARTID_T, config);
+  // Dac init
+  DAC_Init(DAC_0);
+  // ADC INIT
+  ADC_Config_t adcConfig = {.adcN = ADC_0, .resolution = ADC_b16, .cycles = ADC_c16, .divide_select = input_clock, .mux = ADC_mA, .channel = 12}; // Pb2
   ADC_Init (adcConfig);
+  ADC_SetInterruptMode (ADC_0, false); // no interruption
+  ADC_Start (ADC_0);
 
+  // Initialice seno base
+  setup_params(1200, 2200, 50, 0xFFF);
 
+  // Inicializo timers del systick
+  tim_id_t DAC_periodicID = timerGetId();
+  tim_id_t CHANGE_BIT_periodicID = timerGetId();
+  tim_id_t TEST_UART_periodicID = timerGetId();
+  tim_id_t ADC_periodicID = timerGetId();
+  timerStart(DAC_periodicID, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, buff2DAC_callback); // base de tiempo es de 10u
+  timerStart(CHANGE_BIT_periodicID, TIMER_MS2TICKS(83), TIM_MODE_PERIODIC, change_bit_callback);
+  timerStart(ADC_periodicID, TIMER_MS2TICKS(6), TIM_MODE_PERIODIC, ADC2BIT_callback); // Frec de sampleo del ADC = 16666,6Hz obteniendo 14 sampples por periodo aprox
 
+  // Test
+  timerStart(TEST_UART_periodicID, TIMER_MS2TICKS(830), TIM_MODE_PERIODIC, send_uart);
 
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	uint8_t data;
 
-	if (!startConv) {
-		//PTB12
-		ADC_Start(ADC_0);
-		startConv = true;
-	}
+	  //uint8_t UARTmsg = 0b10110110;
 
-	if (ADC_IsReady(ADC_0)) {
-		startConv = false;
-		data = ADC_getData(ADC_0);
-		char UartData = (char) data;
-		uartWriteMsg(UARTID, &UartData, sizeof(data));
-	}
+
+	  //bitstream_modulate(UARTmsg, true);
+
+
 }
 
 /*******************************************************************************
@@ -125,3 +135,16 @@ static void intochar(int16_t num, char chscore[LENG_SC]) {
 		}
 	}
 }
+
+static void send_uart()
+{
+	static char msg = 0b11111111;
+	msg = msg<<1;
+	if ( msg == 0)
+	{
+		msg = 0b11111111;
+	}
+	msg = 11000000;
+	uartWriteMsg(UARTID_T, &msg, 1);
+}
+

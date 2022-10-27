@@ -18,8 +18,8 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define TBIT 833 // en micro sec
-#define SIZE-BITSTREAM 11 // START + 8Bitdata + PAR + STOP 
+#define TBIT 833	// en micro sec
+#define SIZE_BITSTREAM 11	// START + 8Bitdata + PAR + STOP
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -47,8 +47,10 @@
 // +ej: char lcd_goto (int fil, int col);+
 
 void setup_params(uint32_t f1_xd, uint32_t f2_xd, uint16_t resolucion, uint16_t scaling_factor);
-void modulate(int bitstream);
+uint16_t FSK_get_sample(_Bool bit);
+void bitstream_modulate(uint8_t data, _Bool uart_received);
 /*******************************************************************************
  ******************************************************************************/
 
 #endif // _TEMPLATE_H_
+

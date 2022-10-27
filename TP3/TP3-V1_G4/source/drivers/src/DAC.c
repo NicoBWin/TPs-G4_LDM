@@ -28,7 +28,7 @@ void DAC_Init (DAC_n dacN) {
 	else
 		SIM->SCGC2 |= SIM_SCGC2_DAC1_MASK;
 
-	dac->C0 = DAC_C0_DACEN_MASK | DAC_C0_DACRFS_MASK | DAC_C0_DACTRGSEL_MASK;
+	dac->C0 = DAC_C0_DACEN_MASK | DAC_C0_DACRFS_MASK | DAC_C0_DACTRGSEL_MASK | DAC_C0_LPEN_MASK;
 }
 
 void dacEnableDMA(DAC_n dacN){
@@ -39,5 +39,7 @@ void dacEnableDMA(DAC_n dacN){
 void DAC_SetData (DAC_n dacN, DACData_t data) {
 	DAC_t dac = (dacN == DAC_0) ? DAC0 : DAC1;
 	dac->DAT[0].DATL = DAC_DATL_DATA0(data);
+	//dac->DAT[0].DATL = 0xFF;
+	//dac->DAT[0].DATH = 0x7F;
 	dac->DAT[0].DATH = DAC_DATH_DATA1(data >> DAC_DATL_DATA0_WIDTH);
 }

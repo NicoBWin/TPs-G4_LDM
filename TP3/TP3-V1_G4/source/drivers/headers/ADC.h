@@ -29,8 +29,8 @@ typedef enum {
 	ADC_c16,
 	ADC_c10,
 	ADC_c6,
-	ADC_c4,
-} ADCCycles_t;
+	ADC_c4
+} ADCCycles_t;	// Cada cuanto ciclos de clock muestrea
 
 typedef enum {
 	ADC_t4,
@@ -51,7 +51,7 @@ typedef enum {
 } ADC_n;
 
 typedef enum {
-	input_clock,
+	input_clock,    // Clock = 50MHz
 	input_clock2,	// Clock/2
 	input_clock4,	// Clock/4
 	input_clock8,	// Clock/8
