@@ -267,7 +267,7 @@ void FTM_modifyDC(FTM_n FTMn, uint8_t DC) {
 
     if(ftmconfig[FTMn].mode == FTM_mPWM) {
     	// Turn percentage duty cycle to counter value
-    	ftmconfig[FTMn].counter = (uint16_t)((DC / 0xFFFF) * ftmconfig[FTMn].modulo);
+    	ftmconfig[FTMn].counter = (uint16_t)((DC / 100) * ftmconfig[FTMn].modulo);
     	FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
     }
 
