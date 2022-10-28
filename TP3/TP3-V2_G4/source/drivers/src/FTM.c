@@ -62,6 +62,8 @@
 #define FTM3_CH6	PORTNUM2PIN(PE,11)	//ALT6
 #define FTM3_CH7	PORTNUM2PIN(PE,12)	//ALT6
 
+
+#define READ_BIT(reg, bit_mask)		(((reg) & (bit_mask)) == (bit_mask))
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -237,7 +239,7 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 	}
 
     // Disable FTM register write
-    FTMp->MODE = (FTMp->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
+    //FTMp->MODE = (FTMp->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
 }
 
 
@@ -307,7 +309,7 @@ void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch){
 			case FTM_3:
 				PORT_TYPE[FTMn]->PCR[PIN2NUM(FTM3_PIN[ch])] = 0x0; //Clear all bits
 				PORT_TYPE[FTMn]->PCR[PIN2NUM(FTM3_PIN[ch])] |= PORT_PCR_DSE(1);
-				PORT_TYPE[FTMn]->PCR[PIN2NUM(FTM3_PIN[ch])] |= PORT_PCR_MUX(PORT_Alt3); //Set MUX to Alt3
+				PORT_TYPE[FTMn]->PCR[PIN2NUM(FTM3_PIN[ch])] |= PORT_PCR_MUX(PORT_Alt6); //Set MUX to Alt3
 			break;
 	}
 }
@@ -330,7 +332,13 @@ __ISR__ FTM3_IRQHandler(void){
 
 // No está lindo
 void IC_ISR(){
-	FTM2->STATUS = 0;	//Limpio todos los flags
-	FTM2->CONTROLS[FTM_Channel_0].CnSC &= ~FTM_CnSC_CHF_MASK;		// Clear interrupt flag
+	//FTM2->STATUS = 0;	//Limpio todos los flags
+	if (READ_BIT(FTM2->SC, FTM_SC_TOF_MASK)){
+		FTM2->SC &= ~FTM_SC_TOF_MASK;
+	}
+	if (READ_BIT(FTM2->CONTROLS[FTM_Channel_0].CnSC, FTM_CnSC_CHF_MASK)){
+		FTM2->CONTROLS[FTM_Channel_0].CnSC = (FTM2->CONTROLS[FTM_Channel_0].CnSC & ~FTM_CnSC_CHF_MASK) | FTM_CnSC_CHF(0); // Clear interrupt flag
+	}
+	//FTM_ClearInterruptFlag (FTM_2);
 	IC_count = FTM2->CONTROLS[FTM_Channel_0].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
 }
