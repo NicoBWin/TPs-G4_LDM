@@ -77,9 +77,6 @@ void CMP_init(CMP_X_t n)
     CMP_c.DAC_CR.VRSEL= Vin2;
     CMP_c.DAC_CR.VOSEL = VOUT_SELECT;
 
-
-
-
   //PORT IN
     SIM->SCGC5 |= 1<<(PIN2PORT(CMP0_IN)+ CLK_GATING_OFFSET );	// Prendo el clock del puerto a configurar
     PORTC->PCR[PIN2NUM(CMP0_IN)]=0;
@@ -145,11 +142,8 @@ void CMP_IRQ(bool en, CMP_X_t n)
     }
 }
 
-void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n)
-{
-    
+void CMP_set_MUXinput (Mux_input_t p_input, Mux_input_t m_input, CMP_X_t n) {
     CMP_ptr[n]->MUXCR = (CMP_ptr[n]->MUXCR & ~CMP_MUXCR_PSEL_MASK) | CMP_MUXCR_PSEL(p_input);
-   
     CMP_ptr[n]->MUXCR = (CMP_ptr[n]->MUXCR & ~CMP_MUXCR_MSEL_MASK) | CMP_MUXCR_MSEL(m_input);
 }
 
@@ -157,26 +151,19 @@ void CMP_set_output(CMP_output output)
 {
     if(output == FTM1_CH0){
         SIM->SOPT4 &= ~(SIM_SOPT4_FTM1CH0SRC_MASK);
-		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(true);
+		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(1);
     }
     else if (output == FTM2_CH0){
         SIM->SOPT4 &= ~(SIM_SOPT4_FTM2CH0SRC_MASK);
-		SIM->SOPT4 |= SIM_SOPT4_FTM2CH0SRC(true);
+		SIM->SOPT4 |= SIM_SOPT4_FTM2CH0SRC(2);
     }
 }
 
 void Prueba_CMP(void)
 {
-
     CMP_init(CMP_0);
-
-
     CMP_set_MUXinput(IN1,IN7,CMP_0);
-    CMP_set_output(FTM1_CH0);
-
-
-    
-
+    CMP_set_output(FTM2_CH0);
 }
 
 /*******************************************************************************

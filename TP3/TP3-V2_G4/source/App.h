@@ -16,8 +16,10 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define UARTID	0
-#define UARTBAUDRATE	9600
+#define UARTID_T	3
+#define UARTID_R	1
+
+#define UARTBAUDRATE	1200
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

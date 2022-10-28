@@ -49,21 +49,6 @@
 #define UART5_RX   PORTNUM2PIN(PE,9) 	//ALT3
 
 
-/*************** SPI **********************************************************/
-
-
-/*************** I2C **********************************************************/
-#define I2C0_DATA 	PORTNUM2PIN(PE, 25) // ALT5		SDA
-#define I2C0_CLK	PORTNUM2PIN(PE, 24)	// ALT5	SCL
-
-#define I2C1_DATA 	PORTNUM2PIN(PC, 11) // ALT2
-#define I2C1_CLK 	PORTNUM2PIN(PC, 10) // ALT2
-
-#define I2C2_DATA 	PORTNUM2PIN(PA, 11) // ALT5
-#define I2C2_CLK	PORTNUM2PIN(PA, 12) // ALT5
-
-#define I2C_INTERRUPT PORTNUM2PIN(PB,20) // Interrupción
-
 /***** DEBUG *******************************************************************/
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
 

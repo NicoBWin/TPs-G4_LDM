@@ -62,13 +62,11 @@
 #define FTM3_CH6	PORTNUM2PIN(PE,11)	//ALT6
 #define FTM3_CH7	PORTNUM2PIN(PE,12)	//ALT6
 
-
-
-#define __FTM_REG_WAIT__		for(uint32_t i = 0; i < 10000; i++){}
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch);
+void IC_ISR(void);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -185,13 +183,6 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
     // Set Mode
     FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_MSB_MASK | FTM_CnSC_MSA_MASK)) |
     			                      (FTM_CnSC_MSB((config.mode >> 1) & 0X01) | FTM_CnSC_MSA((config.mode >> 0) & 0X01));
-    // Set CLK Source
-    FTMp->SC = (FTMp->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(config.CLK_source);
-
-    if (config.CLK_source == FTM_ExtCLK) {
-		// Set external clock gpio
-    	// Do some day
-    }
 
     // Set Prescaler
     FTMp->SC = (FTMp->SC & ~FTM_SC_PS_MASK) | FTM_SC_PS(config.prescale);
@@ -233,6 +224,13 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
     // Set interrupts
 	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~FTM_CnSC_CHIE_MASK) |  FTM_CnSC_CHIE(config.interrupt_on);
 
+	// Set CLK Source
+	FTMp->SC = (FTMp->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(config.CLK_source);
+	if (config.CLK_source == FTM_ExtCLK) {
+		// Set external clock gpio
+		// Do some day
+	}
+
     // Disable FTM register write
     FTMp->MODE = (FTMp->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
 }
@@ -258,7 +256,8 @@ void FTM_resetCounter(FTM_n FTMn) {
 }
 
 uint16_t FTM_getCounter(FTM_n FTMn) {
-	return FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
+	//return FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
+	return (uint16_t) FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV;
 }
 
 void FTM_modifyDC(FTM_n FTMn, uint16_t DC) {
@@ -275,7 +274,9 @@ void FTM_modifyDC(FTM_n FTMn, uint16_t DC) {
 	//FTM_PTRS[FTMn]->MODE = (FTM_PTRS[FTMn]->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
 }
 
-
+void FTM_ClearInterruptFlag (FTM_n FTMn) {
+    FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnSC &= ~FTM_CnSC_CHF_MASK;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -304,4 +305,55 @@ void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch){
 				PORT_TYPE[FTMn]->PCR[PIN2NUM(FTM3_PIN[ch])] |= PORT_PCR_MUX(PORT_Alt3); //Set MUX to Alt3
 			break;
 	}
+}
+
+__ISR__ FTM2_IRQHandler(void) {
+	//uint32_t status;
+	//status = FTM2->STATUS; //Capturo flags de interrupcion de todos los canales
+	//FTM2->STATUS = 0;	//Limpio todos los flags
+	IC_ISR();
+}
+
+
+void IC_ISR(void) //FTM3 CH5 PTC9 as IC
+{
+    static uint16_t med1,med2,med;
+    static uint8_t  state=0;
+    uint8_t bitRecived;
+    static uint8_t Is_cero =0;
+
+    //ClearInterruptFlag
+    FTM_ClearInterruptFlag (FTM_2);
+
+    if(state==0)
+    {
+        med1=FTM_getCounter(FTM_2); //
+        state=1;
+    }
+    else if(state==1)
+    {
+        med2=FTM_getCounter(FTM_2);
+        med=med2-med1;
+
+        state=0;                    // Set break point here and watch "med" value
+    }
+
+    if((SYSTEM_CLOCK_FREC/med)>1100 | (SYSTEM_CLOCK_FREC/med)<1300)
+    {
+        bitRecived = 1;
+        bitstream_reconTX(bitRecived);
+    }
+    else if((SYSTEM_CLOCK_FREC/med)>2300 | (SYSTEM_CLOCK_FREC/med)<2500)
+    {
+        bitRecived = 0;
+        if(Is_cero==0)
+        {
+            bitstream_reconTX(bitRecived);
+            Is_cero=1;
+        }
+        else
+        {
+            Is_cero =0;
+        }
+    }
 }
