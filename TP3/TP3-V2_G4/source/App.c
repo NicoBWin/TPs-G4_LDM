@@ -79,7 +79,7 @@ void App_Init(void) {
 	// Modulo -> (50MHz / frec del DC) -1
 
 	// InputCapture Config
-	FTMConfig_t FTMConfigIC = {.channel=FTM_Channel_0, .mode=FTM_mInputCapture, .prescale=FTM_PSC_x32, .CLK_source=FTM_SysCLK,
+	FTMConfig_t FTMConfigIC = {.channel=FTM_Channel_0, .mode=FTM_mInputCapture, .prescale=FTM_PSC_x16, .CLK_source=FTM_SysCLK,
 						  .IC_edge=FTM_eEither, .modulo=0x00FF, .counter=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=true};
 	FTM_Init (FTM_2, FTMConfigIC);
 	FTM_start(FTM_2);
