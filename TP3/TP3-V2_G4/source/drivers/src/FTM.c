@@ -64,6 +64,16 @@
 #define FTM3_CH6	PORTNUM2PIN(PE,11)	//ALT6
 #define FTM3_CH7	PORTNUM2PIN(PE,12)	//ALT6
 
+
+#define MEDIAN(x1, x2)		(((x2) - (x1))/2 + (x1))	// Asume x2 > x1
+#define FSK1	1200
+#define T1		833/2
+#define FSK2	2200
+#define T2		400/2
+#define IC_PRESCALER	FTM_PSC_x16
+#define BUS_CLK_FREQ	50	// in MHz
+#define USEC2TICKS(usec, prescaler)		(((usec) * BUS_CLK_FREQ) / (1 << (prescaler)))
+
 #define READ_BIT(reg, bit_mask)		(((reg) & (bit_mask)) == (bit_mask))
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -359,16 +369,16 @@ void IC_ISR(FTM_n FTMn){
 		else if(state==1)
 		{
 			med2=FTM_getCounter(FTM_2);
-			med=med2 + IC_ovf * MAX_COUNT -med1;
-
+			med=med2 + IC_ovf * MAX_COUNT - med1;
+			IC_ovf = 0;
 			state=0;                    // Set break point here and watch "med" value
 		}
-		if(((SYSTEM_CLOCK_FREC/med)>1100) & ((SYSTEM_CLOCK_FREC/med)<1300))
-		{
+		//if(((SYSTEM_CLOCK_FREC/med)>1100) & ((SYSTEM_CLOCK_FREC/med)<1300))
+		if (med > USEC2TICKS(MEDIAN(T2, T1), IC_PRESCALER)){
 			bitRecived = 1;
 			bitstream_reconTX(bitRecived);
 		}
-		else if(((SYSTEM_CLOCK_FREC/med)>2300) & ((SYSTEM_CLOCK_FREC/med)<2500))
+		else
 		{
 			bitRecived = 0;
 			if(Is_cero==0)
