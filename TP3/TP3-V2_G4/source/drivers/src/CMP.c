@@ -60,10 +60,6 @@ static IRQn_Type IRQ_ptr[] = CMP_IRQS;
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-
-
-
 void CMP_init(CMP_X_t n)
 {
 	CMP_config_t CMP_c;
@@ -97,7 +93,8 @@ void CMP_init(CMP_X_t n)
     SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
 
 	CMP_ptr[n]->CR0 = CMP_CR0_HYSTCTR(CMP_c.CR_0.Hyst_CTR);
-    CMP_ptr[n]->CR0 |= CMP_CR0_FILTER_CNT(FILTER_SAMPLE_1);   
+    CMP_ptr[n]->CR0 |= CMP_CR0_FILTER_CNT(FILTER_SAMPLE_7);
+    CMP_ptr[n]->FPR |= 0xFF;
 
     if( CMP_c.CR_1.Module_Enable)
     {
