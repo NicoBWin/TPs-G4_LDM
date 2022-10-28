@@ -68,14 +68,14 @@ void App_Init(void) {
 	uartInit(UARTID_T, config);
 
 	// CMP init
-	Prueba_CMP();
+	//Prueba_CMP();
 
 	// FTMs init -> DO NOT USE FTM0 & CH5!
 	// PWM Config
-	FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_6, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
-						  .PWM_logic=FTM_High, .modulo=4999, .PWM_DC=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=false};
-	FTM_Init (FTM_0, FTMConfigPWM);
-	FTM_start(FTM_0);
+	//FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_6, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
+	//					  .PWM_logic=FTM_High, .modulo=4999, .PWM_DC=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=false};
+	//FTM_Init (FTM_0, FTMConfigPWM);
+	//FTM_start(FTM_0);
 	// Modulo -> (50MHz / frec del DC) -1
 
 	// InputCapture Config
@@ -90,7 +90,6 @@ void App_Init(void) {
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
 	//TERMINAR o EMPEZAR...
-
 }
 
 /*******************************************************************************

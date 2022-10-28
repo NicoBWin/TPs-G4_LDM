@@ -62,13 +62,12 @@
 #define FTM3_CH6	PORTNUM2PIN(PE,11)	//ALT6
 #define FTM3_CH7	PORTNUM2PIN(PE,12)	//ALT6
 
-
 #define READ_BIT(reg, bit_mask)		(((reg) & (bit_mask)) == (bit_mask))
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch);
-void IC_ISR(void);
+void IC_ISR(FTM_n FTMn);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -109,6 +108,13 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 	//Pointer to specific FTM
 	FTM_t FTMp;
 
+    // Clock gating for the channel port
+	SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK;
+	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
+
 	// Clock gating and NVIC
     switch(FTMn) {
         case 0:
@@ -138,16 +144,10 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
         	break;
     }
 
-    // Clock gating for the channel port
-	SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
-	SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
-	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
-	SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK;
-	SIM->SCGC5 |= SIM_SCGC5_PORTE_MASK;
-
     // Enable FTM register write
     FTMp->MODE = FTM_MODE_WPDIS(1);
 
+    FTMp->MODE |= FTM_MODE_FTMEN_MASK;	// FTM Advanced
     //**************** Init channel: GPIO and polarity ***************************
     switch(config.channel) {
     	case FTM_Channel_0:
@@ -185,24 +185,22 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
     }
 
     //**************** FTM Register config ***************************
-    // Set Mode
-    FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_MSB_MASK | FTM_CnSC_MSA_MASK)) |
-    			                      (FTM_CnSC_MSB((config.mode >> 1) & 0X01) | FTM_CnSC_MSA((config.mode >> 0) & 0X01));
-
     // Set Prescaler
     FTMp->SC = (FTMp->SC & ~FTM_SC_PS_MASK) | FTM_SC_PS(config.prescale);
 
-    // Set Modulo and Counter
+       // Set Modulo and Counter
     FTMp->CNTIN = 0x0;	//Arranca en 0
     FTMp->CNT = 0x0;	//Arranca en 0
     FTMp->MOD = FTM_MOD_MOD(config.modulo); //Defino el módulo para el contador
 
+    // Set Mode
+    FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_MSB_MASK | FTM_CnSC_MSA_MASK)) | (FTM_CnSC_MSB((config.mode >> 1) & 0X01) | FTM_CnSC_MSA((config.mode >> 0) & 0X01));
+
     // Set edge on mode
 	switch(config.mode) {
 		case FTM_mInputCapture:
-			FTMp->CONTROLS[config.channel].CnSC =
-							(FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_ELSB_MASK | FTM_CnSC_ELSA_MASK)) |
-							(FTM_CnSC_ELSB((config.IC_edge >> 1) & 0X01) | FTM_CnSC_ELSA((config.IC_edge >> 0) & 0X01));
+			FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_ELSA_MASK)) | FTM_CnSC_ELSA(1); //(config.IC_edge >> 0) & 0X01
+			FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_ELSB_MASK)) | FTM_CnSC_ELSB(1); //(config.IC_edge >> 1) & 0X01
 		break;
 		case FTM_mOutputCompare:
 			FTMp->CONTROLS[config.channel].CnSC =
@@ -222,14 +220,12 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 	}
 	FTMp->CONTROLS[config.channel].CnV = FTM_CnV_VAL(config.counter);
 
-
     // Set DMA mode
 	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_DMA_MASK)) | (FTM_CnSC_DMA(config.DMA_on));
 
     // Set interrupts
-	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~FTM_CnSC_CHIE_MASK) |  FTM_CnSC_CHIE(config.interrupt_on);
+	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_CHIE_MASK)) |  FTM_CnSC_CHIE(config.interrupt_on);
 	//FTMp->SC |= FTM_SC_TOIE_MASK;	// Enable Overflow interrupt
-
 
 	// Set CLK Source
 	FTMp->SC = (FTMp->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(config.CLK_source);
@@ -245,6 +241,7 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 
 void FTM_start(FTM_n FTMn) {
 	FTM_PTRS[FTMn]->SC = FTM_PTRS[FTMn]->SC | FTM_SC_CLKS(0x01);
+
 }
 
 void FTM_stop(FTM_n FTMn) {
@@ -314,31 +311,38 @@ void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch){
 	}
 }
 
-__ISR__ FTM2_IRQHandler(void) {
-	IC_ISR();
-}
 
 __ISR__ FTM0_IRQHandler(void){
-	IC_ISR();
+	IC_ISR(FTM_0);
 }
 
 __ISR__ FTM1_IRQHandler(void){
-	IC_ISR();
+	IC_ISR(FTM_1);
+}
+
+__ISR__ FTM2_IRQHandler(void) {
+	IC_ISR(FTM_2);
 }
 
 __ISR__ FTM3_IRQHandler(void){
-	IC_ISR();
+	IC_ISR(FTM_3);
 }
 
-// No está lindo
-void IC_ISR(){
+
+void IC_ISR(FTM_n FTMn){
+	// Enable FTM register write
+	FTM_PTRS[FTMn]->MODE = FTM_MODE_WPDIS(1);
+
 	//FTM2->STATUS = 0;	//Limpio todos los flags
-	if (READ_BIT(FTM2->SC, FTM_SC_TOF_MASK)){
-		FTM2->SC &= ~FTM_SC_TOF_MASK;
+	if (READ_BIT(FTM_PTRS[FTMn]->SC, FTM_SC_TOF_MASK)){
+		FTM_PTRS[FTMn]->SC &= ~FTM_SC_TOF_MASK;
 	}
-	if (READ_BIT(FTM2->CONTROLS[FTM_Channel_0].CnSC, FTM_CnSC_CHF_MASK)){
-		FTM2->CONTROLS[FTM_Channel_0].CnSC = (FTM2->CONTROLS[FTM_Channel_0].CnSC & ~FTM_CnSC_CHF_MASK) | FTM_CnSC_CHF(0); // Clear interrupt flag
+	if (READ_BIT(FTM_PTRS[FTMn]->CONTROLS[FTM_Channel_6].CnSC, FTM_CnSC_CHF_MASK)){
+		FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnSC = (FTM2->CONTROLS[ftmconfig[FTMn].channel].CnSC & ~FTM_CnSC_CHF_MASK) | FTM_CnSC_CHF(0); // Clear interrupt flag
 	}
 	//FTM_ClearInterruptFlag (FTM_2);
-	IC_count = FTM2->CONTROLS[FTM_Channel_0].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
+	IC_count = FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
+
+	// Disable FTM register write
+	FTM_PTRS[FTMn]->MODE = (FTM_PTRS[FTMn]->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
 }
