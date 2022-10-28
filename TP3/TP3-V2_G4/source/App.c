@@ -40,6 +40,7 @@
  ******************************************************************************/
 static void intochar(int16_t num, char chscore[LENG_SC]);
 
+void bitsDecoder(void);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -64,7 +65,7 @@ void App_Init(void) {
 	uartInit(UARTID_T, config);
 
 	// CMP init
-	//Prueba_CMP();
+	Prueba_CMP();
 
 	// FTMs init -> DO NOT USE FTM0 & CH5!
 	// PWM Config
@@ -121,6 +122,44 @@ static void intochar(int16_t num, char chscore[LENG_SC]) {
 		}
 		else {
 			chscore[i]='0';              // Si el numero que queda es = a 0, muestro espacios.
+		}
+	}
+}
+
+
+
+void bitsDecoder(void){
+	static bool segu = false;
+	if (IC_IsNewData(0)){
+		uint16_t IC_data = IC_GetData(0);
+		if (IC_data > USEC2TICKS(MEDIAN(T2, T1), IC_PRESCALER)){
+			gpioWrite(OUT_PIN, 1);
+			new_word = new_word<<1;
+			new_word |= 0b1;
+			w_counter++;
+			if(w_counter == 9){
+				word = (char) new_word;
+				w_counter = 0;
+				new_word = 0;
+				uartWriteMsg(UART_SEL, &word, 1);
+			}
+		} else {
+			if (!segu){
+				gpioWrite(OUT_PIN, 0);
+				segu = true;
+				new_word = new_word<<1;
+				new_word |= 0b0;
+				w_counter++;
+				if(w_counter == 9){
+					word = (char) new_word;
+					w_counter = 0;
+					new_word = 0;
+					uartWriteMsg(UART_SEL, &word, 1);
+				}
+			}
+			else {
+				segu = false;
+			}
 		}
 	}
 }
