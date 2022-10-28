@@ -19,7 +19,7 @@
  ******************************************************************************/
 #define BIT_1FREC (1200)
 #define BIT_0FREC (2400)
-#define SYSTEM_CLOCK_FREC 50000000
+#define CLOCK_FREC_PRC 390625
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

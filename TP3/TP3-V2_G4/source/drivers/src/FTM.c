@@ -65,15 +65,6 @@
 #define FTM3_CH7	PORTNUM2PIN(PE,12)	//ALT6
 
 
-#define MEDIAN(x1, x2)		(((x2) - (x1))/2 + (x1))	// Asume x2 > x1
-#define FSK1	1200
-#define T1		833/2
-#define FSK2	2200
-#define T2		400/2
-#define IC_PRESCALER	FTM_PSC_x16
-#define BUS_CLK_FREQ	50	// in MHz
-#define USEC2TICKS(usec, prescaler)		(((usec) * BUS_CLK_FREQ) / (1 << (prescaler)))
-
 #define READ_BIT(reg, bit_mask)		(((reg) & (bit_mask)) == (bit_mask))
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -361,35 +352,37 @@ void IC_ISR(FTM_n FTMn){
 		uint8_t bitRecived;
 		static uint8_t Is_cero =0;
 
-		if(state==0)
-		{
+		if(state==0) {
 			med1=FTM_getCounter(FTM_2); //
 			state=1;
 		}
-		else if(state==1)
-		{
-			med2=FTM_getCounter(FTM_2);
-			med=med2 + IC_ovf * MAX_COUNT - med1;
+		else if(state==1) {
+			med2 = FTM_getCounter(FTM_2);
+			med = med2 - med1;
+			//med += IC_ovf * MAX_COUNT;
 			IC_ovf = 0;
-			state=0;                    // Set break point here and watch "med" value
+			state = 0;                    // Set break point here and watch "med" value
 		}
-		//if(((SYSTEM_CLOCK_FREC/med)>1100) & ((SYSTEM_CLOCK_FREC/med)<1300))
-		if (med > USEC2TICKS(MEDIAN(T2, T1), IC_PRESCALER)){
+		if(((CLOCK_FREC_PRC/med)>800) & ((CLOCK_FREC_PRC/med)<1600)) {
 			bitRecived = 1;
 			bitstream_reconTX(bitRecived);
+			med1 = 0;
+			med2 = 0;
+			med = 0;
 		}
-		else
+		else if (((CLOCK_FREC_PRC/med)>2000) & ((CLOCK_FREC_PRC/med)<2600))
 		{
 			bitRecived = 0;
-			if(Is_cero==0)
-			{
+			if(Is_cero==0) {
 				bitstream_reconTX(bitRecived);
 				Is_cero=1;
 			}
-			else
-			{
+			else {
 				Is_cero =0;
 			}
+			med1 = 0;
+			med2 = 0;
+			med = 0;
 		}
 	}
 	// Disable FTM register write

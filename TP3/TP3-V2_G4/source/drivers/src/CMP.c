@@ -111,7 +111,7 @@ void CMP_init(CMP_X_t n)
     }
 
     //SCR
-    CMP_IRQ(true, n);
+    //CMP_IRQ(false, n);
 
 
     //DACCR
@@ -162,7 +162,7 @@ void CMP_set_output(CMP_output output)
 void Prueba_CMP(void) {
     CMP_init(CMP_0);
     CMP_set_MUXinput(IN1,IN7,CMP_0);
-    CMP_set_output(FTM2_CH0);
+    //CMP_set_output(FTM2_CH0);
 }
 
 /*******************************************************************************
