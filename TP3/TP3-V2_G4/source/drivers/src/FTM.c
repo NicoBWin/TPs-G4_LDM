@@ -92,6 +92,9 @@ static int const FTM3_PIN[8] = {FTM3_CH0, FTM3_CH1, FTM3_CH2, FTM3_CH3, FTM3_CH4
  */
 static FTM_Type* const FTM_PTRS[] = FTM_BASE_PTRS;
 
+
+static uint16_t IC_count=0;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -223,6 +226,8 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 
     // Set interrupts
 	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~FTM_CnSC_CHIE_MASK) |  FTM_CnSC_CHIE(config.interrupt_on);
+	//FTMp->SC |= FTM_SC_TOIE_MASK;	// Enable Overflow interrupt
+
 
 	// Set CLK Source
 	FTMp->SC = (FTMp->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(config.CLK_source);
@@ -257,7 +262,7 @@ void FTM_resetCounter(FTM_n FTMn) {
 
 uint16_t FTM_getCounter(FTM_n FTMn) {
 	//return FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV = FTM_CnV_VAL(ftmconfig[FTMn].counter);
-	return (uint16_t) FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV;
+	return IC_count;
 }
 
 void FTM_modifyDC(FTM_n FTMn, uint16_t DC) {
@@ -308,52 +313,24 @@ void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch){
 }
 
 __ISR__ FTM2_IRQHandler(void) {
-	//uint32_t status;
-	//status = FTM2->STATUS; //Capturo flags de interrupcion de todos los canales
-	//FTM2->STATUS = 0;	//Limpio todos los flags
 	IC_ISR();
 }
 
+__ISR__ FTM0_IRQHandler(void){
+	IC_ISR();
+}
 
-void IC_ISR(void) //FTM3 CH5 PTC9 as IC
-{
-    static uint16_t med1,med2,med;
-    static uint8_t  state=0;
-    uint8_t bitRecived;
-    static uint8_t Is_cero =0;
+__ISR__ FTM1_IRQHandler(void){
+	IC_ISR();
+}
 
-    //ClearInterruptFlag
-    FTM_ClearInterruptFlag (FTM_2);
+__ISR__ FTM3_IRQHandler(void){
+	IC_ISR();
+}
 
-    if(state==0)
-    {
-        med1=FTM_getCounter(FTM_2); //
-        state=1;
-    }
-    else if(state==1)
-    {
-        med2=FTM_getCounter(FTM_2);
-        med=med2-med1;
-
-        state=0;                    // Set break point here and watch "med" value
-    }
-
-    if((SYSTEM_CLOCK_FREC/med)>1100 | (SYSTEM_CLOCK_FREC/med)<1300)
-    {
-        bitRecived = 1;
-        bitstream_reconTX(bitRecived);
-    }
-    else if((SYSTEM_CLOCK_FREC/med)>2300 | (SYSTEM_CLOCK_FREC/med)<2500)
-    {
-        bitRecived = 0;
-        if(Is_cero==0)
-        {
-            bitstream_reconTX(bitRecived);
-            Is_cero=1;
-        }
-        else
-        {
-            Is_cero =0;
-        }
-    }
+// No está lindo
+void IC_ISR(){
+	FTM2->STATUS = 0;	//Limpio todos los flags
+	FTM2->CONTROLS[FTM_Channel_0].CnSC &= ~FTM_CnSC_CHF_MASK;		// Clear interrupt flag
+	IC_count = FTM2->CONTROLS[FTM_Channel_0].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
 }
