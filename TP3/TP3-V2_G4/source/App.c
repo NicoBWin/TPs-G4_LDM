@@ -34,22 +34,23 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
-
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static void intochar(int16_t num, char chscore[LENG_SC]);
 
 void bitsDecoder(void);
+
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static char word;
+static uint8_t new_word;
+static uint8_t w_counter;
 
 /*******************************************************************************
  *******************************************************************************
@@ -58,7 +59,9 @@ void bitsDecoder(void);
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init(void) {
-	timerInit();		// Inicializa timers
+	// Inicializa timers
+	timerInit();
+
 	 // UART init
 	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = EVEN_PARITY_UART};
 	uartInit(UARTID_R, config);
@@ -82,10 +85,11 @@ void App_Init(void) {
 	FTM_start(FTM_2);
 }
 
+
+
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	uint16_t var;
-	var = FTM_getCounter(FTM_2);
+	//TERMINAR o EMPEZAR...
 
 }
 
@@ -131,9 +135,8 @@ static void intochar(int16_t num, char chscore[LENG_SC]) {
 void bitsDecoder(void){
 	static bool segu = false;
 	if (IC_IsNewData(0)){
-		uint16_t IC_data = IC_GetData(0);
-		if (IC_data > USEC2TICKS(MEDIAN(T2, T1), IC_PRESCALER)){
-			gpioWrite(OUT_PIN, 1);
+		uint16_t IC_data = FTM_getCounter(FTM_2);
+		if (IC_data > 0){
 			new_word = new_word<<1;
 			new_word |= 0b1;
 			w_counter++;
@@ -141,11 +144,10 @@ void bitsDecoder(void){
 				word = (char) new_word;
 				w_counter = 0;
 				new_word = 0;
-				uartWriteMsg(UART_SEL, &word, 1);
+				uartWriteMsg(UARTID_T, &word, 1);
 			}
 		} else {
 			if (!segu){
-				gpioWrite(OUT_PIN, 0);
 				segu = true;
 				new_word = new_word<<1;
 				new_word |= 0b0;
@@ -154,7 +156,7 @@ void bitsDecoder(void){
 					word = (char) new_word;
 					w_counter = 0;
 					new_word = 0;
-					uartWriteMsg(UART_SEL, &word, 1);
+					uartWriteMsg(UARTID_T, &word, 1);
 				}
 			}
 			else {
