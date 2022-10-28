@@ -77,7 +77,7 @@ void App_Init(void) {
 
 	// InputCapture Config
 	FTMConfig_t FTMConfigIC = {.channel=FTM_Channel_0, .mode=FTM_mInputCapture, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
-						  .IC_edge=FTM_eRising, .modulo=0x000A, .counter=0x0001, .active_low=false, .DMA_on=false, .interrupt_on=true};
+						  .IC_edge=FTM_eEither, .modulo=0x000A, .counter=0x0001, .active_low=false, .DMA_on=false, .interrupt_on=true};
 	FTM_Init (FTM_2, FTMConfigIC);
 	FTM_start(FTM_2);
 }

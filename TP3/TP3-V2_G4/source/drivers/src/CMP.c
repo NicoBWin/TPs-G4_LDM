@@ -155,7 +155,7 @@ void CMP_set_output(CMP_output output)
     }
     else if (output == FTM2_CH0){
         SIM->SOPT4 &= ~(SIM_SOPT4_FTM2CH0SRC_MASK);
-		SIM->SOPT4 |= SIM_SOPT4_FTM2CH0SRC(2);
+		SIM->SOPT4 |= SIM_SOPT4_FTM2CH0SRC(1);
     }
 }
 
