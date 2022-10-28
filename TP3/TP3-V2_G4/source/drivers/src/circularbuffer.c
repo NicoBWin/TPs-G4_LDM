@@ -109,7 +109,7 @@ void bitstream_reconTX(char demod_bit)
 		if(demod_bit==oparity)
 		{
 			msg_sent= msg;
-			uartWriteMsg(1, &msg, 1);//LLAMO A UART TX MANDANDOLE msg
+			uartWriteMsg(1, &msg, 1);//LLAMO A UART1 TX MANDANDOLE msg
 		}
 		else if(demod_bit!=oparity)
 		{

@@ -23,7 +23,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define MAX_FTM 4
-#define MAX_COUNT	0xFFFF
+#define MAX_COUNT	65535
 
 #define FTM_CH_0 0
 #define FTM_CH_1 1
@@ -347,10 +347,14 @@ void IC_ISR(FTM_n FTMn){
 			IC_count = FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
 
 		//Lógica
-		static uint16_t med1,med2,med;
+		static uint16_t med1,med2;
+		static int32_t medfinal;
 		static uint8_t  state=0;
 		uint8_t bitRecived;
 		static uint8_t Is_cero =0;
+
+		//static uint32_t array_debug[1000];
+		//static uint32_t index_debug = 0;
 
 		if(state==0) {
 			med1=FTM_getCounter(FTM_2); //
@@ -358,19 +362,27 @@ void IC_ISR(FTM_n FTMn){
 		}
 		else if(state==1) {
 			med2 = FTM_getCounter(FTM_2);
-			med = med2 - med1;
-			//med += IC_ovf * MAX_COUNT;
-			IC_ovf = 0;
-			state = 0;                    // Set break point here and watch "med" value
-		}
-		if(((CLOCK_FREC_PRC/med)>800) & ((CLOCK_FREC_PRC/med)<1600)) {
-			bitRecived = 1;
-			bitstream_reconTX(bitRecived);
+			medfinal = med2 - med1;
+			medfinal += (IC_ovf * MAX_COUNT);
 			med1 = 0;
 			med2 = 0;
-			med = 0;
+			IC_ovf = 0;
+			state = 0;                    // Set break point here and watch "med" value
+
+			/*array_debug[index_debug] = medfinal;
+
+			if (index_debug < 1000){
+				index_debug ++;
+			}else{
+				index_debug = index_debug; // debug
+			}*/
 		}
-		else if (((CLOCK_FREC_PRC/med)>2000) & ((CLOCK_FREC_PRC/med)<2600))
+		if(((CLOCK_FREC_PRC/medfinal)>2000) & ((CLOCK_FREC_PRC/medfinal)<2600)) {
+			bitRecived = 1;
+			bitstream_reconTX(bitRecived);
+			medfinal = 0;
+		}
+		else if (((CLOCK_FREC_PRC/medfinal)>4200) & ((CLOCK_FREC_PRC/medfinal)<4900))
 		{
 			bitRecived = 0;
 			if(Is_cero==0) {
@@ -380,9 +392,7 @@ void IC_ISR(FTM_n FTMn){
 			else {
 				Is_cero =0;
 			}
-			med1 = 0;
-			med2 = 0;
-			med = 0;
+			medfinal = 0;
 		}
 	}
 	// Disable FTM register write
