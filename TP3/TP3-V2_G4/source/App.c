@@ -48,6 +48,7 @@ void bitsDecoder(void);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
+static int var;
 static char word;
 static uint8_t new_word;
 static uint8_t w_counter;
@@ -72,17 +73,16 @@ void App_Init(void) {
 
 	// FTMs init -> DO NOT USE FTM0 & CH5!
 	// PWM Config
-	//FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_6, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
-	//					  .PWM_logic=FTM_High, .modulo=4999, .PWM_DC=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=false};
-	//FTM_Init (FTM_0, FTMConfigPWM);
-	//FTM_start(FTM_0);
+	FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_6, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
+						  .PWM_logic=FTM_High, .modulo=4999, .PWM_DC=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=false};
+	FTM_Init (FTM_0, FTMConfigPWM);
+	FTM_start(FTM_0);
 	// Modulo -> (50MHz / frec del DC) -1
 
 	// InputCapture Config
-	FTMConfig_t FTMConfigIC = {.channel=FTM_Channel_0, .mode=FTM_mInputCapture, .prescale=FTM_PSC_x16, .CLK_source=FTM_SysCLK,
-						  .IC_edge=FTM_eEither, .modulo=0x00FF, .counter=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=true};
+	FTMConfig_t FTMConfigIC = {.channel=FTM_Channel_0, .mode=FTM_mInputCapture, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
+						  .IC_edge=FTM_eEither, .modulo=0xFFFF, .counter=0x0000, .active_low=false, .DMA_on=false, .interrupt_on=true};
 	FTM_Init (FTM_2, FTMConfigIC);
-	FTM_start(FTM_2);
 }
 
 

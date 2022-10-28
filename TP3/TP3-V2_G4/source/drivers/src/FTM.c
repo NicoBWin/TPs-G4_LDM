@@ -9,6 +9,7 @@
  ******************************************************************************/
 // Main lib
 #include "../headers/FTM.h"
+#include "../headers/circularbuffer.h"
 
 // Internal libs
 #include "../../MCAL/gpio.h"
@@ -22,6 +23,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define MAX_FTM 4
+#define MAX_COUNT	0xFFFF
 
 #define FTM_CH_0 0
 #define FTM_CH_1 1
@@ -147,7 +149,7 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
     // Enable FTM register write
     FTMp->MODE = FTM_MODE_WPDIS(1);
 
-    FTMp->MODE |= FTM_MODE_FTMEN_MASK;	// FTM Advanced
+    //FTMp->MODE |= FTM_MODE_FTMEN_MASK;	// FTM Advanced
     //**************** Init channel: GPIO and polarity ***************************
     switch(config.channel) {
     	case FTM_Channel_0:
@@ -225,7 +227,7 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config) {
 
     // Set interrupts
 	FTMp->CONTROLS[config.channel].CnSC = (FTMp->CONTROLS[config.channel].CnSC & ~(FTM_CnSC_CHIE_MASK)) |  FTM_CnSC_CHIE(config.interrupt_on);
-	//FTMp->SC |= FTM_SC_TOIE_MASK;	// Enable Overflow interrupt
+	FTMp->SC |= FTM_SC_TOIE_MASK;	// Enable Overflow interrupt
 
 	// Set CLK Source
 	FTMp->SC = (FTMp->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(config.CLK_source);
@@ -313,11 +315,11 @@ void FTM_PortConfig(FTM_n FTMn, FTM_Channel_t ch){
 
 
 __ISR__ FTM0_IRQHandler(void){
-	IC_ISR(FTM_0);
+	//IC_ISR(FTM_0);
 }
 
 __ISR__ FTM1_IRQHandler(void){
-	IC_ISR(FTM_1);
+	//IC_ISR(FTM_1);
 }
 
 __ISR__ FTM2_IRQHandler(void) {
@@ -325,24 +327,61 @@ __ISR__ FTM2_IRQHandler(void) {
 }
 
 __ISR__ FTM3_IRQHandler(void){
-	IC_ISR(FTM_3);
+	//IC_ISR(FTM_3);
 }
-
 
 void IC_ISR(FTM_n FTMn){
 	// Enable FTM register write
 	FTM_PTRS[FTMn]->MODE = FTM_MODE_WPDIS(1);
 
+	static uint16_t IC_ovf = 0;
 	//FTM2->STATUS = 0;	//Limpio todos los flags
 	if (READ_BIT(FTM_PTRS[FTMn]->SC, FTM_SC_TOF_MASK)){
 		FTM_PTRS[FTMn]->SC &= ~FTM_SC_TOF_MASK;
+		IC_ovf++;
 	}
-	if (READ_BIT(FTM_PTRS[FTMn]->CONTROLS[FTM_Channel_6].CnSC, FTM_CnSC_CHF_MASK)){
-		FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnSC = (FTM2->CONTROLS[ftmconfig[FTMn].channel].CnSC & ~FTM_CnSC_CHF_MASK) | FTM_CnSC_CHF(0); // Clear interrupt flag
-	}
-	//FTM_ClearInterruptFlag (FTM_2);
-	IC_count = FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
+	else if(FTM_PTRS[FTMn]->STATUS){
+			FTM_PTRS[FTMn]->STATUS = 0x00;
 
+			IC_count = FTM_PTRS[FTMn]->CONTROLS[ftmconfig[FTMn].channel].CnV & FTM_CnV_VAL_MASK;	//Copy value to internal var
+
+		//Lógica
+		static uint16_t med1,med2,med;
+		static uint8_t  state=0;
+		uint8_t bitRecived;
+		static uint8_t Is_cero =0;
+
+		if(state==0)
+		{
+			med1=FTM_getCounter(FTM_2); //
+			state=1;
+		}
+		else if(state==1)
+		{
+			med2=FTM_getCounter(FTM_2);
+			med=med2 + IC_ovf * MAX_COUNT -med1;
+
+			state=0;                    // Set break point here and watch "med" value
+		}
+		if(((SYSTEM_CLOCK_FREC/med)>1100) & ((SYSTEM_CLOCK_FREC/med)<1300))
+		{
+			bitRecived = 1;
+			bitstream_reconTX(bitRecived);
+		}
+		else if(((SYSTEM_CLOCK_FREC/med)>2300) & ((SYSTEM_CLOCK_FREC/med)<2500))
+		{
+			bitRecived = 0;
+			if(Is_cero==0)
+			{
+				bitstream_reconTX(bitRecived);
+				Is_cero=1;
+			}
+			else
+			{
+				Is_cero =0;
+			}
+		}
+	}
 	// Disable FTM register write
 	FTM_PTRS[FTMn]->MODE = (FTM_PTRS[FTMn]->MODE & ~FTM_MODE_WPDIS_MASK) | FTM_MODE_WPDIS(0);
 }
