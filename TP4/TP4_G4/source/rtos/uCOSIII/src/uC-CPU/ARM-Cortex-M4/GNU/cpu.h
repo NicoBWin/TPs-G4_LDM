@@ -746,4 +746,3 @@ void        CPU_BitBandSet   (CPU_ADDR    addr,
 #endif
 
 #endif                                                          /* End of CPU module include.                           */
-

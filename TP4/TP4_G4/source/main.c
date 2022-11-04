@@ -1,6 +1,19 @@
+/***************************************************************************/ /**
+   @file     main.c
+   @brief    Main μC/OS-III
+   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
+  ******************************************************************************/
+
+/*******************************************************************************
+ * INCLUDE HEADER FILES
+ ******************************************************************************/
 #include "hardware.h"
+#include "App.h"
 #include  <os.h>
 
+/*******************************************************************************
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
 /* LEDs */
 #define LED_R_PORT            PORTB
 #define LED_R_GPIO            GPIOB
@@ -31,15 +44,11 @@ static CPU_STK TaskStartStk[TASKSTART_STK_SIZE];
 #define TASK2_STK_SIZE			256u
 #define TASK2_STK_SIZE_LIMIT	(TASK2_STK_SIZE / 10u)
 #define TASK2_PRIO              3u
-#define TASK3_PRIO              3u
 static OS_TCB Task2TCB;
-static OS_TCB Task3TCB;
 static CPU_STK Task2Stk[TASK2_STK_SIZE];
-static CPU_STK Task3Stk[TASK2_STK_SIZE];
 
 /* Example semaphore */
 static OS_SEM semTest;
-static OS_SEM semExample;
 
 /* Messege Queue */
 static OS_Q ComQ;
@@ -47,44 +56,9 @@ static OS_Q ComQ;
 static void Task2(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
-    char ComQBuff[3] = {'B', 'G', 'R'};
-    int i = 0;
+    App_Init();
     while (1) {
-        OSSemPost(&semTest, OS_OPT_POST_1, &os_err);
-        OSTimeDlyHMSM(0u, 0u, 1u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
-        //OSSemPost(&semExample, OS_OPT_POST_1, &os_err); //Sets or unsets the sem to use un Task3
-        //OSTimeDly(1000, OS_OPT_TIME_DLY, &os_err);	// Cuenta ticks de uC3, la frec. es de 1000Hz
-		OSQPost(&ComQ, &ComQBuff[i], sizeof(ComQBuff), OS_OPT_POST_FIFO + OS_OPT_POST_ALL, &os_err);
-		i++;
-        if(i>2){
-        	i=0;
-        }
-    }
-}
-
-static void Task3(void *p_arg) {
-    (void)p_arg;
-    OS_ERR os_err;
-
-    static void *p_msg;
-	static OS_MSG_SIZE msg_size;
-
-
-    while (1) {
-        OSSemPost(&semTest, OS_OPT_POST_1, &os_err);
-        //OSTimeDlyHMSM(0u, 0u, 1u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
-    	//OSSemPend(&semExample, 0u, OS_OPT_PEND_BLOCKING, (CPU_TS*)0, &os_err);	//Wait for release made in Task2
-    	p_msg = OSQPend(&ComQ, 0, OS_OPT_PEND_BLOCKING, &msg_size, (CPU_TS *)0, &os_err);
-    	char msg = *(char*)p_msg;
-    	if(msg == 'B'){
-    		LED_B_TOGGLE();
-    	}
-    	else if (msg == 'G') {
-    		LED_G_TOGGLE();
-    	}
-    	else if (msg == 'R'){
-    		LED_R_TOGGLE();
-    	}
+    	App_Run();
     }
 }
 
@@ -125,23 +99,10 @@ static void TaskStart(void *p_arg) {
                  (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                  &os_err);
 
-    OSTaskCreate(&Task3TCB, 			//tcb
-                 "Task 3",				//name
-                  Task3,				//func
-                  0u,					//arg
-                  TASK3_PRIO,			//prio
-                 &Task3Stk[0u],			//stack
-                  TASK2_STK_SIZE_LIMIT,	//stack limit
-                  TASK2_STK_SIZE,		//stack size
-                  0u,
-                  0u,
-                  0u,
-                 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                 &os_err);
+
 
     while (1) {
-        OSTimeDlyHMSM(0u, 0u, 10u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
-        //LED_G_TOGGLE();
+        //DO NTHIG
     }
 }
 
