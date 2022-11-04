@@ -89,7 +89,7 @@ void App_Run(void) {
   User *ptr_administradores;   // Apunta a la base de datos de administradores
   int cant_user = 1;		// Cantidad de usuarios 
 
-//incializa usuarios y administradores 
+  //incializa usuarios y administradores
   ptr_user = user_init(cant_user, ptr_user);
   ptr_administradores = admin_init(ptr_administradores);
   SetdispBrightness(7);

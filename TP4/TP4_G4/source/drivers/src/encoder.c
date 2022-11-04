@@ -100,6 +100,12 @@ encResult_t encGetEvent() {
 static void encoCallback(void){
   readPins();
   encEvent = encStatus(PINA, PINB, PINSW);
+  if(encEvent){
+
+  }
+  else {
+
+  }
 }
 
 // Lee todos los pins
