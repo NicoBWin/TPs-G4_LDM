@@ -25,6 +25,9 @@
 
 void hw_Init (void);
 
+void hw_EnableInterrupts (void);
+void hw_DisableInterrupts (void);
+
 /* See IRQn_Type for IRQn definitions
  * Example: NVIC_EnableIRQ(SysTick_IRQn);
  * Example: NVIC_DisableIRQ(SysTick_IRQn);

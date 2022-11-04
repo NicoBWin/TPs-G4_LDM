@@ -7,6 +7,8 @@
 
 #include "hardware.h"
 
+static uint32_t __LDM_interruptDisableCount = 0;
+
 void hw_Init (void)
 {
 	SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2)); /* set CP10, CP11 for Full Access to the FPU*/
@@ -46,4 +48,23 @@ void hw_Init (void)
 		portBaseList[i]->ISFR = PORT_ISFR_ISF_MASK;
 #endif
 
+}
+
+
+void hw_EnableInterrupts (void)
+{
+    if (__LDM_interruptDisableCount > 0)
+    {
+        __LDM_interruptDisableCount--;
+
+        if (__LDM_interruptDisableCount == 0)
+            __enable_irq();
+    }
+}
+
+void hw_DisableInterrupts (void)
+{
+    __disable_irq();
+
+    __LDM_interruptDisableCount++;
 }

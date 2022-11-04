@@ -11,8 +11,11 @@
 #include <stdint.h>
 
 #include "SysTick.h"
-#include  <os.h>
+#include "../MCAL/gpio.h"
+#include "../drivers/board.h"
 #include "MK64F12.h"
+
+#include  <os.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -27,7 +30,8 @@
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static systick_callback_t st_callback;
+#define ISR_t         void __attribute__ ((interrupt))
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -35,7 +39,18 @@
  ******************************************************************************/
 bool SysTick_Init(systick_callback_t callback) {
 	//CPU_CRITICAL_ENTER();
-	OS_AppTimeTickHookPtr = callback;
+	OS_AppTimeTickHookPtr = G4_SysTick_Handler;
+	st_callback = callback;
 	//CPU_CRITICAL_EXIT(); //SEEE MANUAL
 	return true;
+}
+
+void G4_SysTick_Handler(void) {
+	#ifdef SYSTICK_DEVELOPMENT_MODE
+		gpioWrite(PIN_IRQ, HIGH);
+	#endif //SYSTICK_DEVELOPMENT_MODE
+	st_callback();
+	#ifdef SYSTICK_DEVELOPMENT_MODE
+		gpioWrite(PIN_IRQ, LOW);
+	#endif //SYSTICK_DEVELOPMENT_MODE
 }

@@ -15,6 +15,7 @@
 #include "../board.h"
 #include "hardware.h"
 #include "MK64F12.h"
+#include  <os.h>
 
 #define ISR_t         void __attribute__ ((interrupt))
 
@@ -121,6 +122,8 @@ int mag_drv_LIVE()					//Callback, se llama en caso de que se detecte una señal
 
 ISR_t PORTC_IRQHandler (void)		//Se copian los datos recibidos a partir del primer 1 (inclusive), bit a bit y en el orden recibido.
 {
+	OSIntEnter();
+
 	static int index=0, half_bit=1;
 	static bool	start_sentinel=FALSE;
 	if ((index == 0) && (half_bit==1)&&(start_sentinel==FALSE))
@@ -163,6 +166,8 @@ ISR_t PORTC_IRQHandler (void)		//Se copian los datos recibidos a partir del prim
 
 
 	}
+
+	OSIntExit();
 }
 bool mag_get_data_ready()			//Getter del flag que se enciende al haber recibido todos los datos mediante un swipe (mag_drv_LIVE + PORTC_IRQHandler)
 {
