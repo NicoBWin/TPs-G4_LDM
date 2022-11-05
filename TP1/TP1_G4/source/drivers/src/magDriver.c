@@ -227,6 +227,8 @@ bool mag_data2bits() //Funcion que convierte los bits recibidos en unidades de 5
 	if (index==200)									//Si termine de procesar toda la data-
 	{
 		index=0;
+		bitcounter=0;
+		word_index=0;
 		mask.ch = WRITING_MASK;						//Reseteo variables locales estaticas
 		return	TRUE;								//Devuelvo true
 	}
@@ -312,7 +314,7 @@ bool mag_bitscheck()				//Funcion que verifica las palabras segun paridad y LRC.
 void mag_bitstochar()				//Funcion que convierte las palabras de 5 bits codificadas (con paridades) a su valor ASCII correspondiente.
 {
 	static single_char_t	temp,mask;
-	static int index;
+	int index;
 	for (index=0, mask.ch=NP_MASK; index<39; index++)		//(~16) = 01111
 	{
 		temp.ch = (mag_word[index].ch & mask.ch);			//Borro los bits de paridad de todos los datos.
