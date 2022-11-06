@@ -1,8 +1,8 @@
 /***************************************************************************/ /**
-   @file     App.c
-   @brief    Application functions
-   @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
-  ******************************************************************************/
+@file     App.c
+@brief    Application functions
+@author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
+******************************************************************************/
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
@@ -129,7 +129,7 @@ void App_Run(void) {
 	  
     joystick_input= encoderState;
     //se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
-    if( mag_get_data_ready())	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
+    if( mag_get_data_ready() && status == ID)	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
     {
     	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID); 
     	status = PASSWORD;	// EL usuario debe ingresar la password 
