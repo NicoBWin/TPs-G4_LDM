@@ -19,6 +19,9 @@
 // App
 #include "App.h"
 
+//OS
+#include <os.h>
+
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -57,10 +60,12 @@ static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *s
 
 static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status); // Navega en el menu del administrador
 static User* user_add(int cant_user, User* ptr_user, char id[], char password[]); // Agrega el ID y contraseña ingresada a la base de datos dinámica de usuarios 
+
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+/* Example semaphore */
+static OS_SEM EncSem;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -69,6 +74,8 @@ static User* user_add(int cant_user, User* ptr_user, char id[], char password[])
 static encResult_t encoderState;	// 
 static int flag_add = 0;	// Indica que el administrador esta añadiendo un usuario a la base de datos
 static int cant_admin = 2;	// Indica la cantidad de administradores 
+
+static OS_ERR app_err;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -76,11 +83,17 @@ static int cant_admin = 2;	// Indica la cantidad de administradores
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init(void) {
-  timerInit();		// Inicializa timers
-  encInit();		// Inicializa encoder
-  dispInit();		// Inicializa Display
-  ledsInit();		// Inicializa Leds
-  mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
+
+	timerInit();		// Inicializa timers
+
+	/* Create semaphore */
+	OSSemCreate(&EncSem, "Enc Sem", 0u, &app_err);
+	encInit(&EncSem);		// Inicializa encoder
+	dispInit();		// Inicializa Display
+	ledsInit();		// Inicializa Leds
+
+
+	mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -119,11 +132,11 @@ void App_Run(void) {
   while (1)
   {
     counter++;
-    // se comunica con el encoder para saber si se acciono y que es lo que se acciono
-    if(encGetStatus()) {
-    	encoderState = encGetEvent();	// Cambio el encoder
+    // El semaphore comunica que el encoder se acciono
+    if(OSSemPend(&EncSem, 0, OS_OPT_PEND_NON_BLOCKING, NULL,&app_err)) {
+    	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
     }
-    else{
+    else{ //Pend devuelve OS_EE_NONE = 0u
     	encoderState = ENC_NONE;        // El usuario no realizó movimiento
     }
 	  

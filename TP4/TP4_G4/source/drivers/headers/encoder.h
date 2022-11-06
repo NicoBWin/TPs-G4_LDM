@@ -13,6 +13,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//OS
+#include <os.h>
+
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -29,7 +32,7 @@ typedef enum {
 /**
  * @brief Initialize encoder
  */
-void encInit();
+void encInit(OS_SEM *EncSem);
 
 /**
  * @brief Check for new encoder events

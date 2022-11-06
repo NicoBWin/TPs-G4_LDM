@@ -47,6 +47,10 @@ static encResult_t encEvent;
 //Timer para el encoder
 static tim_id_t encTimer;
 
+//Semaphore
+static OS_SEM *Sem;
+static OS_ERR enc_err;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -55,7 +59,7 @@ static tim_id_t encTimer;
 /**
  * @brief Initialize encoder
  */
-void encInit() {
+void encInit(OS_SEM *EncSem) {
   //Inicializo Data
   encEvent = ENC_NONE;
   status = false;
@@ -64,6 +68,9 @@ void encInit() {
   gpioMode(PIN_RCHA, INPUT);
   gpioMode(PIN_RCHB, INPUT);
   gpioMode(PIN_SW, INPUT);
+
+  //Seteo el semaforó
+  Sem = EncSem;
 
   //Seteo el timer para que llame periodicamente a la callback con 1ms
   encTimer = timerGetId();
@@ -74,7 +81,7 @@ void encInit() {
  * @brief Check for new encoder events
  * @return true if there is an encoder event
  */
-bool encGetStatus() {
+/*bool encGetStatus() {
 	if(status) {
 		status = false;
 		return true;
@@ -82,7 +89,7 @@ bool encGetStatus() {
 	else {
 		return false;
 	}
-}
+}*/ //NO SE USARÍA CON SEMAFOROS
 
 /**
  * @brief Get event type
@@ -101,10 +108,10 @@ static void encoCallback(void){
   readPins();
   encEvent = encStatus(PINA, PINB, PINSW);
   if(encEvent){
-
+	  OSSemSet(Sem, 1, &enc_err);
   }
   else {
-
+	  OSSemSet(Sem, 0, &enc_err);
   }
 }
 

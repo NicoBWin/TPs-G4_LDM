@@ -54,8 +54,7 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 // Defino estados
-typedef struct User
-{
+typedef struct User {
     char id[SIZE_ID] ;
     char password[SIZE_PASSWORD];
     char name[SIZE_NAME];
