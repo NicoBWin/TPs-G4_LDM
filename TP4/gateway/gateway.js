@@ -1,8 +1,8 @@
 /*******************************************************************/
 /*** Configuration ***/
 /*******************************************************************/
-const serialPortName = "COM51";
-const thingSpeakAPIKey = "DVDTVSXTQFY8QZXT";
+const serialPortName = "COM7";  //REVISAR PUERTO CUANDO CONECTO!
+const thingSpeakAPIKey = "B9CU8OPILVJO2GTA";
 /*******************************************************************/
 
 
