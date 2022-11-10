@@ -59,7 +59,7 @@ static void send_uart();
  ******************************************************************************/
 void App_Init(void) {
   timerInit();		// Inicializa timers
-	 // UART init
+  // UART init
   uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = EVEN_PARITY_UART};
   uartInit(UARTID_R, config);
   uartInit(UARTID_T, config);

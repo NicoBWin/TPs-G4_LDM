@@ -16,6 +16,10 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define UARTID	0
+#define UARTBAUDRATE	1200
+
+/* ************************************************** */
 #define CARACTER_NULL 'A' // Caracter que indica que la contraseña es de 4 digitos
 #define INCORRECTO 0
 #define CORRECTO 1

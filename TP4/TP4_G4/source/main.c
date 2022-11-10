@@ -137,8 +137,8 @@ static void TaskStart(void *p_arg) {
 // UART Task
 /*static void Task2(void *p_arg) {
     (void)p_arg;
-    //OS_ERR os_err;
+    OS_ERR os_err;
     while (1) {
-
+		// UART IMPLEMENTADO CON MessageQueue
     }
 }*/
