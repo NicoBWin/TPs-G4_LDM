@@ -12,6 +12,7 @@
 #include "drivers/headers/encoder.h"
 #include "drivers/headers/leds.h"
 #include "drivers/headers/magDriver.h"
+#include "drivers/headers/uart.h"
 
 // Timer
 #include "timer/timer.h"
@@ -100,7 +101,7 @@ void App_Init(void) {
 	mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
 
 	/*// UART init
-	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = EVEN_PARITY_UART};
+	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
 	uartInit(UARTID, config);*/
 }
 
