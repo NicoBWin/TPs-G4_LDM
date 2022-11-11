@@ -110,6 +110,7 @@ static void encoCallback(void){
   if(status){
 	  status = false;
 	  OSSemPost(Sem, OS_OPT_POST_ALL, &enc_err);
+	  //OSSemSet(Sem, 2u, &enc_err);
   }
 }
 

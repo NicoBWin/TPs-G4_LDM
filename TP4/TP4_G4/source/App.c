@@ -136,22 +136,12 @@ void App_Run(void) {
   encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder 
   tim_id_t ID_LED = timerGetId(); // ID que se usará para el tiempo que estan prendidos los leds
 
-
+  static OS_SEM_CTR EncSt;
   int counter = 0;
   while (1)
   {
     counter++;
-    // El semaphore comunica que el encoder se acciono
-    OS_SEM_CTR EncSt = OSSemPend(&EncSem, 0, OS_OPT_PEND_NON_BLOCKING, NULL, &enc_err);
-    if(EncSt) {
-    	OSSemSet(&EncSem, 0u, &enc_err);
-    	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
-    }
-    else{ //Pend devuelve el contador del Sem
-    	encoderState = ENC_NONE;        // El usuario no realizó movimiento
-    }
-	  
-    joystick_input= encoderState;
+
     //se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
     if( mag_get_data_ready() && status == ID)	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
     {
@@ -319,6 +309,13 @@ void App_Run(void) {
       break;
     }
     //print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
+
+    // El semaphore comunica que el encoder se acciono
+    EncSt = OSSemPend(&EncSem, 0u, OS_OPT_PEND_BLOCKING, NULL, &enc_err);
+	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
+    joystick_input= encoderState;
+
+
   }
   free(ptr_user);
   free(ptr_administradores);	// Libero la memoria dinamica
