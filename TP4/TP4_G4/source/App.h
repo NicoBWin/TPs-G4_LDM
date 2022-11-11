@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "drivers/headers/uart.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/

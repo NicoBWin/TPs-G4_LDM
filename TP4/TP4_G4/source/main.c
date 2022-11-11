@@ -27,8 +27,8 @@ static CPU_STK TaskStartStk[TASKSTART_STK_SIZE];
 static OS_TCB Task2TCB;
 static CPU_STK Task2Stk[TASK2_STK_SIZE];
 
-/* Example semaphore */
-static OS_SEM semTest;
+/* Semaphore */
+static OS_SEM MainSem;
 
 /* Messege Queue */
 static OS_Q ComQ;
@@ -112,10 +112,10 @@ static void TaskStart(void *p_arg) {
 #endif
 
     /* Create semaphore */
-    //OSSemCreate(&semTest, "Sem Test", 0u, &os_err);
+    OSSemCreate(&MainSem, "Sem Test", 0u, &os_err);
 
     /* Create Task2 */
-    /*OSTaskCreate(&Task2TCB, 			//tcb
+    OSTaskCreate(&Task2TCB, 			//tcb
                  "Task 2",				//name
                   Task2,				//func
                   0u,					//arg
@@ -127,18 +127,24 @@ static void TaskStart(void *p_arg) {
                   0u,
                   0u,
                  (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                 &os_err);*/
+                 &os_err);
 
     while (1) {
-    	App_Run();
+    	OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
+    	//App_Run();
+    	//char UART_TXmsg[20] = "104RxxxxCxxxx\r\n"; //String a transmitir
+    	char UART_TXmsg[30] = "AA55C33C0701000100040006"; //String a transmitir
+    	uartWriteMsg(UARTID, UART_TXmsg, 24);
+    	OSTimeDlyHMSM(0u, 0u, 30u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
     }
 }
 
 // UART Task
-/*static void Task2(void *p_arg) {
+static void Task2(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     while (1) {
-		// UART IMPLEMENTADO CON MessageQueue
+		OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
+
     }
-}*/
+}

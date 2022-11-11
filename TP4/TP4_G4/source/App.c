@@ -12,7 +12,6 @@
 #include "drivers/headers/encoder.h"
 #include "drivers/headers/leds.h"
 #include "drivers/headers/magDriver.h"
-#include "drivers/headers/uart.h"
 
 // Timer
 #include "timer/timer.h"
@@ -101,9 +100,9 @@ void App_Init(void) {
 	// El semaforo reemplazaría a mag_get_data_ready(); VER IMPLEMENTACION SIMILAR EN ENCODER
 	mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
 
-	/*// UART init
+	// UART init
 	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
-	uartInit(UARTID, config);*/
+	uartInit(UARTID, config);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -148,7 +147,7 @@ void App_Run(void) {
     	OSSemSet(&EncSem, 0u, &enc_err);
     	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
     }
-    else{ //Pend devuelve OS_EE_NONE = 0u
+    else{ //Pend devuelve el contador del Sem
     	encoderState = ENC_NONE;        // El usuario no realizó movimiento
     }
 	  
