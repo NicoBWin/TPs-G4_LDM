@@ -1,7 +1,8 @@
 /*******************************************************************/
 /*** Configuration ***/
 /*******************************************************************/
-const serialPortName = "COM7";  //REVISAR PUERTO CUANDO CONECTO!
+const baudRate = 1200;
+const serialPortName = 'COM4';  //REVISAR PUERTO CUANDO CONECTO!
 const thingSpeakAPIKey = "B9CU8OPILVJO2GTA";
 /*******************************************************************/
 
@@ -9,14 +10,14 @@ const thingSpeakAPIKey = "B9CU8OPILVJO2GTA";
 /*******************************************************************/
 /*** Gateway code ***/
 /*******************************************************************/
-const SerialPort = require("serialport");
+const {SerialPort} = require('serialport');
 const https = require('https');
 
 var discard = false;
 
-const port = new SerialPort(serialPortName, {  
-    baudRate: 1200
-});
+const params = { path: serialPortName, baudRate: baudRate };
+
+const port = new SerialPort(params)
 
 function tx(buff) {
     port.write(Buffer.from([0xaa, 0x55, 0xc3, 0x3c, buff.length]));

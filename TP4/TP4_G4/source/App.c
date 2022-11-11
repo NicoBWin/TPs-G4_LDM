@@ -78,6 +78,7 @@ static int flag_add = 0;	// Indica que el administrador esta añadiendo un usuar
 static int cant_admin = 2;	// Indica la cantidad de administradores 
 
 static OS_ERR app_err;
+static OS_ERR enc_err;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -95,7 +96,7 @@ void App_Init(void) {
 	ledsInit();		// Inicializa Leds
 
 	/* Create semaphore */
-	OSSemCreate(&MagSem, "Mag Sem", 0u, &app_err);
+	//OSSemCreate(&MagSem, "Mag Sem", 0u, &app_err);
 	// Hay que pasarle el puntero al semaforo para que mag lo pueda usar cuando tenga info lista
 	// El semaforo reemplazaría a mag_get_data_ready(); VER IMPLEMENTACION SIMILAR EN ENCODER
 	mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
@@ -142,7 +143,9 @@ void App_Run(void) {
   {
     counter++;
     // El semaphore comunica que el encoder se acciono
-    if(OSSemPend(&EncSem, 0, OS_OPT_PEND_NON_BLOCKING, NULL,&app_err)) {
+    OS_SEM_CTR EncSt = OSSemPend(&EncSem, 0, OS_OPT_PEND_NON_BLOCKING, NULL, &enc_err);
+    if(EncSt) {
+    	OSSemSet(&EncSem, 0u, &enc_err);
     	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
     }
     else{ //Pend devuelve OS_EE_NONE = 0u

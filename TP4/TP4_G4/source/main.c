@@ -112,7 +112,7 @@ static void TaskStart(void *p_arg) {
 #endif
 
     /* Create semaphore */
-    OSSemCreate(&semTest, "Sem Test", 0u, &os_err);
+    //OSSemCreate(&semTest, "Sem Test", 0u, &os_err);
 
     /* Create Task2 */
     /*OSTaskCreate(&Task2TCB, 			//tcb

@@ -69,7 +69,7 @@ void encInit(OS_SEM *EncSem) {
   gpioMode(PIN_RCHB, INPUT);
   gpioMode(PIN_SW, INPUT);
 
-  //Seteo el semaforó
+  //Seteo el puntero del semáforo
   Sem = EncSem;
 
   //Seteo el timer para que llame periodicamente a la callback con 1ms
@@ -107,12 +107,13 @@ encResult_t encGetEvent() {
 static void encoCallback(void){
   readPins();
   encEvent = encStatus(PINA, PINB, PINSW);
-  if(encEvent){
-	  OSSemSet(Sem, 1, &enc_err);
+  if(status){
+	  status = false;
+	  OSSemPost(Sem, OS_OPT_POST_ALL, &enc_err);
   }
-  else {
-	  OSSemSet(Sem, 0, &enc_err);
-  }
+  //else {
+	  //OSSemSet(Sem, 0, &enc_err);
+  //}
 }
 
 // Lee todos los pins
