@@ -146,18 +146,15 @@ static void Task2(void *p_arg) {
     while (1) {
 		//OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
 
-		char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x00,0x00,0x00,0x00,0x00,0x00};
-		p_msg = OSQPend(&ComQ, 0, OS_OPT_PEND_BLOCKING, &msg_size, (CPU_TS *)0, &os_err);
-		char *msg = (char*)p_msg;
-		for(int i=0; i<msg_size; i++){
-			buffer[i+7]=msg[i];
-		}
-		//Convertir el msg a string
+		static char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x00,0x00,0x00,0x00,0x00,0x00};
 
-		//String a transmitir
 		uartWriteMsg(UARTID, buffer, 12);
 
-		OSTimeDlyHMSM(0u, 0u, 2u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
-
+		p_msg = OSQPend(&ComQ, 0, OS_OPT_PEND_BLOCKING, &msg_size, (CPU_TS *)0, &os_err);
+		char *msg = (char*)p_msg;
+		//Convertir el msg al string
+		for(int i=0; i<msg_size; i++){
+			buffer[i+6]=msg[i];
+		}
     }
 }
