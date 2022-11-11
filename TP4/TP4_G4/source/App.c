@@ -532,10 +532,12 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             if(ptr_user[i].inside)
             {
                 cant_piso1--;
+
             }
             else
             {
                 cant_piso1++;
+                ptr_user[i].inside = 1;
             }
             buffer_piso[0] = cant_piso1;
         }
@@ -548,6 +550,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             else
             {
                 cant_piso2++;
+                ptr_user[i].inside = 1;
             }
             buffer_piso[2] = cant_piso2;
         }
@@ -560,12 +563,13 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             else
             {
                 cant_piso3++;
+                ptr_user[i].inside = 1;
             }
             buffer_piso[4] = cant_piso3;
         }
         // buffer_piso = {cant_piso1, 0x0, cant_piso2, 0x0, cant_piso3, 0x0};
 
-        OSQPost(&AppMQ, &buffer_piso, sizeof(buffer_piso), OS_OPT_POST_FIFO + OS_OPT_POST_ALL, &app_err);
+        OSQPost(AppMQ, &buffer_piso, sizeof(buffer_piso), OS_OPT_POST_FIFO + OS_OPT_POST_ALL, &app_err);
 
         return CORRECTO;
       }
