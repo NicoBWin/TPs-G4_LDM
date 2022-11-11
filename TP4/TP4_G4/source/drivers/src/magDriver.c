@@ -82,13 +82,16 @@ static	bool active_flag=TRUE,word_ready=FALSE, data_ready=FALSE;	//Flags
 static	tim_id_t ID_MAG_DRV_LIVE ;
 static	tim_id_t ID_MAG_DRV_KILL ;
 
+//Semaphore
+static OS_SEM *Sem;
+static OS_ERR mag_err;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
 
-void mag_drv_INIT()						//"Constructor" del driver. Setea los puertos usados en su modo adecuado e inicia un polling en el pin enable
+void mag_drv_INIT(OS_SEM *MagSem)						//"Constructor" del driver. Setea los puertos usados en su modo adecuado e inicia un polling en el pin enable
 {
 	gpioMode(ENABLE_PIN,INPUT_PULLUP);	//Preparo el pin para el enable.
 	gpioMode(CLOCK_PIN,INPUT_PULLUP);	//Preparo el pin para el clock.
@@ -97,6 +100,8 @@ void mag_drv_INIT()						//"Constructor" del driver. Setea los puertos usados en
 	ID_MAG_DRV_KILL = timerGetId();
 	timerStart(ID_MAG_DRV_LIVE, TIMER_MS2TICKS(1), 1 , &mag_drv_LIVE);	//Inicio el timer.
 
+	//Seteo el puntero del semáforo
+	Sem = MagSem;
 }
 
 int mag_drv_LIVE()					//Callback, se llama en caso de que se detecte una señal en enable y se prepara para leer los datos.
@@ -164,7 +169,7 @@ ISR_t PORTC_IRQHandler (void)		//Se copian los datos recibidos a partir del prim
 		NVIC_DisableIRQ(PORTC_IRQn);							//
 		PORTC->PCR[11]|=PORT_PCR_IRQC(PORT_eDisabled);     		//Disable all interrupts
 
-
+		OSSemPost(Sem, OS_OPT_POST_ALL, &mag_err);
 	}
 
 	OSIntExit();

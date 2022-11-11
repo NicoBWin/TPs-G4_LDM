@@ -61,12 +61,17 @@ static char *PW_scroll(char array_pw[], char *ptr_pw, int joystick_input, int *s
 static char *ADMIN_scroll(char array_admin[], char *ptr_admin, int joystick_input, int *status); // Navega en el menu del administrador
 static User* user_add(int cant_user, User* ptr_user, char id[], char password[]); // Agrega el ID y contraseña ingresada a la base de datos dinámica de usuarios 
 
+static char cant_piso1 = 0;
+static char cant_piso2 = 0;
+static char cant_piso3 = 0;
+static char buffer_piso[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 /* Semaphores */
 static OS_SEM EncSem;
 static OS_SEM MagSem;
+static OS_SEM TimerSem;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -78,6 +83,7 @@ static int cant_admin = 2;	// Indica la cantidad de administradores
 
 static OS_ERR app_err;
 static OS_ERR enc_err;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -86,6 +92,7 @@ static OS_ERR enc_err;
 /* Todos los init necesarios */
 void App_Init(void) {
 
+	OSSemCreate(&TimerSem, "Timer Sem", 0u, &app_err);
 	timerInit();		// Inicializa timers
 
 	/* Create semaphore */
@@ -103,13 +110,14 @@ void App_Init(void) {
 	// UART init
 	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
 	uartInit(UARTID, config);
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
   User *ptr_user;	// Apunta a la base de datos de usuarios
   User *ptr_administradores;   // Apunta a la base de datos de administradores
-  int cant_user = 1;		// Cantidad de usuarios 
+  int cant_user = 6;		// Cantidad de usuarios
 
   //incializa usuarios y administradores
   ptr_user = user_init(cant_user, ptr_user);
@@ -138,18 +146,15 @@ void App_Run(void) {
 
   static OS_SEM_CTR EncSt;
   int counter = 0;
+
+  //For multi Pend
+  OS_PEND_DATA pend_data_tbl[3];
+
   while (1)
   {
     counter++;
 
-    //se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
-    if( mag_get_data_ready() && status == ID)	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
-    {
-    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID); 
-    	status = PASSWORD;	// EL usuario debe ingresar la password 
-    }
-
-    // maquina de estados 
+    // Maquina de estados
     switch (status)
     {
 
@@ -308,14 +313,26 @@ void App_Run(void) {
     default:
       break;
     }
-    //print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0]);
 
-    // El semaphore comunica que el encoder se acciono
-    EncSt = OSSemPend(&EncSem, 0u, OS_OPT_PEND_BLOCKING, NULL, &enc_err);
-	encoderState = encGetEvent();	// Cambio el encoder y guardo que es lo que se acciono
+    pend_data_tbl[0].PendObjPtr = (OS_PEND_OBJ *) &EncSem;
+    pend_data_tbl[1].PendObjPtr = (OS_PEND_OBJ *) &MagSem;
+    pend_data_tbl[2].PendObjPtr = (OS_PEND_OBJ *) &TimerSem;
+    OSPendMulti(&pend_data_tbl[0], 2, 0, OS_OPT_PEND_BLOCKING, &app_err);
+
+    // se comunica con el encoder para saber si se acciono y que es lo que se acciono
+    if(encGetStatus()) {
+    	encoderState = encGetEvent();	// Cambio el encoder
+    }
+    else{
+    	encoderState = ENC_NONE;        // El usuario no realizó movimiento
+    }
+    //Se comunica con la lectora de tarjetas para saber si se paso una tarjeta y levantar los numeros de la misma
+    if( mag_get_data_ready() && status == ID) {	// Si el usuario paso la tarjeta relleno el usuario con los numeros de la tarjeta
+    	write_array(array_id + LIMITE_IZQ_ID , mag_drv_read()+1+8 , SIZE_ID);
+    	status = PASSWORD;	// EL usuario debe ingresar la password
+    }
+
     joystick_input= encoderState;
-
-
   }
   free(ptr_user);
   free(ptr_administradores);	// Libero la memoria dinamica
@@ -332,6 +349,7 @@ static void print_display(char first, char second, char third, char fourth,encRe
   dispSendChar(second, 1);
   dispSendChar(third, 2);
   dispSendChar(fourth, 3);
+  OSSemPost(&TimerSem, OS_OPT_POST_ALL, &app_err);
 }
 
 static char encoder_control(char number, int joystick_input, int *status) // Modifica los numeros del ID, PW
@@ -376,36 +394,72 @@ static char encoder_control(char number, int joystick_input, int *status) // Mod
 static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usuarios con memoria dinamica
 {
   ptr_user = malloc(cant_user * sizeof(User));
-
+  // Usuarios del piso 1
   write_array(ptr_user[0].id, "10000000", SIZE_ID);
   write_array(ptr_user[0].password, "1000_", SIZE_PASSWORD);
-  write_array(ptr_user[0].name, "PORRAS", SIZE_NAME);
+  ptr_user[0].piso = 0x1;
+  ptr_user[0].inside = 0;
+
+  write_array(ptr_user[1].id, "20000000", SIZE_ID);
+  write_array(ptr_user[1].password, "1000_", SIZE_PASSWORD);
+  ptr_user[1].piso = 0x1;
+  ptr_user[1].inside = 0;
+  // Usuarios del piso 2
+  write_array(ptr_user[2].id, "30000000", SIZE_ID);
+  write_array(ptr_user[2].password, "1000_", SIZE_PASSWORD);
+  ptr_user[2].piso = 0x2;
+  ptr_user[2].inside = 0;
+
+  write_array(ptr_user[3].id, "40000000", SIZE_ID);
+  write_array(ptr_user[3].password, "1000_", SIZE_PASSWORD);
+  ptr_user[3].piso = 0x2;
+  ptr_user[3].inside = 0;
+  // Usuarios del piso 3
+  write_array(ptr_user[4].id, "50000000", SIZE_ID);
+  write_array(ptr_user[4].password, "1000_", SIZE_PASSWORD);
+  ptr_user[4].piso = 0x3;
+  ptr_user[4].inside = 0;
+
+  write_array(ptr_user[5].id, "60000000", SIZE_ID);
+  write_array(ptr_user[5].password, "1000_", SIZE_PASSWORD);
+  ptr_user[5].piso = 0x3;
+  ptr_user[5].inside = 0;
+  //write_array(ptr_user[0].name, "PORRAS", SIZE_NAME);
   //printf("USER: %s",ptr_user[0].password );
   return ptr_user;
 }
+
+
 static User* user_add(int cant_user, User* ptr_user, char id[], char password[]) // inicializa primeros usuarios con memoria dinamica
 {
   ptr_user = realloc(ptr_user, cant_user * sizeof(User));
 
   write_array(ptr_user[cant_user-1].id, id , SIZE_ID);
   write_array(ptr_user[cant_user-1].password, password, SIZE_PASSWORD);
-  write_array(ptr_user[cant_user-1].name, "PORRAS", SIZE_NAME);
+  ptr_user[cant_user-1].piso = 0x1;
+  // write_array(ptr_user[cant_user-1].piso, 0x0 , SIZE_NAME); // Fijo a que piso corresponde el usuario
   //printf("USER: %s",ptr_user[0].password );
   return ptr_user;
 }
 
-static User* admin_init( User* ptr_admin)	// Inicializa los primeros administradores con memoria dinamica 
+
+static User* admin_init( User* ptr_admin)    // Inicializa los primeros administradores con memoria dinamica
 {
-	ptr_admin = malloc(2*sizeof(User));
+    // El administración pertenece al piso 0
+    ptr_admin = malloc(2*sizeof(User));
     write_array(ptr_admin[0].id, "34950962", SIZE_ID);
-	write_array(ptr_admin[0].password, "1959_", SIZE_PASSWORD);
-	write_array(ptr_admin[0].name, "ZANE", SIZE_NAME);
+    write_array(ptr_admin[0].password, "1959_", SIZE_PASSWORD);
+    ptr_admin[0].piso = 0x0;
+    //write_array(ptr_admin[0].piso, 0x1, SIZE_NAME);
 
     write_array(ptr_admin[1].id, "44546438", SIZE_ID);
-	write_array(ptr_admin[1].password, "1111_", SIZE_PASSWORD);
-	write_array(ptr_admin[1].name, "NACHIIINO", SIZE_NAME);
-	return ptr_admin;
+    write_array(ptr_admin[1].password, "1111_", SIZE_PASSWORD);
+    ptr_admin[1].piso = 0x0;
+    //write_array(ptr_admin[1].piso, 0x2 , SIZE_NAME);
+    return ptr_admin;
 }
+
+
 static int admin_verify(char id[], char password[], User* ptr_admin)	// Verifico que sea administrador
 {
 	int size_pw = SIZE_PASSWORD;
@@ -435,7 +489,8 @@ static int admin_verify(char id[], char password[], User* ptr_admin)	// Verifico
 	  }
     return INCORRECTO;
 }
-static int user_verify(char id[], char password[], User* ptr_user, int cant_user)	// Verifico que sea usuario
+
+static int user_verify(char id[], char password[], User* ptr_user, int cant_user)    // Verifico que sea usuario
 {
   //printf("ID userver: %s\n", id);
   //printf("Paddword userveri: %s\n", password);
@@ -454,11 +509,50 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
         size_pw--;
         if(ptr_user[i].password[SIZE_PASSWORD-1] != '_' )
         {
-        	return INCORRECTO;
+            return INCORRECTO;
         }
       } 
       if (compare_array(password, ptr_user[i].password, size_pw))
       {
+
+        if ( ptr_user[i].piso == 0x1 )
+        {
+            if(ptr_user[i].inside)
+            {
+                cant_piso1--;
+            }
+            else
+            {
+                cant_piso1++;
+            }
+            buffer_piso[0] = cant_piso1;
+        }
+        else if ( ptr_user[i].piso == 0x2 )
+        {
+            if(ptr_user[i].inside)
+            {
+                cant_piso2--;
+            }
+            else
+            {
+                cant_piso2++;
+            }
+            buffer_piso[2] = cant_piso2;
+        }
+        else if ( ptr_user[i].piso == 0x3 )
+        {
+            if(ptr_user[i].inside)
+            {
+                cant_piso3--;
+            }
+            else
+            {
+                cant_piso3++;
+            }
+            buffer_piso[4] = cant_piso3;
+        }
+        // buffer_piso = {cant_piso1, 0x0, cant_piso2, 0x0, cant_piso3, 0x0};
+
         return CORRECTO;
       }
       else

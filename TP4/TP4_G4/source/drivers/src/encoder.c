@@ -81,7 +81,7 @@ void encInit(OS_SEM *EncSem) {
  * @brief Check for new encoder events
  * @return true if there is an encoder event
  */
-/*bool encGetStatus() {
+bool encGetStatus() {
 	if(status) {
 		status = false;
 		return true;
@@ -89,7 +89,7 @@ void encInit(OS_SEM *EncSem) {
 	else {
 		return false;
 	}
-}*/ //NO SE USARÍA CON SEMAFOROS
+}
 
 /**
  * @brief Get event type
@@ -108,9 +108,7 @@ static void encoCallback(void){
   readPins();
   encEvent = encStatus(PINA, PINB, PINSW);
   if(status){
-	  status = false;
 	  OSSemPost(Sem, OS_OPT_POST_ALL, &enc_err);
-	  //OSSemSet(Sem, 2u, &enc_err);
   }
 }
 

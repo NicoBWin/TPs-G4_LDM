@@ -63,7 +63,8 @@
 typedef struct User {
     char id[SIZE_ID] ;
     char password[SIZE_PASSWORD];
-    char name[SIZE_NAME];
+    char piso;
+    bool inside;
 } User;
 
 

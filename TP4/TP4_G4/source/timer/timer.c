@@ -59,6 +59,7 @@ static void timer_isr(void);
 static timer_t timers[TIMERS_MAXCANT];
 static tim_id_t timers_cant = TIMER_ID_INTERNAL+1;
 
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -68,7 +69,7 @@ void timerInit(void) {
     gpioMode(PIN_IRQ, OUTPUT);
 	gpioWrite(PIN_IRQ, LOW);
 
-    SysTick_Init(timer_isr); // Init SysTick preiferico
+	SysTick_Init(timer_isr); // Init SysTick preiferico
 }
 
 
@@ -181,7 +182,6 @@ static void timer_isr(void) {
 		  (*timers[id].callback)();
 		}
 		timers[id].expired=0b1;
-
 		// 2) update state
 		if(timers[id].mode){
 			timers[id].cnt=timers[id].period;
