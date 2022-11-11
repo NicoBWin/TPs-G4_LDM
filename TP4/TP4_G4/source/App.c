@@ -95,10 +95,10 @@ void App_Init(void) {
 	ledsInit();		// Inicializa Leds
 
 	/* Create semaphore */
-	//OSSemCreate(&MagSem, "Mag Sem", 0u, &app_err);
 	// Hay que pasarle el puntero al semaforo para que mag lo pueda usar cuando tenga info lista
 	// El semaforo reemplazaría a mag_get_data_ready(); VER IMPLEMENTACION SIMILAR EN ENCODER
-	mag_drv_INIT();	// Inicializa lector de tarjeta magnetica
+	OSSemCreate(&MagSem, "Mag Sem", 0u, &app_err);
+	mag_drv_INIT(&MagSem);	// Inicializa lector de tarjeta magnetica
 
 	// UART init
 	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
