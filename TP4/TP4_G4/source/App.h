@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//OS
+#include <os.h>
+
 #include "drivers/headers/uart.h"
 
 /*******************************************************************************
@@ -54,7 +57,7 @@
 /// Tiempo Led on
 #define TIME_LED_ON 5000 // en ms#
 #define TIME_LED_BLOCK 5000 // en ms
-#define TIME_GOD 5000
+#define TIME_GOD 3000
 #define CANT_TRY_BLOCK 1
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -68,7 +71,7 @@ typedef struct User {
 } User;
 
 
-void App_Init(void);
+void App_Init(OS_Q *ComQ);
 void App_Run(void);
 /*******************************************************************************
  ******************************************************************************/

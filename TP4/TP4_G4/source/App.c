@@ -19,9 +19,6 @@
 // App
 #include "App.h"
 
-//OS
-#include <os.h>
-
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -73,6 +70,9 @@ static OS_SEM EncSem;
 static OS_SEM MagSem;
 static OS_SEM TimerSem;
 
+/* Messege Queue */
+static OS_Q *AppMQ;
+
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -90,7 +90,7 @@ static OS_ERR enc_err;
  *******************************************************************************
  ******************************************************************************/
 /* Todos los init necesarios */
-void App_Init(void) {
+void App_Init(OS_Q *ComQ) {
 
 	OSSemCreate(&TimerSem, "Timer Sem", 0u, &app_err);
 	timerInit();		// Inicializa timers
@@ -111,6 +111,7 @@ void App_Init(void) {
 	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
 	uartInit(UARTID, config);
 
+	AppMQ = ComQ;
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -564,12 +565,12 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
         }
         // buffer_piso = {cant_piso1, 0x0, cant_piso2, 0x0, cant_piso3, 0x0};
 
+        OSQPost(&AppMQ, &buffer_piso, sizeof(buffer_piso), OS_OPT_POST_FIFO + OS_OPT_POST_ALL, &app_err);
+
         return CORRECTO;
       }
-      else
-      {
+      else {
         return INCORRECTO;
-
       }
     }
   }
