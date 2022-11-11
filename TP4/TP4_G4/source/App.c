@@ -12,8 +12,6 @@
 #include "drivers/headers/encoder.h"
 #include "drivers/headers/leds.h"
 #include "drivers/headers/magDriver.h"
-#include "drivers/headers/PIT.h"
-
 
 // Timer
 #include "timer/timer.h"
@@ -73,7 +71,7 @@ static char buffer_piso[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 /* Semaphores */
 static OS_SEM EncSem;
 static OS_SEM MagSem;
-static OS_SEM PitSem;
+static OS_SEM TimerSem;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -94,9 +92,7 @@ static OS_ERR enc_err;
 /* Todos los init necesarios */
 void App_Init(void) {
 
-	OSSemCreate(&PitSem, "Pit Sem", 0u, &app_err);
-	PIT_init(250000000, 0, false, &PitSem);
-
+	OSSemCreate(&TimerSem, "Timer Sem", 0u, &app_err);
 	timerInit();		// Inicializa timers
 
 	/* Create semaphore */
@@ -131,6 +127,7 @@ void App_Run(void) {
   // Inicializa sistema con valores por defecto
   // dispInit();
   static int status = ID;
+  static int next_status = ID;
   static int prev_status = ID;
   // int status_number = CERO;
   // int status_bright = NINE;
@@ -161,168 +158,178 @@ void App_Run(void) {
     counter++;
 
     // Maquina de estados
-    switch (status)
-    {
-
-    case CHANGE_BRIGHT:		// El usuario clickeo el cambio de brillo 
-      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);	// Modifico el numero del brillo y si clickea vuelvo a estado ID      
-      SetdispBrightness((int)*ptr_id - 48);	// Setea brillo
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input );
-      break;
-
-    case ID:
-      ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &status);	
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
-
-      break;
-
-    case CHANGE_ID:
-      *ptr_id = encoder_control(*ptr_id, joystick_input, &status);	// Cambio numero de ID
-      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
-      break;
-
-    case SUBMIT:				// Estado que al final no se utiliza ( no se lo elimina pues por el feriado no podemos testear ) 
-      status = PASSWORD;
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
-      //dispSendWord(char* ch); //"ingresar pin"
-      break;
-    case PASSWORD:				// Ingresa contraseña
-      ptr_pw= PW_scroll(array_pw, ptr_pw,joystick_input, &status);
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
-      break;
-    case CHECK_ID_PW:				// Se llama al ingresar un ID y Password
-
-      if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))	// Se ingreso un ID y PW perteneciente a un usuario
-      {
-    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
-    	ledSet(0);
-    	ledSet(1);		// Prende los LEDS
-    	ledSet(2);
-    	while ( !timerExpired(ID_LED) ) // bloquea el programa por 5 segundos por la abertura de la puerta
-    	{
-    		print_display('O','P','E','N',joystick_input);
-    	}
-    	ledClear(0);
-    	ledClear(1);		// Apaga LEDS
-	ledClear(2);
-    	status = CANCEL;	// Se reinicia y bloquea puerta de vuelta 
-        cant_try = 0;		// COmo hacerto se reinicia la variable de cantidad de intentos fallidos consecutivos
-      }
-      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_administradores)) // Se ingreso un ID y PW perteneciente a un administrador
-      {
-      	timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
-      	ledSet(0);
-      	ledSet(1); 		// Prende los LEDS
-      	ledSet(2);
-      	while ( !timerExpired(ID_LED) )
-      	{
-      		print_display('G','O','D',' ',joystick_input);	// Indica que entro al menú del adminitrador
-      	}
-    	ledClear(0);
-    	ledClear(1);		// Apaga los LEDS
-        ledClear(2);
-    	status = ADMIN;		// Ingresa al modo administrador
-    	// Llamar a user add
-      }
-      else			// No se a ingresado un ID y PASSWORD correspondiente a ningun usuario ni administrador
-      {
-        cant_try++;		// Aumenta contador de intentos fallidos
-        if (cant_try <= CANT_TRY_BLOCK)		// Si no superó una cantidad de intentos determinados ( Se eligió CANT_TRY_BLOCK = 2 para poder testear rapidamente )
+    do
         {
-          timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL); // 
-          status = CANCEL;
-          ledSet(1);
-          while ( !timerExpired(ID_LED) )
-          {
-        	  print_display('F','A','I','L',joystick_input);
-          }
-          ledClear(1);
+        	status = next_status;
+        	switch (status)
+        	    {
+
+        	    case CHANGE_BRIGHT:		// El usuario clickeo el cambio de brillo
+        	      *ptr_id = encoder_control(*ptr_id, joystick_input, &next_status);	// Modifico el numero del brillo y si clickea vuelvo a estado ID
+        	      SetdispBrightness((int)*ptr_id - 48);	// Setea brillo
+        	      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input );
+        	      break;
+
+        	    case ID:
+        	      ptr_id = ID_scroll(array_id, ptr_id, joystick_input, &next_status);
+        	      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
+
+        	      break;
+
+        	    case CHANGE_ID:
+        	      *ptr_id = encoder_control(*ptr_id, joystick_input, &next_status);	// Cambio numero de ID
+        	      print_display(ptr_id[-3], ptr_id[-2], ptr_id[-1], ptr_id[0],joystick_input);
+        	      break;
+
+        	    case SUBMIT:				// Estado que al final no se utiliza ( no se lo elimina pues por el feriado no podemos testear )
+        	      status = PASSWORD;
+        	      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
+        	      //dispSendWord(char* ch); //"ingresar pin"
+        	      break;
+        	    case PASSWORD:				// Ingresa contraseña
+        	      ptr_pw= PW_scroll(array_pw, ptr_pw,joystick_input, &next_status);
+        	      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
+        	      break;
+        	    case CHECK_ID_PW:				// Se llama al ingresar un ID y Password
+
+        	      if (user_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_user, cant_user))	// Se ingreso un ID y PW perteneciente a un usuario
+        	      {
+        	    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);
+        	    	ledSet(0);
+        	    	ledSet(1);		// Prende los LEDS
+        	    	ledSet(2);
+        	    	while ( !timerExpired(ID_LED) ) // bloquea el programa por 5 segundos por la abertura de la puerta
+        	    	{
+        	    		print_display('O','P','E','N',joystick_input);
+        	    	}
+        	    	ledClear(0);
+        	    	ledClear(1);		// Apaga LEDS
+        	    	ledClear(2);
+        			next_status = CANCEL;	// Se reinicia y bloquea puerta de vuelta
+        	        cant_try = 0;		// COmo hacerto se reinicia la variable de cantidad de intentos fallidos consecutivos
+        	      }
+        	      else if(admin_verify(array_id + LIMITE_IZQ_ID, array_pw_number, ptr_administradores)) // Se ingreso un ID y PW perteneciente a un administrador
+        	      {
+        	      	timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
+        	      	ledSet(0);
+        	      	ledSet(1); 		// Prende los LEDS
+        	      	ledSet(2);
+        	      	while ( !timerExpired(ID_LED) )
+        	      	{
+        	      		print_display('G','O','D',' ',joystick_input);	// Indica que entro al menú del adminitrador
+        	      	}
+        	    	ledClear(0);
+        	    	ledClear(1);		// Apaga los LEDS
+        	        ledClear(2);
+        	        next_status = ADMIN;		// Ingresa al modo administrador
+        	    	// Llamar a user add
+        	      }
+        	      else			// No se a ingresado un ID y PASSWORD correspondiente a ningun usuario ni administrador
+        	      {
+        	        cant_try++;		// Aumenta contador de intentos fallidos
+        	        if (cant_try <= CANT_TRY_BLOCK)		// Si no superó una cantidad de intentos determinados ( Se eligió CANT_TRY_BLOCK = 2 para poder testear rapidamente )
+        	        {
+        	          timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL); //
+        	          next_status = CANCEL;
+        	          ledSet(1);
+        	          while ( !timerExpired(ID_LED) )
+        	          {
+        	        	  print_display('F','A','I','L',joystick_input);
+        	          }
+        	          ledClear(1);
+        	        }
+        	        else
+        	        {
+        		// Si supero una cantidad de intentos determinados, blockea el ingreso por una cantidad de tiempo que aumento cuanto mas cantidad de veces falle
+        	            timerStart(ID_LED, TIMER_MS2TICKS(cant_try*TIME_LED_BLOCK), 0 , NULL);
+        	            next_status = CANCEL;
+        	            ledSet(0);
+        	            ledSet(2);
+        	            while ( !timerExpired(ID_LED) )
+        	            {
+        	          	  print_display('B','L','O','C',joystick_input);
+        	            }
+        	            ledClear(0);
+        	            ledClear(2);
+
+        	        }
+        	      }
+        	      //SetdispDP();
+        	      break;
+        	    case CHANGE_PW:	// Cambio el numero de la contraseña
+        	      prueba = (int)(ptr_pw - (array_pw + LIMITE_IZQ_PW));
+
+        	      *ptr_pw = encoder_control(*(array_pw_number + prueba), joystick_input, &next_status);
+        	      *(array_pw_number + prueba) = *ptr_pw;
+        	      if (next_status == PASSWORD)
+        	      {
+        	        *ptr_pw = '_';  // Vuelve a poner un guion si se hizo click, asi no se ve la contraseña ingresada
+        	      }
+        	      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
+        	      break;
+        	    case CANCEL:	// Reinicia todo y vuelve al estado inicial
+        	      next_status = ID;
+        	      temporal = array_id[SIZE_DISPLAY_ID - 1];
+        	      write_array(array_id, "ID=00000000SCB=0", SIZE_DISPLAY_ID);
+        	      array_id[SIZE_DISPLAY_ID - 1] = temporal;
+        	      write_array(array_pw_number, "0000_", SIZE_PASSWORD);
+        	      ptr_id = array_id + LIMITE_IZQ_ID;
+        	      ptr_pw = array_pw + LIMITE_IZQ_PW;
+        	      break;
+        	    case OPEN:		// Se abrio la puerta
+        	    	CleardispDP();
+        	    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);	// prende LEDs por 5 segundo
+        	    	printf("PRENDER LED\n");
+        	    	ledSet(0);
+        	    	ledSet(1);
+        	    	ledSet(2);
+        	    	while ( !timerExpired(ID_LED) )
+        	    	{
+        	    		print_display('O','P','E','N',joystick_input);
+        	    	}
+
+        	    	ledClear(0);
+        	    	ledClear(1);
+        			ledClear(2);
+        	    	printf("APAGAR LED\n");
+        	    	next_status = CANCEL;
+
+        	    	SetdispDP();
+
+        	    	break;
+        	    case ADMIN:		// Entra al modo Admin
+        	    	ptr_admin = ADMIN_scroll( array_admin, ptr_admin, joystick_input, &next_status);
+        	    	print_display(ptr_admin[-3], ptr_admin[-2], ptr_admin[-1], ptr_admin[0],joystick_input);
+        	    	break;
+
+        	    case ADD:		// Añado el id y password ingresado
+        	  	  cant_user++;
+        	  	  ptr_user = user_add( cant_user,  ptr_user, array_id + LIMITE_IZQ_ID, array_pw_number);
+        	  	  timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
+        	  	  print_display('U','A','D','D',joystick_input); // user add
+        	  	  while ( !timerExpired(ID_LED) )
+        	    	{
+
+        	    	}
+        	  	  next_status = CANCEL;
+        	  	  flag_add = 0;
+
+        	    	break;
+        	    case DELETE:	// Elimina usuario
+        	    	if(cant_user>0)
+        	    		cant_user--; // Decremente la cantidad de usuarios
+        	    	next_status = CANCEL;
+        	    default:
+        	      break;
+        	    }
+        		joystick_input = ENC_NONE;
         }
-        else
-        {
-	// Si supero una cantidad de intentos determinados, blockea el ingreso por una cantidad de tiempo que aumento cuanto mas cantidad de veces falle
-            timerStart(ID_LED, TIMER_MS2TICKS(cant_try*TIME_LED_BLOCK), 0 , NULL);
-            status = CANCEL;
-            ledSet(0);
-            ledSet(2);
-            while ( !timerExpired(ID_LED) )
-            {
-          	  print_display('B','L','O','C',joystick_input);
-            }
-            ledClear(0);
-            ledClear(2);
-
-        }
-      }
-      //SetdispDP();
-      break;
-    case CHANGE_PW:	// Cambio el numero de la contraseña
-      prueba = (int)(ptr_pw - (array_pw + LIMITE_IZQ_PW));
-      
-      *ptr_pw = encoder_control(*(array_pw_number + prueba), joystick_input, &status);
-      *(array_pw_number + prueba) = *ptr_pw;
-      if (status == PASSWORD)
-      {
-        *ptr_pw = '_';  // Vuelve a poner un guion si se hizo click, asi no se ve la contraseña ingresada
-      }
-      print_display(ptr_pw[-3], ptr_pw[-2], ptr_pw[-1], ptr_pw[0],joystick_input);
-      break;
-    case CANCEL:	// Reinicia todo y vuelve al estado inicial
-      status = ID;
-      temporal = array_id[SIZE_DISPLAY_ID - 1];
-      write_array(array_id, "ID=00000000SCB=0", SIZE_DISPLAY_ID);
-      array_id[SIZE_DISPLAY_ID - 1] = temporal;
-      write_array(array_pw_number, "0000_", SIZE_PASSWORD);
-      ptr_id = array_id + LIMITE_IZQ_ID;
-      ptr_pw = array_pw + LIMITE_IZQ_PW;
-      break;
-    case OPEN:		// Se abrio la puerta
-    	CleardispDP();
-    	timerStart(ID_LED, TIMER_MS2TICKS(TIME_LED_ON), 0 , NULL);	// prende LEDs por 5 segundo
-    	printf("PRENDER LED\n");
-    	ledSet(0);
-    	ledSet(1);
-    	ledSet(2);
-    	while ( !timerExpired(ID_LED) )			
-    	{
-    		print_display('O','P','E','N',joystick_input);	
-    	}
-    	ledClear(0);
-    	ledClear(1);
-		ledClear(2);
-    	printf("APAGAR LED\n");
-    	status = CANCEL;
-    	SetdispDP();
-    	break;
-    case ADMIN:		// Entra al modo Admin
-    	ptr_admin = ADMIN_scroll( array_admin, ptr_admin, joystick_input, &status);
-    	print_display(ptr_admin[-3], ptr_admin[-2], ptr_admin[-1], ptr_admin[0],joystick_input);
-    	break;
-
-    case ADD:		// Añado el id y password ingresado
-  	  cant_user++;
-  	  ptr_user = user_add( cant_user,  ptr_user, array_id + LIMITE_IZQ_ID, array_pw_number);
-  	  timerStart(ID_LED, TIMER_MS2TICKS(TIME_GOD), 0 , NULL);
-  	  while ( !timerExpired(ID_LED) )
-    	  {
-    	      print_display('U','A','D','D',joystick_input); // user add
-    	  }
-  	  status = CANCEL;
-  	  flag_add = 0;
-
-    	break;
-    case DELETE:	// Elimina usuario
-    	if(cant_user>0)
-    		cant_user--; // Decremente la cantidad de usuarios
-    	status = CANCEL;
-    default:
-      break;
-    }
+        while( status != next_status );
 
     pend_data_tbl[0].PendObjPtr = (OS_PEND_OBJ *) &EncSem;
     pend_data_tbl[1].PendObjPtr = (OS_PEND_OBJ *) &MagSem;
-    pend_data_tbl[2].PendObjPtr = (OS_PEND_OBJ *) &PitSem;
-    OSPendMulti(&pend_data_tbl[0], 3, 0, OS_OPT_PEND_BLOCKING, &app_err);
+    pend_data_tbl[2].PendObjPtr = (OS_PEND_OBJ *) &TimerSem;
+    OSPendMulti(&pend_data_tbl[0], 2, 0, OS_OPT_PEND_BLOCKING, &app_err);
 
     // se comunica con el encoder para saber si se acciono y que es lo que se acciono
     if(encGetStatus()) {
