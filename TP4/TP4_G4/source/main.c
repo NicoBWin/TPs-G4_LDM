@@ -23,7 +23,7 @@ static CPU_STK TaskStartStk[TASKSTART_STK_SIZE];
 /* Task 2 */
 #define TASK2_STK_SIZE			256u
 #define TASK2_STK_SIZE_LIMIT	(TASK2_STK_SIZE / 10u)
-#define TASK2_PRIO              3u
+#define TASK2_PRIO              2u
 static OS_TCB Task2TCB;
 static CPU_STK Task2Stk[TASK2_STK_SIZE];
 
@@ -130,15 +130,8 @@ static void TaskStart(void *p_arg) {
                  &os_err);
 
     while (1) {
-    	OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
-    	//App_Run();
-    	//String a transmitir
-    	char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x05,0x00,0x03,0x00,0x01,0x00};
-    	uartWriteMsg(UARTID, buffer, 12);
-    	OSTimeDlyHMSM(0u, 0u, 30u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
-    	char buffer2[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x01,0x00,0xA,0x00,0x03,0x00};
-    	uartWriteMsg(UARTID, buffer2, 12);
-    	OSTimeDlyHMSM(0u, 0u, 30u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+    	//OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
+    	App_Run();
     }
 }
 
@@ -147,7 +140,10 @@ static void Task2(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     while (1) {
-		OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
-
+		////OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
+		//String a transmitir
+		char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x05,0x00,0x03,0x00,0x01,0x00};
+		uartWriteMsg(UARTID, buffer, 12);
+		OSTimeDlyHMSM(0u, 0u, 30u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
     }
 }

@@ -111,9 +111,6 @@ static void encoCallback(void){
 	  status = false;
 	  OSSemPost(Sem, OS_OPT_POST_ALL, &enc_err);
   }
-  //else {
-	  //OSSemSet(Sem, 0, &enc_err);
-  //}
 }
 
 // Lee todos los pins
