@@ -127,6 +127,7 @@ void App_Run(void) {
   // Inicializa sistema con valores por defecto
   // dispInit();
   static int status = ID;
+  static int prev_status = ID;
   // int status_number = CERO;
   // int status_bright = NINE;
   char array_id[SIZE_DISPLAY_ID] = "ID=00000000SCB=7"; //arreglo del menu del ID
@@ -146,6 +147,7 @@ void App_Run(void) {
 
   static OS_SEM_CTR EncSt;
   int counter = 0;
+
 
   //For multi Pend
   OS_PEND_DATA pend_data_tbl[3];
@@ -281,7 +283,6 @@ void App_Run(void) {
     	{
     		print_display('O','P','E','N',joystick_input);	
     	}
-
     	ledClear(0);
     	ledClear(1);
 		ledClear(2);
@@ -349,7 +350,6 @@ static void print_display(char first, char second, char third, char fourth,encRe
   dispSendChar(second, 1);
   dispSendChar(third, 2);
   dispSendChar(fourth, 3);
-  OSSemPost(&TimerSem, OS_OPT_POST_ALL, &app_err);
 }
 
 static char encoder_control(char number, int joystick_input, int *status) // Modifica los numeros del ID, PW
