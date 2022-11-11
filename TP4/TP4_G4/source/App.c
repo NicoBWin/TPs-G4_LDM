@@ -12,6 +12,8 @@
 #include "drivers/headers/encoder.h"
 #include "drivers/headers/leds.h"
 #include "drivers/headers/magDriver.h"
+#include "drivers/headers/PIT.h"
+
 
 // Timer
 #include "timer/timer.h"
@@ -71,7 +73,7 @@ static char buffer_piso[6] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 /* Semaphores */
 static OS_SEM EncSem;
 static OS_SEM MagSem;
-static OS_SEM TimerSem;
+static OS_SEM PitSem;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -92,7 +94,9 @@ static OS_ERR enc_err;
 /* Todos los init necesarios */
 void App_Init(void) {
 
-	OSSemCreate(&TimerSem, "Timer Sem", 0u, &app_err);
+	OSSemCreate(&PitSem, "Pit Sem", 0u, &app_err);
+	PIT_init(250000000, 0, false, &PitSem);
+
 	timerInit();		// Inicializa timers
 
 	/* Create semaphore */
@@ -317,8 +321,8 @@ void App_Run(void) {
 
     pend_data_tbl[0].PendObjPtr = (OS_PEND_OBJ *) &EncSem;
     pend_data_tbl[1].PendObjPtr = (OS_PEND_OBJ *) &MagSem;
-    pend_data_tbl[2].PendObjPtr = (OS_PEND_OBJ *) &TimerSem;
-    OSPendMulti(&pend_data_tbl[0], 2, 0, OS_OPT_PEND_BLOCKING, &app_err);
+    pend_data_tbl[2].PendObjPtr = (OS_PEND_OBJ *) &PitSem;
+    OSPendMulti(&pend_data_tbl[0], 3, 0, OS_OPT_PEND_BLOCKING, &app_err);
 
     // se comunica con el encoder para saber si se acciono y que es lo que se acciono
     if(encGetStatus()) {
