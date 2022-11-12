@@ -167,8 +167,6 @@ static void Task2(void *p_arg) {
     static OS_MSG_SIZE msg_size;
 
     while (1) {
-		//OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
-
 		static char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x00,0x00,0x00,0x00,0x00,0x00};
 
 		uartWriteMsg(UARTID, buffer, 12);
@@ -182,18 +180,17 @@ static void Task2(void *p_arg) {
     }
 }
 
-// UART Task
+// Keep Alive Task
 static void Task3(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
-
-    static void *p_msg;
-    static OS_MSG_SIZE msg_size;
 
     while (1) {
 
 		static char Kbuffer[6]={0xAA,0x55,0xC3,0x3C,0x01,0x2};
 		OSTimeDlyHMSM(0u, 1u, 0u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
 		uartWriteMsg(UARTID, Kbuffer, 6);
+
+
     }
 }
