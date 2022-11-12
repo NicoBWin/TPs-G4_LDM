@@ -27,6 +27,13 @@ static CPU_STK TaskStartStk[TASKSTART_STK_SIZE];
 static OS_TCB Task2TCB;
 static CPU_STK Task2Stk[TASK2_STK_SIZE];
 
+/* Task 3 */
+#define TASK3_STK_SIZE			256u
+#define TASK3_STK_SIZE_LIMIT	(TASK3_STK_SIZE / 10u)
+#define TASK3_PRIO              2u
+static OS_TCB Task3TCB;
+static CPU_STK Task3Stk[TASK3_STK_SIZE];
+
 /* Semaphore */
 static OS_SEM MainSem;
 
@@ -38,6 +45,7 @@ static OS_Q ComQ;
  ******************************************************************************/
 static void TaskStart(void *p_arg);
 static void Task2(void *p_arg);
+static void Task3(void *p_arg);
 
 /*******************************************************************************
  * MAIN
@@ -129,6 +137,21 @@ static void TaskStart(void *p_arg) {
                  (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
                  &os_err);
 
+    /* Create Task3 */
+    OSTaskCreate(&Task3TCB, 			//tcb
+                 "Task 3",				//name
+                  Task3,				//func
+                  0u,					//arg
+                  TASK3_PRIO,			//prio
+                  &Task3Stk[0u],		//stack
+                  TASK3_STK_SIZE_LIMIT,	//stack limit
+                  TASK3_STK_SIZE,		//stack size
+                  0u,
+                  0u,
+                  0u,
+                 (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+                 &os_err);
+
     while (1) {
     	OSSemPost(&MainSem, OS_OPT_POST_1, &os_err);
     	App_Run();
@@ -156,5 +179,21 @@ static void Task2(void *p_arg) {
 		for(int i=0; i<msg_size; i++){
 			buffer[i+6]=msg[i];
 		}
+    }
+}
+
+// UART Task
+static void Task3(void *p_arg) {
+    (void)p_arg;
+    OS_ERR os_err;
+
+    static void *p_msg;
+    static OS_MSG_SIZE msg_size;
+
+    while (1) {
+
+		static char Kbuffer[6]={0xAA,0x55,0xC3,0x3C,0x01,0x2};
+		OSTimeDlyHMSM(0u, 1u, 0u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+		uartWriteMsg(UARTID, Kbuffer, 6);
     }
 }

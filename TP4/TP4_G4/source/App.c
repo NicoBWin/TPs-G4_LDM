@@ -532,7 +532,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             if(ptr_user[i].inside)
             {
                 cant_piso1--;
-
+                ptr_user[i].inside = 0;
             }
             else
             {
@@ -546,6 +546,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             if(ptr_user[i].inside)
             {
                 cant_piso2--;
+                ptr_user[i].inside = 0;
             }
             else
             {
@@ -559,6 +560,7 @@ static int user_verify(char id[], char password[], User* ptr_user, int cant_user
             if(ptr_user[i].inside)
             {
                 cant_piso3--;
+                ptr_user[i].inside = 0;
             }
             else
             {
