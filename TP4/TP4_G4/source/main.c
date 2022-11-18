@@ -188,17 +188,6 @@ static void Task2(void *p_arg) {
 		static char buffer[12]={0xAA,0x55,0xC3,0x3C,0x07,0x1,0x00,0x00,0x00,0x00,0x01,0x00};
 		uartWriteMsg(UARTID, buffer, 12);
 
-		/*OSSemPend(&UartSem, 0u, OS_OPT_PEND_BLOCKING, (CPU_TS*)0, &os_err);
-		static char Rxbuffer[6];
-		uartReadMsg(UARTID, Rxbuffer, 6);
-		if(Rxbuffer[5] == 0x81){
-			gpioWrite (PIN_LED_RED, HIGH);
-			gpioWrite (PIN_LED_BLUE, LOW);
-		}
-		else {
-			gpioWrite (PIN_LED_BLUE, HIGH);
-			gpioWrite (PIN_LED_RED, LOW);
-		}*/
 		//OSTimeDlyHMSM(0u, 0u, 5u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
 
 		p_msg = OSQPend(&ComQ, 0, OS_OPT_PEND_BLOCKING, &msg_size, (CPU_TS *)0, &os_err);
@@ -217,19 +206,29 @@ static void Task3(void *p_arg) {
     while (1) {
 
 		static char Kbuffer[6]={0xAA,0x55,0xC3,0x3C,0x01,0x2};
-		OSTimeDlyHMSM(0u, 0u, 5u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+		OSTimeDlyHMSM(0u, 0u, 3u, 0u, OS_OPT_TIME_HMSM_STRICT, &os_err);
+
+		//Send Keep Alive
 		uartWriteMsg(UARTID, Kbuffer, 6);
 
+		//Receive Keep Alive
 		OSSemPend(&UartSem, 0u, OS_OPT_PEND_BLOCKING, (CPU_TS*)0, &os_err);
 		static char Rbuffer[6];
 		uartReadMsg(UARTID, Rbuffer, 6);
 		if(Rbuffer[5] == 0x82){
 			gpioWrite (PIN_LED_RED, HIGH);
+			gpioWrite (PIN_LED_BLUE, HIGH);
 			gpioWrite (PIN_LED_GREEN, LOW);
 		}
-		else {
+		else if(Rbuffer[5] == 0x81){
+			gpioWrite (PIN_LED_RED, HIGH);
+			gpioWrite (PIN_LED_BLUE, LOW);
 			gpioWrite (PIN_LED_GREEN, HIGH);
+		}
+		else {
 			gpioWrite (PIN_LED_RED, LOW);
+			gpioWrite (PIN_LED_GREEN, HIGH);
+			gpioWrite (PIN_LED_BLUE, HIGH);
 		}
     }
 }

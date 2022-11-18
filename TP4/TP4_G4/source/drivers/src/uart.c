@@ -268,7 +268,7 @@ void UART_IQRHandler(uint8_t id){
 
 	// Interrupt by receiver
 	if (UARTN->S1 & UART_S1_RDRF_MASK) {
-		if(Rx[id].size < BUFFER_SIZE) {	//Si se lleno el buffer no guardo nada
+		if(Rx[id].size < BUFFER_SIZE - 1) {	//Si se lleno el buffer no guardo nada
 			Rx[id].buffer[Rx[id].writeIndex] = UARTN->D; 	// Guardo lo recibido
 			Rx[id].writeIndex = (Rx[id].writeIndex+1 == BUFFER_SIZE) ? 0 : Rx[id].writeIndex+1;
 			Rx[id].size++;
