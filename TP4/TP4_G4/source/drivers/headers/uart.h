@@ -25,7 +25,7 @@
 #define UART_CANT_IDS	5
 
 // Max cant of chars in buffer
-#define BUFFER_SIZE 12
+#define BUFFER_SIZE 255
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
