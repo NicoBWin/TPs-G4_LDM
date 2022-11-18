@@ -408,12 +408,12 @@ static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usu
   ptr_user[0].piso = 0x1;
   ptr_user[0].inside = 0;
 
-  write_array(ptr_user[1].id, "20000000", SIZE_ID);
+  write_array(ptr_user[1].id, "53450411", SIZE_ID);
   write_array(ptr_user[1].password, "1000_", SIZE_PASSWORD);
   ptr_user[1].piso = 0x1;
   ptr_user[1].inside = 0;
   // Usuarios del piso 2
-  write_array(ptr_user[2].id, "30000000", SIZE_ID);
+  write_array(ptr_user[2].id, "30782716", SIZE_ID);
   write_array(ptr_user[2].password, "1000_", SIZE_PASSWORD);
   ptr_user[2].piso = 0x2;
   ptr_user[2].inside = 0;
@@ -428,7 +428,7 @@ static User* user_init(int cant_user, User* ptr_user) // inicializa primeros usu
   ptr_user[4].piso = 0x3;
   ptr_user[4].inside = 0;
 
-  write_array(ptr_user[5].id, "60000000", SIZE_ID);
+  write_array(ptr_user[5].id, "34950962", SIZE_ID);
   write_array(ptr_user[5].password, "1000_", SIZE_PASSWORD);
   ptr_user[5].piso = 0x3;
   ptr_user[5].inside = 0;
@@ -455,7 +455,7 @@ static User* admin_init( User* ptr_admin)    // Inicializa los primeros administ
 {
     // El administración pertenece al piso 0
     ptr_admin = malloc(2*sizeof(User));
-    write_array(ptr_admin[0].id, "34950962", SIZE_ID);
+    write_array(ptr_admin[0].id, "94950962", SIZE_ID);
     write_array(ptr_admin[0].password, "1959_", SIZE_PASSWORD);
     ptr_admin[0].piso = 0x0;
     //write_array(ptr_admin[0].piso, 0x1, SIZE_NAME);
