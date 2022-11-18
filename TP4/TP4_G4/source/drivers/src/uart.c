@@ -76,6 +76,10 @@ static const IRQn_Type IRQnUART[6] = {UART0_RX_TX_IRQn, UART1_RX_TX_IRQn, UART2_
 static buffer_t Tx[6];
 static buffer_t Rx[6];
 
+//Semaphore
+static OS_SEM *Sem;
+static OS_ERR enc_err;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -86,7 +90,10 @@ static buffer_t Rx[6];
  * @param id UART's number
  * @param config UART's configuration (baudrate, parity, etc.)
 */
-void uartInit (uint8_t id, uart_cfg_t config){
+void uartInit (uint8_t id, uart_cfg_t config, OS_SEM *UartSem){
+	//Seteo el puntero del semáforo
+	Sem = UartSem;
+
 	UART_Type* const UARTN = UART_NUM[id];
 
 	switch(id) {
@@ -267,6 +274,7 @@ void UART_IQRHandler(uint8_t id){
 			Rx[id].size++;
 		}
 		Rx[id].read = true;
+		OSSemPost(Sem, OS_OPT_POST_ALL, &enc_err);
 	}
 }
 

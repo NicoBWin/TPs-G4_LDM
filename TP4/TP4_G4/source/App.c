@@ -107,10 +107,6 @@ void App_Init(OS_Q *ComQ) {
 	OSSemCreate(&MagSem, "Mag Sem", 0u, &app_err);
 	mag_drv_INIT(&MagSem);	// Inicializa lector de tarjeta magnetica
 
-	// UART init
-	uart_cfg_t config = {.baudrate = UARTBAUDRATE, .parity = NO_PARITY_UART};
-	uartInit(UARTID, config);
-
 	AppMQ = ComQ;
 }
 

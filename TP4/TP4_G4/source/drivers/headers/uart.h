@@ -15,6 +15,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//OS
+#include <os.h>
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -22,7 +25,7 @@
 #define UART_CANT_IDS	5
 
 // Max cant of chars in buffer
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 12
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -45,7 +48,7 @@ enum{NO_PARITY_UART, EVEN_PARITY_UART, ODD_PARITY_UART};
  * @param id UART's number
  * @param config UART's configuration (baudrate, parity, etc.)
 */
-void uartInit (uint8_t id, uart_cfg_t config);
+void uartInit (uint8_t id, uart_cfg_t config, OS_SEM *UartSem);
 
 /**
  * @brief Check if a new byte was received
