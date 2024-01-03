@@ -44,8 +44,6 @@ void PIT_Init(uint32_t time_ms, uint8_t channel, bool chained) {
 
     // PIT interrupt enable (not used)
     PIT->CHANNEL[channel].LDVAL = time_ms;
-    //PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TIE_MASK;
-    //PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
     PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_CHN_MASK;
 
     if(chained) {

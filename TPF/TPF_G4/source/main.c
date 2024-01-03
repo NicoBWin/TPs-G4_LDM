@@ -98,7 +98,7 @@ void BOARD_SW_IRQ_HANDLER(void)
 void ProvideAudioBuffer(int16_t *samples, int cnt) ;
 static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
 static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize);
-void RunDACsine(int sample_rate, int output_samples);
+void RunDACsound(int sample_rate, int output_samples);
 void play_file(char *mp3_fname);
 
 
@@ -136,17 +136,12 @@ enum play_e {
 /*******************************************************************************
 * Code
 ******************************************************************************/
-
-//DAC
-uint32_t dacValue;
-
 volatile uint32_t r1,r2;
 
 /*!
 * @brief Main function
 */
-int main(void)
-{
+int main(void) {
   FRESULT error;
   DIR directory; /* Directory object */
   FILINFO fileInformation;
@@ -232,7 +227,6 @@ int main(void)
       strcpy( mp3_files[mp3_file_index], files.fname );    //to save file names
       mp3_file_index++;
       mp3_total_files++;
-
     }
   }
 
@@ -246,7 +240,6 @@ int main(void)
 }
 
 void play_file(char *mp3_fname) {
-
   if(strlen(mp3_fname) == 0) {
   	PRINTF("No hay cancion pa");
 	  while(1);
@@ -296,7 +289,6 @@ void play_file(char *mp3_fname) {
       memcpy( read_buff, read_ptr, bytes_left );
       read_ptr = read_buff;
       btr = FILE_READ_BUFFER_SIZE - bytes_left;
-
 
       //GPIO_TogglePinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN);
       GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
@@ -355,7 +347,7 @@ void play_file(char *mp3_fname) {
       MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
       if(!dac_started) {
         dac_started = 1;
-        RunDACsine(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
+        RunDACsound(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
         DAC_Enable(DAC_0, true);
       }
       // Duplicate data in case of mono to maintain playback speed
@@ -369,7 +361,6 @@ void play_file(char *mp3_fname) {
     }
     if (!outOfData) {
       ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
-
       time += mp3FrameInfo.outputSamps/2;
       if(time > mp3FrameInfo.samprate) {
         time -= mp3FrameInfo.samprate;
@@ -379,11 +370,9 @@ void play_file(char *mp3_fname) {
           seconds = 0;
         }
       }
-
       if(prev_seconds != seconds) {
         char time_s[10];
         PRINTF(time_s, "%02d:%02d", minutes, seconds);
-
         prev_seconds = seconds;
       }
     }
@@ -496,30 +485,23 @@ void ProvideAudioBuffer(int16_t *samples, int cnt) {
 * Taken from
 * http://www.mikrocontroller.net/topic/252319
 */
-static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize)
-{
+static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize) {
   UINT unRead = 0;
   BYTE byEncoding = 0;
-  if((f_read(pInFile, &byEncoding, 1, &unRead) == FR_OK) && (unRead == 1))
-  {
+  if((f_read(pInFile, &byEncoding, 1, &unRead) == FR_OK) && (unRead == 1)) {
     unDataLen--;
-    if(unDataLen <= (unBufferSize - 1))
-    {
-      if((f_read(pInFile, pszBuffer, unDataLen, &unRead) == FR_OK) ||
-         (unRead == unDataLen))
-      {
-        if(byEncoding == 0)
-        {
+    if(unDataLen <= (unBufferSize - 1)) {
+      if((f_read(pInFile, pszBuffer, unDataLen, &unRead) == FR_OK) || (unRead == unDataLen)) {
+        if(byEncoding == 0) {
           // ISO-8859-1 multibyte
           // just add a terminating zero
           pszBuffer[unDataLen] = 0;
         }
-        else if(byEncoding == 1)
-        {
+        else if(byEncoding == 1) {
           // UTF16LE unicode
           uint32_t r = 0;
           uint32_t w = 0;
-          if((unDataLen > 2) && (pszBuffer[0] == 0xFF) && (pszBuffer[1] == 0xFE)){
+          if((unDataLen > 2) && (pszBuffer[0] == 0xFF) && (pszBuffer[1] == 0xFE)) {
             // ignore BOM, assume LE
             r = 2;
           }
@@ -536,8 +518,7 @@ static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuff
     }
     else {
       // we won't read a partial text
-      if(f_lseek(pInFile, f_tell(pInFile) + unDataLen) != FR_OK)
-      {
+      if(f_lseek(pInFile, f_tell(pInFile) + unDataLen) != FR_OK) {
         return 1;
       }
     }
@@ -554,19 +535,16 @@ static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuff
 * Taken from
 * http://www.mikrocontroller.net/topic/252319
 */
-static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize)
-{
+static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize) {
   pszArtist[0] = 0;
   pszTitle[0] = 0;
 
   BYTE id3hd[10];
   UINT unRead = 0;
-  if((f_read(pInFile, id3hd, 10, &unRead) != FR_OK) || (unRead != 10))
-  {
+  if((f_read(pInFile, id3hd, 10, &unRead) != FR_OK) || (unRead != 10)) {
     return 1;
   }
-  else
-  {
+  else {
     uint32_t unSkip = 0;
     if((unRead == 10) &&
        (id3hd[0] == 'I') &&
@@ -579,69 +557,56 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
       // try to get some information from the tag
       // skip the extended header, if present
       uint8_t unVersion = id3hd[3];
-      if(id3hd[5] & 0x40)
-      {
+      if(id3hd[5] & 0x40) {
         BYTE exhd[4];
         f_read(pInFile, exhd, 4, &unRead);
         size_t unExHdrSkip = ((exhd[0] & 0x7f) << 21) | ((exhd[1] & 0x7f) << 14) | ((exhd[2] & 0x7f) << 7) | (exhd[3] & 0x7f);
         unExHdrSkip -= 4;
-        if(f_lseek(pInFile, f_tell(pInFile) + unExHdrSkip) != FR_OK)
-        {
+        if(f_lseek(pInFile, f_tell(pInFile) + unExHdrSkip) != FR_OK) {
           return 1;
         }
       }
       uint32_t nFramesToRead = 2;
-      while(nFramesToRead > 0)
-      {
+      while(nFramesToRead > 0) {
         char frhd[10];
-        if((f_read(pInFile, frhd, 10, &unRead) != FR_OK) || (unRead != 10))
-        {
+        if((f_read(pInFile, frhd, 10, &unRead) != FR_OK) || (unRead != 10)) {
           return 1;
         }
-        if((frhd[0] == 0) || (strncmp(frhd, "3DI", 3) == 0))
-        {
+        if((frhd[0] == 0) || (strncmp(frhd, "3DI", 3) == 0)) {
           break;
         }
         char szFrameId[5] = {0, 0, 0, 0, 0};
         memcpy(szFrameId, frhd, 4);
         uint32_t unFrameSize = 0;
         uint32_t i = 0;
-        for(; i < 4; i++)
-        {
-          if(unVersion == 3)
-          {
+        for(; i < 4; i++) {
+          if(unVersion == 3) {
             // ID3v2.3
             unFrameSize <<= 8;
             unFrameSize += frhd[i + 4];
           }
-          if(unVersion == 4)
-          {
+          if(unVersion == 4) {
             // ID3v2.4
             unFrameSize <<= 7;
             unFrameSize += frhd[i + 4] & 0x7F;
           }
         }
 
-        if(strcmp(szFrameId, "TPE1") == 0)
-        {
+        if(strcmp(szFrameId, "TPE1") == 0) {
           // artist
-          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszArtist, unArtistSize) != 0)
-          {
+          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszArtist, unArtistSize) != 0) {
             break;
           }
           nFramesToRead--;
         }
-        else if(strcmp(szFrameId, "TIT2") == 0)
-        {
+        else if(strcmp(szFrameId, "TIT2") == 0) {
           // title
-          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszTitle, unTitleSize) != 0)
-          {
+          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszTitle, unTitleSize) != 0) {
             break;
           }
           nFramesToRead--;
         }
-        else
-        {
+        else {
           if(f_lseek(pInFile, f_tell(pInFile) + unFrameSize) != FR_OK) {
             return 1;
           }
@@ -652,25 +617,22 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
       return 1;
     }
   }
-
   return 0;
 }
 
 
 
-void RunDACsine(int sample_rate, int output_samples) {
-	// Nuevo DAC
+void RunDACsound(int sample_rate, int output_samples) {
+	// DAC
 	DAC_Init(DAC_0);
-	//DacEnableDMA(DAC_0);
 
-	// Nuevo DMA
 	// DMA Config
 	DMA_config_t DMAConfigOutput = {.source_buffer = audio_buff, .destination_buffer = &(DAC0->DAT),
 								 .request_source = DMAALWAYS63, .source_offset = sizeof(uint32_t), .destination_offset = 0x00,
 								 .transfer_bytes = sizeof(uint16_t), .major_cycles = output_samples, .wrap_around = output_samples*4};
 	DMA_Init(DMA_0, DMAConfigOutput);
 
-  	// Nuevo PIT
+  	// PIT Config
 	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH0, false);
 	PIT_Start(PIT_CH0);
 }
