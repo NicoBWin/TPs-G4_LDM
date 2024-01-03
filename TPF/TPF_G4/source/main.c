@@ -147,19 +147,6 @@ volatile uint32_t r1,r2;
 */
 int main(void)
 {
-	// Inits de Nico
-	timerInit();		// Inicializa timers
-
-	encInit();		// Inicializa encoder
-
-	SW_Init();		// Inicializa encoder
-
-	RGBMatrix_Init();
-
-	LCD1602_Init();
-	// Inits de las app
-
-
   FRESULT error;
   DIR directory; /* Directory object */
   FILINFO fileInformation;
@@ -256,8 +243,6 @@ int main(void)
   while( 1 ) {
     play_file(mp3_files[mp3_file_index]);
   }
-
-
 }
 
 void play_file(char *mp3_fname) {
@@ -265,25 +250,18 @@ void play_file(char *mp3_fname) {
   if(strlen(mp3_fname) == 0) {
   	PRINTF("No hay cancion pa");
 	  while(1);
-
     }
-
-
   uint8_t dac_started = 0;
-
 
   FIL fil;        /* File object */
   char line[100]; /* Line buffer */
   FRESULT fr;     /* FatFs return code */
 
-
   uint32_t time = 0;
   uint32_t seconds = 0, prev_seconds = 0, minutes = 0;
 
-
   /* Open a text file */
   fr = f_open(&fil, mp3_fname, FA_READ);
-
 
   if(fr) {
 	PRINTF("Fallo el file read");
@@ -291,21 +269,17 @@ void play_file(char *mp3_fname) {
   }
   // Read ID3v2 Tag
 
-
   hMP3Decoder = MP3InitDecoder();
-
 
   char szArtist[120];
   char szTitle[120];
   Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
-
 
  // uint32_t size = f_size(&fil);
   //uint32_t read_size = 0;
 
   bytes_left = 0;
 //  read_ptr = read_buff;
-
 
   int offset, err;
   int outOfData = 0;
@@ -315,8 +289,6 @@ void play_file(char *mp3_fname) {
   //delay(1000);
 
   int16_t *samples = pcm_buff;
-
-
 
   while(1) {
 
@@ -333,8 +305,7 @@ void play_file(char *mp3_fname) {
       static char flag_sw = 0;
       //flag_sw = GPIO_GetPinsInterruptFlags(BOARD_SW_GPIO);
       flag_sw = GPIO_ReadPinInput(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN);
-      if (flag_sw!=1)
-      {
+      if (flag_sw!=1) {
     	  if (bass_boosted == 0)
     		  bass_boosted=1;
     	  else
@@ -355,7 +326,6 @@ void play_file(char *mp3_fname) {
     if(offset == -1 ) {
       bytes_left = 0;
       continue;
-
     }
 
     bytes_left -= offset;
@@ -372,8 +342,6 @@ void play_file(char *mp3_fname) {
       case ERR_MP3_MAINDATA_UNDERFLOW:
         /* do nothing - next call to decode will provide more mainData */
         break;
-
-
       case ERR_MP3_NULL_POINTER:
         bytes_left -=1;
         read_ptr+=1;
@@ -389,7 +357,6 @@ void play_file(char *mp3_fname) {
         dac_started = 1;
         RunDACsine(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
         DAC_Enable(DAC_0, true);
-
       }
       // Duplicate data in case of mono to maintain playback speed
       if (mp3FrameInfo.nChans == 1) {
@@ -413,18 +380,16 @@ void play_file(char *mp3_fname) {
         }
       }
 
-
       if(prev_seconds != seconds) {
         char time_s[10];
         PRINTF(time_s, "%02d:%02d", minutes, seconds);
 
         prev_seconds = seconds;
       }
-
-
     }
   }
 }
+
 /*
 float a0 = 0.00005029912027879971;
 float a1 = 0.00010059824055759942;
@@ -432,34 +397,8 @@ float a2 = 0.00005029912027879971;
 float b1 = -1.9821252053783214;
 float b2 = 0.9823264018594366;
 */
-//{1.063771500843777,-2,0.982787728876055 ,1.758394402069101,-0.799329146521103 } // 1500 Hz
-float a0 = 1.063771500843777;
-float a1 = -2;
-float a2 = 0.982787728876055;
-float b1 = -1.758394402069101;
-float b2 = 0.799329146521103;
-//{1.315471063170089,-2,1.059958207403383 ,1.292172328674553,-0.534731986079310 },// 4000Hz -9dB
-float a0_1 = 1.315471063170089;
-float a1_1 = -2;
-float a2_1 = 1.059958207403383;
-float b1_1 = -1.292172328674553;
-float b2_1 = 0.534731986079310;
-//{1.015730293762013,-2,0.989355301752624 ,1.923612924125309,-0.928504282754724}, // 500Hz -9d
-float a0_2 = 1.015730293762013;
-float a1_2 = -2;
-float a2_2 = 0.989355301752624;
-float b1_2 = -1.923612924125309;
-float b2_2 = 0.928504282754724;
-//{{1.00453968207833,-2,0.995917140680743,1.97554429635406,-0.975995533152126}, // 150Hz -9db
-float a0_3 = 1.00453968207833;
-float a1_3 = -2;
-float a2_3 = 0.995917140680743;
-float b1_3 = -1.97554429635406;
-float b2_3 = 0.975995533152126;
 
-void ProvideAudioBuffer(int16_t *samples, int cnt)
-{
-
+void ProvideAudioBuffer(int16_t *samples, int cnt) {
   static float z1,z2;
 
   static uint8_t state = 0;
@@ -474,11 +413,8 @@ void ProvideAudioBuffer(int16_t *samples, int cnt)
       }
     }
   }
-
-
   float w,out;//, in;
   //bass_boosted = 1;
-
   if(bass_boosted) {
 	  /*
     for(int i = 0; i < cnt; i++) {
@@ -512,30 +448,21 @@ void ProvideAudioBuffer(int16_t *samples, int cnt)
     */
     for(int i = 0; i < cnt; i++) {
       if( i % 2 == 0) {
-        w = (float)samples[i] - b1_3*z1 - b2_3*z2;
-        out = a0_3*w + a1_3*z1 + a2_3*z2;
+        //w = (float)samples[i] - b1_3*z1 - b2_3*z2;
+        //out = a0_3*w + a1_3*z1 + a2_3*z2;
         z2 = z1;
         z1 = w;
       }
       samples[i] = (int16_t)out;
     }
   }
-
-
-
-
   if(state == 0) {
-
-
     r1 =  DMA_GetRemainingMajorLoopCount(DMA_0) - cnt/2;
     while( DMA_GetRemainingMajorLoopCount(DMA_0) > cnt/2 ) {
       if(fast_forward){
-
         goto end1;
       }
     }
-
-
     for(int i = 0; i < cnt; i++) {
       audio_buff[i] = *samples / 16;
       audio_buff[i] += (4096/2);
@@ -620,6 +547,8 @@ static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuff
   }
   return 0;
 }
+
+
 
 /*
 * Taken from
@@ -713,15 +642,13 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
         }
         else
         {
-          if(f_lseek(pInFile, f_tell(pInFile) + unFrameSize) != FR_OK)
-          {
+          if(f_lseek(pInFile, f_tell(pInFile) + unFrameSize) != FR_OK) {
             return 1;
           }
         }
       }
     }
-    if(f_lseek(pInFile, unSkip) != FR_OK)
-    {
+    if(f_lseek(pInFile, unSkip) != FR_OK) {
       return 1;
     }
   }
@@ -731,12 +658,10 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
 
 
 
-
-
 void RunDACsine(int sample_rate, int output_samples) {
 	// Nuevo DAC
 	DAC_Init(DAC_0);
-	DacEnableDMA(DAC_0);
+	//DacEnableDMA(DAC_0);
 
 	// Nuevo DMA
 	// DMA Config
@@ -746,7 +671,7 @@ void RunDACsine(int sample_rate, int output_samples) {
 	DMA_Init(DMA_0, DMAConfigOutput);
 
   	// Nuevo PIT
-	PIT_Init(((sample_rate)*1000), PIT_CH0, false);
+	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH0, false);
 	PIT_Start(PIT_CH0);
 }
 
