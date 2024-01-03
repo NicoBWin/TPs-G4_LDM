@@ -388,7 +388,7 @@ void play_file(char *mp3_fname) {
       if(!dac_started) {
         dac_started = 1;
         RunDACsine(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
-        //DAC_Enable(DAC0, true); -> AGREGAR FUNCION EN EL DRIVER
+        DAC_Enable(DAC_0, true);
 
       }
       // Duplicate data in case of mono to maintain playback speed

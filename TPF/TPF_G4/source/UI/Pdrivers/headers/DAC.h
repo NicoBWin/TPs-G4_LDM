@@ -33,6 +33,7 @@ void DAC_SetData (DAC_n dacN, DACData_t data);
 
 void DacEnableDMA(DAC_n dacN);
 
+void DAC_Enable(DAC_n dacN, bool enable);
 /*******************************************************************************
  ******************************************************************************/
 
