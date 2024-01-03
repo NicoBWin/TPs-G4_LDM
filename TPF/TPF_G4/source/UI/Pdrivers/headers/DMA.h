@@ -55,6 +55,7 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config);
 
 void DMA_SetCallback(uint8_t channel, dma_callback_t callback_fn);
 
+uint32_t DMA_GetRemainingMajorLoopCount(uint8_t DMA_channel);
 
 /*******************************************************************************
  ******************************************************************************/

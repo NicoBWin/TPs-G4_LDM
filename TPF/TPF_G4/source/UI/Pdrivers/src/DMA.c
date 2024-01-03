@@ -139,6 +139,26 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config) {
 void DMA_SetCallback(uint8_t channel, dma_callback_t callback_fn){
 	dma_callbacks[DMA_0] = callback_fn;
 }
+
+uint32_t DMA_GetRemainingMajorLoopCount(uint8_t DMA_channel) {
+    uint32_t remainingCount = 0;
+
+    if (DMA_CSR_DONE_MASK & DMA0->TCD[DMA_channel].CSR) {
+        remainingCount = 0;
+    }
+    else {
+        /* Calculate the unfinished bytes */
+        if (DMA0->TCD[DMA_channel].CITER_ELINKNO & DMA_CITER_ELINKNO_ELINK_MASK) {
+            remainingCount =
+                (DMA0->TCD[DMA_channel].CITER_ELINKYES & DMA_CITER_ELINKYES_CITER_MASK) >> DMA_CITER_ELINKYES_CITER_SHIFT;
+        }
+        else {
+            remainingCount =
+                (DMA0->TCD[DMA_channel].CITER_ELINKNO & DMA_CITER_ELINKNO_CITER_MASK) >> DMA_CITER_ELINKNO_CITER_SHIFT;
+        }
+    }
+    return remainingCount;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
