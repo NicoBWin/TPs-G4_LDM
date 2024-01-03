@@ -76,19 +76,19 @@ void RGBMatrix_Init() {
 	// PWM Config -> DO NOT USE FTM0 & CH5!
 	FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_0, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
 						  .PWM_logic=FTM_High, .modulo=TrFREC, .PWM_DC=PWM0, .active_low=false, .DMA_on=true, .interrupt_on=true};
-	FTM_Init (FTM_0, FTMConfigPWM); // PTC,1
-	FTM_start(FTM_0);
+	FTM_Init (FTM_1, FTMConfigPWM); // PTC,1
+	FTM_start(FTM_1);
 
 	// DMA Config
 	DMA_config_t DMAConfigOutput = {.source_buffer = pwmMatrix, .destination_buffer = &(PWM0_DC_MEM),
-			 	 	 	 	 	 .request_source = FTM0CH0, .source_offset = sizeof(uint16_t), .destination_offset = 0x00,
+			 	 	 	 	 	 .request_source = FTM1CH0, .source_offset = sizeof(uint16_t), .destination_offset = 0x00,
 								 .transfer_bytes = sizeof(uint16_t), .major_cycles = PMW_ARRAY_LEN, .wrap_around = sizeof(pwmMatrix)};
-	DMA_Init(DMA_0, DMAConfigOutput);
-	DMA_SetCallback(DMA_0, RGBMatrix_Reset);
+	DMA_Init(DMA_1, DMAConfigOutput);
+	DMA_SetCallback(DMA_1, RGBMatrix_Reset);
 
-	PIT_Init(20, PIT_CH0, false);
-	PIT_Stop(PIT_CH0);
-	Pit_SetCallback(PIT_CH0, RGBMatrix_Restart);
+	PIT_Init(20, PIT_CH1, false);
+	PIT_Stop(PIT_CH1);
+	Pit_SetCallback(PIT_CH1, RGBMatrix_Restart);
 }
 
 void RGBMatrix_UpdateLED(color_t led, uint8_t col, uint8_t row) {
