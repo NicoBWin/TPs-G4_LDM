@@ -43,6 +43,11 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config) {
 	NVIC_ClearPendingIRQ(DMA0_IRQn);
 	/* Enable the DMA interrupts. */
 	NVIC_EnableIRQ(DMA0_IRQn);
+	/* Enable the interrupts for the channel 0. */
+	/* Clear all the pending events. */
+	NVIC_ClearPendingIRQ(DMA1_IRQn);
+	/* Enable the DMA interrupts. */
+	NVIC_EnableIRQ(DMA1_IRQn);
 
 	// ============= INIT TCD0 ===================//
 	/* Set memory address for source and destination. */
@@ -170,6 +175,15 @@ void DMA0_IRQHandler(void) {
 	DMA0->CINT |= DMA_CINT_CINT(DMA_0); //clear interrupt ch0
 	if(dma_callbacks[DMA_0]){
 		dma_callbacks[DMA_0]();
+	}
+}
+
+void DMA1_IRQHandler(void) {
+	/* Clear all the pending events. */
+	NVIC_ClearPendingIRQ(DMA1_IRQn);
+	DMA0->CINT |= DMA_CINT_CINT(DMA_1); //clear interrupt ch0
+	if(dma_callbacks[DMA_1]){
+		dma_callbacks[DMA_1]();
 	}
 }
 

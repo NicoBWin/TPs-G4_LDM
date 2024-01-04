@@ -88,7 +88,7 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
 static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize);
 void RunDACsound(int sample_rate, int output_samples);
 void play_file(char *mp3_fname);
-int sound(void);
+int App_Run(void);
 /*******************************************************************************
 * Variables
 ******************************************************************************/
@@ -124,7 +124,7 @@ volatile uint32_t r1,r2;
 /*!
 * @brief Main function
 */
-int sound(void) {
+int main(void) {
   FRESULT error;
   DIR directory; /* Directory object */
 
@@ -421,8 +421,8 @@ void ProvideAudioBuffer(int16_t *samples, int cnt) {
     }
   }
   if(state == 0) {
-    r1 =  DMA_GetRemainingMajorLoopCount(DMA_0) - cnt/2;
-    while( DMA_GetRemainingMajorLoopCount(DMA_0) > cnt/2 ) {
+    r1 =  DMA_GetRemainingMajorLoopCount(DMA_1) - cnt/2;
+    while( DMA_GetRemainingMajorLoopCount(DMA_1) > cnt/2 ) {
       if(fast_forward){
         goto end1;
       }
@@ -438,8 +438,8 @@ void ProvideAudioBuffer(int16_t *samples, int cnt) {
   }
 
   if(state == 1) {
-    r2 = DMA_GetRemainingMajorLoopCount(DMA_0);
-    while( DMA_GetRemainingMajorLoopCount(DMA_0) < cnt/2 ) {
+    r2 = DMA_GetRemainingMajorLoopCount(DMA_1);
+    while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) {
       if(fast_forward) {
         goto end2;
       }
@@ -602,9 +602,9 @@ void RunDACsound(int sample_rate, int output_samples) {
 	DMA_config_t DMAConfigOutput = {.source_buffer = audio_buff, .destination_buffer = &(DAC0->DAT),
 								 .request_source = DMAALWAYS63, .source_offset = sizeof(uint32_t), .destination_offset = 0x00,
 								 .transfer_bytes = sizeof(uint16_t), .major_cycles = output_samples, .wrap_around = output_samples*4};
-	DMA_Init(DMA_0, DMAConfigOutput);
+	DMA_Init(DMA_1, DMAConfigOutput);
 
   	// PIT Config
-	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH0, false);
-	PIT_Start(PIT_CH0);
+	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH1, false);
+	PIT_Start(PIT_CH1);
 }

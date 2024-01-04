@@ -92,6 +92,7 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init() {
+
 	timerInit();		// Inicializa timers
 
 	encInit();		// Inicializa encoder
