@@ -9,50 +9,28 @@
  ******************************************************************************/
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+
+// Main Lib
+#include "sound.h"
+
+// Fresscale Libs
 #include "fsl_debug_console.h"
-#include "ff.h"
+#include "fsl_sysmpu.h"
+#include "fsl_port.h"
+#include "fsl_gpio.h"
 #include "diskio.h"
 #include "board.h"
-
-#include "fsl_sysmpu.h"
 #include "pin_mux.h"
 #include "clock_config.h"
 
+// MP3 dec lib
 #include "mp3dec.h"
 
-#include <math.h>
-
-#include "fsl_port.h"
-#include "fsl_gpio.h"
-
-// Drives de Nico ///////////////////////////////////////////////
+// Private Drivers
 #include "UI/Pdrivers/headers/DMA.h"
-#include "UI/Pdrivers/headers/encoder.h"
-#include "UI/Pdrivers/headers/FTM.h"
 #include "UI/Pdrivers/headers/PIT.h"
 #include "UI/Pdrivers/headers/DAC.h"
-#include "UI/Pdrivers/headers/LCD1602.h"
-#include "UI/Pdrivers/headers/RGBMatrix.h"
-#include "UI/Pdrivers/headers/switches.h"
-#include "UI/timer/timer.h"
-
-
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
-#define NUMOFFSET       '0'     // Offset de numero entero a char
-#define LENG_SC         4
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-enum status {  //estados de la interfaz principal
-	MENU,
-	SONGS,
-	EQUALIZER,
-	ONOFF,
-	VOLUME
-};
 
 /*******************************************************************************
 * Definitions
@@ -79,16 +57,15 @@ void BOARD_SW_IRQ_HANDLER(void)
   g_ButtonPress = true;
 }
 
-
 /*******************************************************************************
 * Prototypes
 ******************************************************************************/
-void ProvideAudioBuffer(int16_t *samples, int cnt) ;
-static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
 static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize);
-void RunDACsound(int sample_rate, int output_samples);
-void play_file(char *mp3_fname);
-int App_Run(void);
+
+static void RunDACsound(int sample_rate, int output_samples);
+
+static void ProvideAudioBuffer(int16_t *samples, int cnt);
+
 /*******************************************************************************
 * Variables
 ******************************************************************************/
@@ -355,6 +332,159 @@ void play_file(char *mp3_fname) {
 }
 
 
+
+
+uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize) {
+  pszArtist[0] = 0;
+  pszTitle[0] = 0;
+
+  BYTE id3hd[10];
+  UINT unRead = 0;
+  if((f_read(pInFile, id3hd, 10, &unRead) != FR_OK) || (unRead != 10)) {
+    return 1;
+  }
+  else {
+    uint32_t unSkip = 0;
+    if((unRead == 10) &&
+       (id3hd[0] == 'I') &&
+         (id3hd[1] == 'D') &&
+           (id3hd[2] == '3'))
+    {
+      unSkip += 10;
+      unSkip = ((id3hd[6] & 0x7f) << 21) | ((id3hd[7] & 0x7f) << 14) | ((id3hd[8] & 0x7f) << 7) | (id3hd[9] & 0x7f);
+
+      // try to get some information from the tag
+      // skip the extended header, if present
+      uint8_t unVersion = id3hd[3];
+      if(id3hd[5] & 0x40) {
+        BYTE exhd[4];
+        f_read(pInFile, exhd, 4, &unRead);
+        size_t unExHdrSkip = ((exhd[0] & 0x7f) << 21) | ((exhd[1] & 0x7f) << 14) | ((exhd[2] & 0x7f) << 7) | (exhd[3] & 0x7f);
+        unExHdrSkip -= 4;
+        if(f_lseek(pInFile, f_tell(pInFile) + unExHdrSkip) != FR_OK) {
+          return 1;
+        }
+      }
+      uint32_t nFramesToRead = 2;
+      while(nFramesToRead > 0) {
+        char frhd[10];
+        if((f_read(pInFile, frhd, 10, &unRead) != FR_OK) || (unRead != 10)) {
+          return 1;
+        }
+        if((frhd[0] == 0) || (strncmp(frhd, "3DI", 3) == 0)) {
+          break;
+        }
+        char szFrameId[5] = {0, 0, 0, 0, 0};
+        memcpy(szFrameId, frhd, 4);
+        uint32_t unFrameSize = 0;
+        uint32_t i = 0;
+        for(; i < 4; i++) {
+          if(unVersion == 3) {
+            // ID3v2.3
+            unFrameSize <<= 8;
+            unFrameSize += frhd[i + 4];
+          }
+          if(unVersion == 4) {
+            // ID3v2.4
+            unFrameSize <<= 7;
+            unFrameSize += frhd[i + 4] & 0x7F;
+          }
+        }
+
+        if(strcmp(szFrameId, "TPE1") == 0) {
+          // artist
+          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszArtist, unArtistSize) != 0) {
+            break;
+          }
+          nFramesToRead--;
+        }
+        else if(strcmp(szFrameId, "TIT2") == 0) {
+          // title
+          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszTitle, unTitleSize) != 0) {
+            break;
+          }
+          nFramesToRead--;
+        }
+        else {
+          if(f_lseek(pInFile, f_tell(pInFile) + unFrameSize) != FR_OK) {
+            return 1;
+          }
+        }
+      }
+    }
+    if(f_lseek(pInFile, unSkip) != FR_OK) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/*******************************************************************************
+ *******************************************************************************
+                        LOCAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
+// Used by Mp3ReadId3V2Tag
+static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize) {
+  UINT unRead = 0;
+  BYTE byEncoding = 0;
+  if((f_read(pInFile, &byEncoding, 1, &unRead) == FR_OK) && (unRead == 1)) {
+    unDataLen--;
+    if(unDataLen <= (unBufferSize - 1)) {
+      if((f_read(pInFile, pszBuffer, unDataLen, &unRead) == FR_OK) || (unRead == unDataLen)) {
+        if(byEncoding == 0) {
+          // ISO-8859-1 multibyte
+          // just add a terminating zero
+          pszBuffer[unDataLen] = 0;
+        }
+        else if(byEncoding == 1) {
+          // UTF16LE unicode
+          uint32_t r = 0;
+          uint32_t w = 0;
+          if((unDataLen > 2) && (pszBuffer[0] == 0xFF) && (pszBuffer[1] == 0xFE)) {
+            // ignore BOM, assume LE
+            r = 2;
+          }
+          for(; r < unDataLen; r += 2, w += 1) {
+            // should be acceptable for 7 bit ascii
+            pszBuffer[w] = pszBuffer[r];
+          }
+          pszBuffer[w] = 0;
+        }
+      }
+      else {
+        return 1;
+      }
+    }
+    else {
+      // we won't read a partial text
+      if(f_lseek(pInFile, f_tell(pInFile) + unDataLen) != FR_OK) {
+        return 1;
+      }
+    }
+  }
+  else {
+    return 1;
+  }
+  return 0;
+}
+
+
+void RunDACsound(int sample_rate, int output_samples) {
+	// DAC
+	DAC_Init(DAC_0);
+
+	// DMA Config
+	DMA_config_t DMAConfigOutput = {.source_buffer = audio_buff, .destination_buffer = &(DAC0->DAT),
+								 .request_source = DMAALWAYS63, .source_offset = sizeof(uint32_t), .destination_offset = 0x00,
+								 .transfer_bytes = sizeof(uint16_t), .major_cycles = output_samples, .wrap_around = output_samples*4};
+	DMA_Init(DMA_1, DMAConfigOutput);
+
+  	// PIT Config
+	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH1, false);
+	PIT_Start(PIT_CH1);
+}
+
 /* FILTRO
 float a0 = 0.00005029912027879971;
 float a1 = 0.00010059824055759942;
@@ -362,7 +492,7 @@ float a2 = 0.00005029912027879971;
 float b1 = -1.9821252053783214;
 float b2 = 0.9823264018594366;
 */
-void ProvideAudioBuffer(int16_t *samples, int cnt) {
+static void ProvideAudioBuffer(int16_t *samples, int cnt) {
   static float z1,z2;
 
   static uint8_t state = 0;
@@ -452,159 +582,4 @@ void ProvideAudioBuffer(int16_t *samples, int cnt) {
   end2:
     state = 0;
   }
-}
-
-
-/*
-* Taken from
-* http://www.mikrocontroller.net/topic/252319
-*/
-static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize) {
-  UINT unRead = 0;
-  BYTE byEncoding = 0;
-  if((f_read(pInFile, &byEncoding, 1, &unRead) == FR_OK) && (unRead == 1)) {
-    unDataLen--;
-    if(unDataLen <= (unBufferSize - 1)) {
-      if((f_read(pInFile, pszBuffer, unDataLen, &unRead) == FR_OK) || (unRead == unDataLen)) {
-        if(byEncoding == 0) {
-          // ISO-8859-1 multibyte
-          // just add a terminating zero
-          pszBuffer[unDataLen] = 0;
-        }
-        else if(byEncoding == 1) {
-          // UTF16LE unicode
-          uint32_t r = 0;
-          uint32_t w = 0;
-          if((unDataLen > 2) && (pszBuffer[0] == 0xFF) && (pszBuffer[1] == 0xFE)) {
-            // ignore BOM, assume LE
-            r = 2;
-          }
-          for(; r < unDataLen; r += 2, w += 1) {
-            // should be acceptable for 7 bit ascii
-            pszBuffer[w] = pszBuffer[r];
-          }
-          pszBuffer[w] = 0;
-        }
-      }
-      else {
-        return 1;
-      }
-    }
-    else {
-      // we won't read a partial text
-      if(f_lseek(pInFile, f_tell(pInFile) + unDataLen) != FR_OK) {
-        return 1;
-      }
-    }
-  }
-  else {
-    return 1;
-  }
-  return 0;
-}
-
-
-/*
-* Taken from
-* http://www.mikrocontroller.net/topic/252319
-*/
-static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize) {
-  pszArtist[0] = 0;
-  pszTitle[0] = 0;
-
-  BYTE id3hd[10];
-  UINT unRead = 0;
-  if((f_read(pInFile, id3hd, 10, &unRead) != FR_OK) || (unRead != 10)) {
-    return 1;
-  }
-  else {
-    uint32_t unSkip = 0;
-    if((unRead == 10) &&
-       (id3hd[0] == 'I') &&
-         (id3hd[1] == 'D') &&
-           (id3hd[2] == '3'))
-    {
-      unSkip += 10;
-      unSkip = ((id3hd[6] & 0x7f) << 21) | ((id3hd[7] & 0x7f) << 14) | ((id3hd[8] & 0x7f) << 7) | (id3hd[9] & 0x7f);
-
-      // try to get some information from the tag
-      // skip the extended header, if present
-      uint8_t unVersion = id3hd[3];
-      if(id3hd[5] & 0x40) {
-        BYTE exhd[4];
-        f_read(pInFile, exhd, 4, &unRead);
-        size_t unExHdrSkip = ((exhd[0] & 0x7f) << 21) | ((exhd[1] & 0x7f) << 14) | ((exhd[2] & 0x7f) << 7) | (exhd[3] & 0x7f);
-        unExHdrSkip -= 4;
-        if(f_lseek(pInFile, f_tell(pInFile) + unExHdrSkip) != FR_OK) {
-          return 1;
-        }
-      }
-      uint32_t nFramesToRead = 2;
-      while(nFramesToRead > 0) {
-        char frhd[10];
-        if((f_read(pInFile, frhd, 10, &unRead) != FR_OK) || (unRead != 10)) {
-          return 1;
-        }
-        if((frhd[0] == 0) || (strncmp(frhd, "3DI", 3) == 0)) {
-          break;
-        }
-        char szFrameId[5] = {0, 0, 0, 0, 0};
-        memcpy(szFrameId, frhd, 4);
-        uint32_t unFrameSize = 0;
-        uint32_t i = 0;
-        for(; i < 4; i++) {
-          if(unVersion == 3) {
-            // ID3v2.3
-            unFrameSize <<= 8;
-            unFrameSize += frhd[i + 4];
-          }
-          if(unVersion == 4) {
-            // ID3v2.4
-            unFrameSize <<= 7;
-            unFrameSize += frhd[i + 4] & 0x7F;
-          }
-        }
-
-        if(strcmp(szFrameId, "TPE1") == 0) {
-          // artist
-          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszArtist, unArtistSize) != 0) {
-            break;
-          }
-          nFramesToRead--;
-        }
-        else if(strcmp(szFrameId, "TIT2") == 0) {
-          // title
-          if(Mp3ReadId3V2Text(pInFile, unFrameSize, pszTitle, unTitleSize) != 0) {
-            break;
-          }
-          nFramesToRead--;
-        }
-        else {
-          if(f_lseek(pInFile, f_tell(pInFile) + unFrameSize) != FR_OK) {
-            return 1;
-          }
-        }
-      }
-    }
-    if(f_lseek(pInFile, unSkip) != FR_OK) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-
-void RunDACsound(int sample_rate, int output_samples) {
-	// DAC
-	DAC_Init(DAC_0);
-
-	// DMA Config
-	DMA_config_t DMAConfigOutput = {.source_buffer = audio_buff, .destination_buffer = &(DAC0->DAT),
-								 .request_source = DMAALWAYS63, .source_offset = sizeof(uint32_t), .destination_offset = 0x00,
-								 .transfer_bytes = sizeof(uint16_t), .major_cycles = output_samples, .wrap_around = output_samples*4};
-	DMA_Init(DMA_1, DMAConfigOutput);
-
-  	// PIT Config
-	PIT_Init(((CLOCK_GetFreq(kCLOCK_BusClk) / (sample_rate))), PIT_CH1, false);
-	PIT_Start(PIT_CH1);
 }
