@@ -99,6 +99,7 @@ void App_Init() {
 	SW_Init();		// Inicializa encoder
 
 	RGBMatrix_Init();
+	RGBMatrix_Clear();
 
 	LCD1602_Init();
 
@@ -109,12 +110,8 @@ void App_Init() {
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	RGBMatrix_SetBrightness(20.0);
-	VUmeter(0, 80, VUColor);
-	VUmeter(1, 70, VUColor);
-	VUmeter(2, 20, VUColor);
-	VUmeter(3, 90, VUColor);
-	VUmeter(4, 50, VUColor);
+	RGBMatrix_SetBrightness(50.0);
+	VUmeter(1, 50, VUColor);
 
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder

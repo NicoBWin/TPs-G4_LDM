@@ -8,14 +8,12 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 // Main lib
+#include <UI/Pdrivers/pines.h>
 #include "../headers/FTM.h"
 #include "../headers/circularbuffer.h"
 
 // Internal libs
 #include "../../MCAL/gpio.h"
-#include "../board.h"
-
-// MCU libs
 #include "MK64F12.h"
 #include "hardware.h"
 

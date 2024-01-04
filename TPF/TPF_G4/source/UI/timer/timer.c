@@ -8,10 +8,9 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include <stdbool.h>
+#include <UI/Pdrivers/pines.h>
 
 #include "../MCAL/gpio.h"
-#include "../Pdrivers/board.h"
-
 #include "timer.h"
 #include "SysTick.h"
 

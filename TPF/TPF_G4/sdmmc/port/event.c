@@ -65,10 +65,12 @@ void EVENT_InitTimer(void)
     SysTick_Config(CLOCK_GetFreq(kCLOCK_CoreSysClk) / 1000U);
 }
 
+/*
 void SysTick_Handler(void)
 {
     g_timeMilliseconds++;
 }
+*/
 
 static volatile uint32_t *EVENT_GetInstance(event_t eventType)
 {

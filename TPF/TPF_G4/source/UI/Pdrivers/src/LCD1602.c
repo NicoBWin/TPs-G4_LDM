@@ -9,9 +9,9 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 // Main libs
+#include <UI/Pdrivers/pines.h>
 #include "../headers/PIT.h"
 
-#include "../board.h"
 #include "../../MCAL/gpio.h"
 #include "../../timer/timer.h"
 

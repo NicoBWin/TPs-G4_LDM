@@ -25,6 +25,9 @@ typedef enum {
 	PIT_CH2,
 	PIT_CH3,
 } PITch_n;
+
+#define BUS_CLOCK	50000000U
+#define PITLDVAL_MStoTICKS(x) (  ( (BUS_CLOCK * x) / 1000 ) - 1U)
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -32,6 +35,7 @@ void PIT_Init(uint32_t time_ms, uint8_t channel, bool chained);
 
 void PIT_Start(uint8_t channel);
 void PIT_Stop(uint8_t channel);
+void PIT_TIEen(uint8_t channel);
 
 void Pit_SetCallback(uint8_t channel, pit_callback_t callback_fn);
 /*******************************************************************************

@@ -9,10 +9,10 @@
  ******************************************************************************/
 #include <stddef.h>
 #include <stdint.h>
-
+#include <UI/Pdrivers/pines.h>
+#include "../../../sdmmc/port/event.h"
 #include "SysTick.h"
 #include "../MCAL/gpio.h"
-#include "../Pdrivers/board.h"
 #include "MK64F12.h"
 
 /*******************************************************************************
@@ -29,7 +29,7 @@
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static systick_callback_t st_callback;
-
+extern volatile uint32_t g_timeMilliseconds;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -47,7 +47,8 @@ bool SysTick_Init(systick_callback_t callback) {
 	return true;
 }
 
-/*__ISR__ SysTick_Handler(void) {
+__ISR__ SysTick_Handler(void) {
+	g_timeMilliseconds++;
 	#ifdef SYSTICK_DEVELOPMENT_MODE
 		gpioWrite(PIN_IRQ, HIGH);
 	#endif //SYSTICK_DEVELOPMENT_MODE
@@ -55,4 +56,4 @@ bool SysTick_Init(systick_callback_t callback) {
 	#ifdef SYSTICK_DEVELOPMENT_MODE
 		gpioWrite(PIN_IRQ, LOW);
 	#endif //SYSTICK_DEVELOPMENT_MODE
-}*/
+}

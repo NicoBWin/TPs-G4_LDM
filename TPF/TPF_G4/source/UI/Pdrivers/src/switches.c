@@ -7,10 +7,10 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
+#include <UI/Pdrivers/pines.h>
 #include "../../timer/timer.h"
 #include "../headers/switches.h"
 #include "../../MCAL/gpio.h"
-#include "../board.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

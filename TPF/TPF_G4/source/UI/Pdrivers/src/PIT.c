@@ -13,8 +13,8 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define BUS_CLOCK	50000000U
-#define PITLDVAL_MStoTICKS(x) (  ( (BUS_CLOCK * x) / 1000 ) - 1U)
+
+
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -55,6 +55,9 @@ void PIT_Start(uint8_t channel) {
 	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
 }
 
+void PIT_TIEen(uint8_t channel) {
+	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TIE_MASK;
+}
 void PIT_Stop(uint8_t channel){
 	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 }
