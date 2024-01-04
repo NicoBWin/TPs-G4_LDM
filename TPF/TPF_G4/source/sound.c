@@ -88,7 +88,7 @@ static uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtist
 static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize);
 void RunDACsound(int sample_rate, int output_samples);
 void play_file(char *mp3_fname);
-
+int sound(void);
 /*******************************************************************************
 * Variables
 ******************************************************************************/
@@ -124,7 +124,7 @@ volatile uint32_t r1,r2;
 /*!
 * @brief Main function
 */
-int main(void) {
+int sound(void) {
   FRESULT error;
   DIR directory; /* Directory object */
 
