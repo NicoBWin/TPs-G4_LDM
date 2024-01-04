@@ -33,7 +33,18 @@
 #include "UI/Pdrivers/headers/DAC.h"
 
 /*******************************************************************************
-* Definitions
+ * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ ******************************************************************************/
+#define FILE_READ_BUFFER_SIZE   (1024*16)
+
+
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
+enum play_e {eREPLAY, ePREVIOUS, eNEXT};
+
+/*******************************************************************************
+* Volatile
 ******************************************************************************/
 /* buffer size (in byte) for read/write operations */
 #define BOARD_LED_GPIO BOARD_LED_RED_GPIO
@@ -45,9 +56,10 @@
 #define BOARD_SW_IRQ_HANDLER BOARD_SW3_IRQ_HANDLER
 #define BOARD_SW_NAME BOARD_SW3_NAME
 
-
 volatile bool g_ButtonPress = false;
 volatile uint8_t forced_mono,bass_boosted,fast_forward;
+volatile uint32_t r1,r2;
+volatile uint8_t next, prev, replay, mute,ffd,reset, play, volume = 5;
 
 void BOARD_SW_IRQ_HANDLER(void)
 {
@@ -70,37 +82,24 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt);
 * Variables
 ******************************************************************************/
 static FATFS g_fileSystem; /* File system object */
-static FIL g_fileObject;   /* File object */
 
-//static uint8_t g_bufferWrite[BUFFER_SIZE]; /* Write buffer */
-//static uint8_t g_bufferRead[BUFFER_SIZE];  /* Read buffer */
-
-#define FILE_READ_BUFFER_SIZE   (1024*16)
-MP3FrameInfo                 mp3FrameInfo;
-HMP3Decoder         hMP3Decoder;
-uint8_t read_buff[FILE_READ_BUFFER_SIZE];
-uint32_t bytes_read;
-int    bytes_left;
+MP3FrameInfo	mp3FrameInfo;
+HMP3Decoder     hMP3Decoder;
+uint8_t 		read_buff[FILE_READ_BUFFER_SIZE];
+uint32_t 		bytes_read;
+int		bytes_left;
 char    *read_ptr;
 int16_t pcm_buff[2304];
 int16_t audio_buff[2304*2];
-volatile uint32_t delay1 = 1000;
-volatile uint32_t core_clock ;
 
-uint8_t mp3_files[1000][15];    //to save file names
-int mp3_file_index;
-int mp3_total_files;
+uint8_t	mp3_files[1000][15];    //to save file names
+int 	mp3_file_index;
+int 	mp3_total_files;
 
-volatile uint8_t next, prev, replay, mute,ffd,reset, play, volume = 5;
-enum play_e {eREPLAY, ePREVIOUS, eNEXT};
+
 /*******************************************************************************
 * Code
 ******************************************************************************/
-volatile uint32_t r1,r2;
-
-/*!
-* @brief Main function
-*/
 int main(void) {
   FRESULT error;
   DIR directory; /* Directory object */
@@ -123,7 +122,6 @@ int main(void) {
   BOARD_InitDebugConsole();
   SYSMPU_Enable(SYSMPU, false);
 
-  core_clock =   CLOCK_GetFreq(kCLOCK_CoreSysClk);
   LED_BLUE_INIT(1);
 
   /* Init input switch GPIO. */
@@ -240,12 +238,11 @@ void play_file(char *mp3_fname) {
 			read_ptr = read_buff;
 			btr = FILE_READ_BUFFER_SIZE - bytes_left;
 
-			//GPIO_TogglePinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN);
 			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
 			fr = f_read(&fil, read_buff + bytes_left, btr, &br);
 			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 1);
 			static char flag_sw = 0;
-			//flag_sw = GPIO_GetPinsInterruptFlags(BOARD_SW_GPIO);
+
 			flag_sw = GPIO_ReadPinInput(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN);
 			if (flag_sw!=1) {
 				if (bass_boosted == 0)
