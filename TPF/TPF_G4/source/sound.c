@@ -28,7 +28,7 @@
 // MP3 dec lib
 #include "mp3dec.h"
 
-// Private Drivers
+// Peripheral Drivers
 #include "UI/Pdrivers/headers/DMA.h"
 #include "UI/Pdrivers/headers/PIT.h"
 #include "UI/Pdrivers/headers/DAC.h"
@@ -47,27 +47,10 @@ enum play_e {eREPLAY, ePREVIOUS, eNEXT};
 /*******************************************************************************
 * Volatile
 ******************************************************************************/
-/* buffer size (in byte) for read/write operations */
-#define BOARD_LED_GPIO_PIN BOARD_LED_RED_GPIO_PIN
-
-#define BOARD_SW_GPIO BOARD_SW3_GPIO
-#define BOARD_SW_PORT BOARD_SW3_PORT
-#define BOARD_SW_GPIO_PIN BOARD_SW3_GPIO_PIN
-#define BOARD_SW_IRQ BOARD_SW3_IRQ
-#define BOARD_SW_IRQ_HANDLER BOARD_SW3_IRQ_HANDLER
-#define BOARD_SW_NAME BOARD_SW3_NAME
-
-volatile bool g_ButtonPress = false;
 volatile uint8_t forced_mono,bass_boosted,fast_forward;
 volatile uint32_t r1,r2;
 volatile uint8_t next, prev, replay, mute,ffd,reset, play, volume = 5;
 
-void BOARD_SW_IRQ_HANDLER(void) {
-  /* Clear external interrupt flag. */
-  GPIO_ClearPinsInterruptFlags(BOARD_SW_GPIO, 1U << BOARD_SW_GPIO_PIN);
-  /* Change state of button. */
-  g_ButtonPress = true;
-}
 
 /*******************************************************************************
 * Prototypes
@@ -100,7 +83,7 @@ int 	mp3_total_files;
 /*******************************************************************************
 * Code
 ******************************************************************************/
-int main(void) {
+void App_Run(void) {
   FRESULT error;
   DIR directory; /* Directory object */
 

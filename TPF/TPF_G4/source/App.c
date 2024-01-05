@@ -20,6 +20,9 @@
 #include "UI/Pdrivers/headers/DAC.h"
 
 // Timer
+#include "sound.h"
+
+// Sound
 #include "UI/timer/timer.h"
 
 // Standar lib
@@ -110,7 +113,7 @@ void App_Init() {
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run(void) {
+void App_Run2(void) {
 	RGBMatrix_SetBrightness(50.0);
 	VUmeter(1, 50, VUColor);
 

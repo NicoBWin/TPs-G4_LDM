@@ -10,7 +10,7 @@ void App_Init (void);
 void App_Run (void);
 
 
-int main2 (void)
+int main (void)
 {
     hw_Init();
     hw_DisableInterrupts();
