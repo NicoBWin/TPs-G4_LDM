@@ -108,12 +108,17 @@ void App_Init() {
 	LCD1602_Init();
 
 	// Init de Sound
-	// Init de SD
-
+	BOARD_InitPins();
+	BOARD_BootClockRUN();
+	BOARD_InitDebugConsole();
+	SYSMPU_Enable(SYSMPU, false);
+	LED_BLUE_INIT(1);
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run2(void) {
+	SD_ReadSongs();
+
 	RGBMatrix_SetBrightness(50.0);
 	VUmeter(1, 50, VUColor);
 

@@ -15,6 +15,11 @@
 #include <stdlib.h>
 
 #include "ff.h"
+
+#include "board.h"
+#include "pin_mux.h"
+#include "fsl_sysmpu.h"
+#include "clock_config.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -28,8 +33,9 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
+void SD_ReadSongs(void);
 
+uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
 
 void play_file(char *mp3_fname);
 

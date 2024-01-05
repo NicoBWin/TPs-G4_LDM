@@ -17,13 +17,9 @@
 
 // Fresscale Libs
 #include "fsl_debug_console.h"
-#include "fsl_sysmpu.h"
 #include "fsl_port.h"
 #include "fsl_gpio.h"
 #include "diskio.h"
-#include "board.h"
-#include "pin_mux.h"
-#include "clock_config.h"
 
 // MP3 dec lib
 #include "mp3dec.h"
@@ -38,7 +34,6 @@
  ******************************************************************************/
 #define FILE_READ_BUFFER_SIZE   (1024*16)
 
-
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -50,7 +45,6 @@ enum play_e {eREPLAY, ePREVIOUS, eNEXT};
 volatile uint8_t forced_mono,bass_boosted,fast_forward;
 volatile uint32_t r1,r2;
 volatile uint8_t next, prev, replay, mute,ffd,reset, play, volume = 5;
-
 
 /*******************************************************************************
 * Prototypes
@@ -83,67 +77,60 @@ int 	mp3_total_files;
 /*******************************************************************************
 * Code
 ******************************************************************************/
+void SD_ReadSongs(void){
+	FRESULT error;
+	DIR directory; /* Directory object */
+
+	const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
+
+	//printf("\r\nFATFS example to demonstrate how to use FATFS with SD card.\r\n");
+	//PRINTF("\r\nPlease insert a card into board.\r\n");
+
+	if (f_mount(&g_fileSystem, driverNumberBuffer, 0U)) {
+		PRINTF("Mount volume failed.\r\n");
+		return -1;
+	}
+
+	#if (_FS_RPATH >= 2U)
+	  error = f_chdrive((char const *)&driverNumberBuffer[0U]);
+	  if (error) {
+		PRINTF("Change drive failed.\r\n");
+		return -1;
+	  }
+	#endif
+
+	PRINTF("\r\nList the file in that directory......\r\n");
+	if (f_opendir(&directory, "/")) {
+		PRINTF("Open directory failed.\r\n");
+		return -1;
+	}
+
+	volatile FILINFO files;
+	FRESULT res;
+
+	char mp3_fname[50];
+	memset(mp3_fname, 0, 50);
+	while(1) {
+		res =  f_readdir(&directory, &files);
+		if(res != FR_OK || strlen(files.fname) == 0) {
+		  break;////f_opendir(&directory, "/");
+		}
+
+		if(strstr(files.fname, ".MP3")) {
+			strcpy( mp3_files[mp3_file_index], files.fname );    //to save file names
+			mp3_file_index++;
+			mp3_total_files++;
+		}
+	}
+	mp3_file_index = 0;
+}
+
 void App_Run(void) {
-  FRESULT error;
-  DIR directory; /* Directory object */
+	SD_ReadSongs();
 
-  const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
-
-  BOARD_InitPins();
-  BOARD_BootClockRUN();
-  BOARD_InitDebugConsole();
-  SYSMPU_Enable(SYSMPU, false);
-
-  LED_BLUE_INIT(1);
-
-  printf("\r\nFATFS example to demonstrate how to use FATFS with SD card.\r\n");
-
-  PRINTF("\r\nPlease insert a card into board.\r\n");
-
-  if (f_mount(&g_fileSystem, driverNumberBuffer, 0U)) {
-    PRINTF("Mount volume failed.\r\n");
-    return -1;
-  }
-
-#if (_FS_RPATH >= 2U)
-  error = f_chdrive((char const *)&driverNumberBuffer[0U]);
-  if (error) {
-    PRINTF("Change drive failed.\r\n");
-    return -1;
-  }
-#endif
-
-  PRINTF("\r\nList the file in that directory......\r\n");
-  if (f_opendir(&directory, "/")) {
-    PRINTF("Open directory failed.\r\n");
-    return -1;
-  }
-
-  volatile FILINFO files;
-  FRESULT res;
-
-  char mp3_fname[50];
-  memset(mp3_fname, 0, 50);
-  while(1) {
-    res =  f_readdir(&directory, &files);
-    if(res != FR_OK || strlen(files.fname) == 0) {
-      break;////f_opendir(&directory, "/");
-    }
-
-    if(strstr(files.fname, ".MP3")) {
-      strcpy( mp3_files[mp3_file_index], files.fname );    //to save file names
-      mp3_file_index++;
-      mp3_total_files++;
-    }
-  }
-
-  mp3_file_index = 0;
-
-  char file_name_and_index[50];
-  PRINTF(file_name_and_index, "%s (%d/%d)", mp3_files[mp3_file_index], mp3_file_index + 1, mp3_total_files);
-  while( 1 ) {
-    play_file(mp3_files[mp3_file_index]);
-  }
+	while( 1 ) {
+		play_file(mp3_files[mp3_file_index]);
+	}
 }
 
 void play_file(char *mp3_fname) {
@@ -234,39 +221,38 @@ void play_file(char *mp3_fname) {
 			}
 		}
 		else {
-		  // no error
-		  MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
-		  if(!dac_started) {
-
-			dac_started = 1;
-			RunDACsound(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
-			DAC_Enable(DAC_0, true);
-		  }
-		  // Duplicate data in case of mono to maintain playback speed
-		  if (mp3FrameInfo.nChans == 1) {
-			for(int i = mp3FrameInfo.outputSamps;i >= 0;i--) {
-			  samples[2 * i]=samples[i];
-			  samples[2 * i + 1]=samples[i];
+			// no error
+			MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
+			if(!dac_started) {
+				dac_started = 1;
+				RunDACsound(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
+				DAC_Enable(DAC_0, true);
 			}
-			mp3FrameInfo.outputSamps *= 2;
-		  }
+			// Duplicate data in case of mono to maintain playback speed
+			if (mp3FrameInfo.nChans == 1) {
+				for(int i = mp3FrameInfo.outputSamps;i >= 0;i--) {
+					samples[2 * i]=samples[i];
+					samples[2 * i + 1]=samples[i];
+				}
+				mp3FrameInfo.outputSamps *= 2;
+			}
 		}
 		if (!outOfData) {
-		  ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
-		  time += mp3FrameInfo.outputSamps/2;
-		  if(time > mp3FrameInfo.samprate) {
-			time -= mp3FrameInfo.samprate;
-			seconds++;
-			if(seconds >= 60) {
-			  minutes++;
-			  seconds = 0;
+			ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
+			time += mp3FrameInfo.outputSamps/2;
+			if(time > mp3FrameInfo.samprate) {
+				time -= mp3FrameInfo.samprate;
+				seconds++;
+				if(seconds >= 60) {
+					minutes++;
+					seconds = 0;
+				}
 			}
-		  }
-		  if(prev_seconds != seconds) {
-			char time_s[10];
-			PRINTF(time_s, "%02d:%02d", minutes, seconds);
-			prev_seconds = seconds;
-		  }
+			if(prev_seconds != seconds) {
+				char time_s[10];
+				PRINTF(time_s, "%02d:%02d", minutes, seconds);
+				prev_seconds = seconds;
+			}
 		}
 	}
 }
