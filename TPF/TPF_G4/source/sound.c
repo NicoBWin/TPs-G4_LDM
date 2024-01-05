@@ -140,7 +140,9 @@ void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
 }
 
 void play_file(char *mp3_fname) {
-	if(firstTime == 1){
+	static char *mp3_old_fname = NULL;
+	if(*mp3_old_fname != *mp3_fname){
+		mp3_old_fname = mp3_fname;
 		firstTime = 0;
 		if(strlen(mp3_fname) == 0) {
 			PRINTF("No hay cancion pa");

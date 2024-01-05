@@ -133,10 +133,12 @@ void App_Run(void) {
 
 	static uint8_t index;
 
+	static uint8_t mp3_file_index = 0;
+
 	// Maquina de estados NO RTOS
 	while (1) {
 		// FOR TEST ONLY -> SONG PLAY NON STOP
-		play_file(mp3_files[1]);
+		play_file(mp3_files[mp3_file_index]);
 		// ******************************* //
 
 		// Se comunica con el encoder para saber si se acciono y que es lo que se acciono
@@ -169,6 +171,7 @@ void App_Run(void) {
 						index = 4;
 
 					printMenuLCD(index);
+					mp3_file_index++;
 
 				break;
 
