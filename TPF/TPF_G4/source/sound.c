@@ -2,6 +2,7 @@
 @file     sound.c
 @brief    Some sound and SD funtions
 @author   Grupo 4 (Bustelo, Mangone, Porras, Terra)
+@help	  https://github.com/vinodstanur/frdmk64f_mp3_player/tree/master
 ******************************************************************************/
 
 /*******************************************************************************
@@ -105,23 +106,12 @@ int main(void) {
 
   const TCHAR driverNumberBuffer[3U] = {SDDISK + '0', ':', '/'};
 
-  /* Define the init structure for the input switch pin */
-  gpio_pin_config_t sw_config = {
-    kGPIO_DigitalInput, 0,
-  };
-
   BOARD_InitPins();
   BOARD_BootClockRUN();
   BOARD_InitDebugConsole();
   SYSMPU_Enable(SYSMPU, false);
 
   LED_BLUE_INIT(1);
-
-  /* Init input switch GPIO. */
-  PORT_SetPinInterruptConfig(BOARD_SW_PORT, BOARD_SW_GPIO_PIN, kPORT_InterruptFallingEdge);
-  EnableIRQ(BOARD_SW_IRQ);
-  GPIO_PinInit(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN, &sw_config);
-
 
   printf("\r\nFATFS example to demonstrate how to use FATFS with SD card.\r\n");
 
@@ -215,20 +205,14 @@ void play_file(char *mp3_fname) {
 			read_ptr = read_buff;
 			btr = FILE_READ_BUFFER_SIZE - bytes_left;
 
-
 			// BLUE LED INDICATE FILE READING
 			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
 			fr = f_read(&fil, read_buff + bytes_left, btr, &br);
 			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 1);
-			static char flag_sw = 0;
 
-			flag_sw = GPIO_ReadPinInput(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN);
+			static char flag_sw = 0;
 			if (flag_sw!=1) {
-				if (bass_boosted == 0)
-				  bass_boosted=1;
-				else
-				  bass_boosted=0;
-				//GPIO_ClearPinsOutput(BOARD_SW_GPIO, 0);
+				bass_boosted=0;
 			}
 
 			bytes_left = FILE_READ_BUFFER_SIZE;
@@ -456,7 +440,7 @@ void RunDACsound(int sample_rate, int output_samples) {
 	PIT_Start(PIT_CH1);
 }
 
-/* FILTRO
+/* FILTRO -> NO ANDA POR AHORA
 float a0 = 0.00005029912027879971;
 float a1 = 0.00010059824055759942;
 float a2 = 0.00005029912027879971;
