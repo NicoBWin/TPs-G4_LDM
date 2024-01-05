@@ -28,12 +28,13 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+// VARIABLE GLOBAL BORRAR LUEGO
 
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void SD_ReadSongs(void);
+void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files);
 
 uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
 

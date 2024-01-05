@@ -68,16 +68,31 @@ int		bytes_left;
 char    *read_ptr;
 int16_t pcm_buff[2304];
 int16_t audio_buff[2304*2];
+/*
+static uint8_t	mp3_files[1000][15];    //to save file names
+static int 	mp3_file_index;
+static int 	mp3_total_files;
+*/
+uint8_t dac_started = 0;
 
-uint8_t	mp3_files[1000][15];    //to save file names
-int 	mp3_file_index;
-int 	mp3_total_files;
 
+/* PLay_File Vars */
+uint8_t firstTime = 1;
+FIL fil;        /* File object */
+FRESULT fr;     /* FatFs return code */
+bytes_left = 0;
 
+int offset, err;
+int outOfData = 0;
+
+unsigned int br, btr;
+
+int16_t *samples = pcm_buff;
 /*******************************************************************************
 * Code
 ******************************************************************************/
-void SD_ReadSongs(void){
+void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
+	int mp3_file_index=0;
 	FRESULT error;
 	DIR directory; /* Directory object */
 
@@ -122,54 +137,30 @@ void SD_ReadSongs(void){
 			mp3_total_files++;
 		}
 	}
-	mp3_file_index = 0;
-}
-
-void App_Run(void) {
-	SD_ReadSongs();
-
-	while( 1 ) {
-		play_file(mp3_files[mp3_file_index]);
-	}
 }
 
 void play_file(char *mp3_fname) {
-	if(strlen(mp3_fname) == 0) {
-		PRINTF("No hay cancion pa");
-		while(1);
+	if(firstTime == 1){
+		firstTime = 0;
+		if(strlen(mp3_fname) == 0) {
+			PRINTF("No hay cancion pa");
+			while(1);
+		}
+
+		fr = f_open(&fil, mp3_fname, FA_READ);
+		if(fr) {
+			PRINTF("Fallo el file read");
+			while(1);
+		}
+		// Read ID3v2 Tag
+		hMP3Decoder = MP3InitDecoder();
+
+		char szArtist[120];
+		char szTitle[120];
+		Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
 	}
-	uint8_t dac_started = 0;
 
-	FIL fil;        /* File object */
-	FRESULT fr;     /* FatFs return code */
-
-	uint32_t time = 0;
-	uint32_t seconds = 0, prev_seconds = 0, minutes = 0;
-
-	/* Open a text file */
-	fr = f_open(&fil, mp3_fname, FA_READ);
-
-	if(fr) {
-		PRINTF("Fallo el file read");
-		while(1);
-	}
-	// Read ID3v2 Tag
-	hMP3Decoder = MP3InitDecoder();
-
-	char szArtist[120];
-	char szTitle[120];
-	Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
-
-	bytes_left = 0;
-
-	int offset, err;
-	int outOfData = 0;
-
-	unsigned int br, btr;
-
-	int16_t *samples = pcm_buff;
-
-	while(1) {
+	//while(1) {
 		if( bytes_left < FILE_READ_BUFFER_SIZE/2 ) {
 			memcpy( read_buff, read_ptr, bytes_left );
 			read_ptr = read_buff;
@@ -196,7 +187,7 @@ void play_file(char *mp3_fname) {
 		offset = MP3FindSyncWord((unsigned char*)read_ptr, bytes_left);
 		if(offset == -1 ) {
 			bytes_left = 0;
-			continue;
+			return;
 		}
 		bytes_left -= offset;
 		read_ptr += offset;
@@ -239,22 +230,8 @@ void play_file(char *mp3_fname) {
 		}
 		if (!outOfData) {
 			ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
-			time += mp3FrameInfo.outputSamps/2;
-			if(time > mp3FrameInfo.samprate) {
-				time -= mp3FrameInfo.samprate;
-				seconds++;
-				if(seconds >= 60) {
-					minutes++;
-					seconds = 0;
-				}
-			}
-			if(prev_seconds != seconds) {
-				char time_s[10];
-				PRINTF(time_s, "%02d:%02d", minutes, seconds);
-				prev_seconds = seconds;
-			}
 		}
-	}
+	//}
 }
 
 

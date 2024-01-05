@@ -65,7 +65,8 @@ static color_t VUColor = {.r=255,.b=0,.g=0};
 
 static const char menu[5]={'M', 'S', 'E', 'O', 'V'};
 
-
+static uint8_t	mp3_files[1000][15];    //to save file names
+static int 	mp3_total_files;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -116,12 +117,11 @@ void App_Init() {
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run2(void) {
-	SD_ReadSongs();
+void App_Run(void) {
+	SD_ReadSongs(mp3_files , mp3_total_files);
 
 	RGBMatrix_SetBrightness(50.0);
 	VUmeter(1, 50, VUColor);
-
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
 	swResult_t switches_input = SW_NONE; // Variable que recibe los estados del encoder
@@ -135,6 +135,10 @@ void App_Run2(void) {
 
 	// Maquina de estados NO RTOS
 	while (1) {
+		// FOR TEST ONLY -> SONG PLAY NON STOP
+		play_file(mp3_files[1]);
+		// ******************************* //
+
 		// Se comunica con el encoder para saber si se acciono y que es lo que se acciono
 		if(encGetStatus())
 			encoderState = encGetEvent();	// Cambio el encoder
@@ -165,6 +169,7 @@ void App_Run2(void) {
 						index = 4;
 
 					printMenuLCD(index);
+
 				break;
 
 				case SONGS:
@@ -198,7 +203,6 @@ void App_Run2(void) {
 			joystick_input = ENC_NONE;
 		}
 	}
-
 }
 
 /*******************************************************************************
