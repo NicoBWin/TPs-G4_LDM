@@ -160,78 +160,77 @@ void play_file(char *mp3_fname) {
 		Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
 	}
 
-	//while(1) {
-		if( bytes_left < FILE_READ_BUFFER_SIZE/2 ) {
-			memcpy( read_buff, read_ptr, bytes_left );
-			read_ptr = read_buff;
-			btr = FILE_READ_BUFFER_SIZE - bytes_left;
 
-			// BLUE LED INDICATE FILE READING
-			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
-			fr = f_read(&fil, read_buff + bytes_left, btr, &br);
-			GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 1);
+	if( bytes_left < FILE_READ_BUFFER_SIZE/2 ) {
+		memcpy( read_buff, read_ptr, bytes_left );
+		read_ptr = read_buff;
+		btr = FILE_READ_BUFFER_SIZE - bytes_left;
 
-			static char flag_sw = 0;
-			if (flag_sw!=1) {
-				bass_boosted=0;
-			}
+		// BLUE LED INDICATE FILE READING
+		GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
+		fr = f_read(&fil, read_buff + bytes_left, btr, &br);
+		GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 1);
 
-			bytes_left = FILE_READ_BUFFER_SIZE;
-
-			if(fr || br < btr) {
-				f_close(&fil);
-				return;//while(1);//change
-			}
+		static char flag_sw = 0;
+		if (flag_sw!=1) {
+			bass_boosted=0;
 		}
 
-		offset = MP3FindSyncWord((unsigned char*)read_ptr, bytes_left);
-		if(offset == -1 ) {
-			bytes_left = 0;
-			return;
-		}
-		bytes_left -= offset;
-		read_ptr += offset;
+		bytes_left = FILE_READ_BUFFER_SIZE;
 
-		err = MP3Decode(hMP3Decoder, (unsigned char**)&read_ptr, (int*)&bytes_left, samples, 0);
-		if (err) {
-			/* error occurred */
-			switch (err) {
-				case ERR_MP3_INDATA_UNDERFLOW:
-					outOfData = 1;
-				break;
-				case ERR_MP3_MAINDATA_UNDERFLOW:
-					/* do nothing - next call to decode will provide more mainData */
-				break;
-				case ERR_MP3_NULL_POINTER:
-					bytes_left -=1;
-					read_ptr+=1;
-				case ERR_MP3_FREE_BITRATE_SYNC:
-				default:
-					outOfData = 1;
-				break;
-			}
+		if(fr || br < btr) {
+			f_close(&fil);
+			return;//while(1);//change
 		}
-		else {
-			// no error
-			MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
-			if(!dac_started) {
-				dac_started = 1;
-				RunDACsound(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
-				DAC_Enable(DAC_0, true);
-			}
-			// Duplicate data in case of mono to maintain playback speed
-			if (mp3FrameInfo.nChans == 1) {
-				for(int i = mp3FrameInfo.outputSamps;i >= 0;i--) {
-					samples[2 * i]=samples[i];
-					samples[2 * i + 1]=samples[i];
-				}
-				mp3FrameInfo.outputSamps *= 2;
-			}
+	}
+
+	offset = MP3FindSyncWord((unsigned char*)read_ptr, bytes_left);
+	if(offset == -1 ) {
+		bytes_left = 0;
+		return;
+	}
+	bytes_left -= offset;
+	read_ptr += offset;
+
+	err = MP3Decode(hMP3Decoder, (unsigned char**)&read_ptr, (int*)&bytes_left, samples, 0);
+	if (err) {
+		/* error occurred */
+		switch (err) {
+			case ERR_MP3_INDATA_UNDERFLOW:
+				outOfData = 1;
+			break;
+			case ERR_MP3_MAINDATA_UNDERFLOW:
+				/* do nothing - next call to decode will provide more mainData */
+			break;
+			case ERR_MP3_NULL_POINTER:
+				bytes_left -=1;
+				read_ptr+=1;
+			case ERR_MP3_FREE_BITRATE_SYNC:
+			default:
+				outOfData = 1;
+			break;
 		}
-		if (!outOfData) {
-			ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
+	}
+	else {
+		// no error
+		MP3GetLastFrameInfo(hMP3Decoder, &mp3FrameInfo);
+		if(!dac_started) {
+			dac_started = 1;
+			RunDACsound(mp3FrameInfo.samprate, mp3FrameInfo.outputSamps);
+			DAC_Enable(DAC_0, true);
 		}
-	//}
+		// Duplicate data in case of mono to maintain playback speed
+		if (mp3FrameInfo.nChans == 1) {
+			for(int i = mp3FrameInfo.outputSamps;i >= 0;i--) {
+				samples[2 * i]=samples[i];
+				samples[2 * i + 1]=samples[i];
+			}
+			mp3FrameInfo.outputSamps *= 2;
+		}
+	}
+	if (!outOfData) {
+		ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
+	}
 }
 
 
