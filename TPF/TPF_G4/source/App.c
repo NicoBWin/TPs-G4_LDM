@@ -28,6 +28,7 @@
 // Standar lib
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -249,8 +250,17 @@ static void switch_control(swResult_t switches_input, int *status){
 	else if (switches_input == SW_VOL)
 		*status = VOLUME;
 	else if (switches_input == SW_PLAY) {
-		*status = SONGS;
 		// PONER PLAY O PAUSAR LA MUSICA
+		*status = SONGS;
+		static bool Play = true;
+		if (Play){
+			pauseSound();
+			Play = false;
+		}
+		else{
+			resumeSound();
+			Play = true;
+		}
 	}
 	else if (switches_input == SW_LEFT) {
 		*status = SONGS;

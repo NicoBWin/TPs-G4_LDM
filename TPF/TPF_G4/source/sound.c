@@ -102,21 +102,21 @@ void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
 	//PRINTF("\r\nPlease insert a card into board.\r\n");
 
 	if (f_mount(&g_fileSystem, driverNumberBuffer, 0U)) {
-		PRINTF("Mount volume failed.\r\n");
+		//PRINTF("Mount volume failed.\r\n");
 		return -1;
 	}
 
 	#if (_FS_RPATH >= 2U)
 	  error = f_chdrive((char const *)&driverNumberBuffer[0U]);
 	  if (error) {
-		PRINTF("Change drive failed.\r\n");
+		//PRINTF("Change drive failed.\r\n");
 		return -1;
 	  }
 	#endif
 
-	PRINTF("\r\nList the file in that directory......\r\n");
+	//PRINTF("\r\nList the file in that directory......\r\n");
 	if (f_opendir(&directory, "/")) {
-		PRINTF("Open directory failed.\r\n");
+		//PRINTF("Open directory failed.\r\n");
 		return -1;
 	}
 
@@ -145,13 +145,13 @@ void play_file(char *mp3_fname) {
 		mp3_old_fname = mp3_fname;
 		firstTime = 0;
 		if(strlen(mp3_fname) == 0) {
-			PRINTF("No hay cancion pa");
+			//PRINTF("No hay cancion pa");
 			while(1);
 		}
 
 		fr = f_open(&fil, mp3_fname, FA_READ);
 		if(fr) {
-			PRINTF("Fallo el file read");
+			//PRINTF("Fallo el file read");
 			while(1);
 		}
 		// Read ID3v2 Tag
@@ -321,6 +321,17 @@ uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, c
   return 0;
 }
 
+
+void pauseSound(){
+	PIT_Stop(PIT_CH1);
+	// Usar funcion para cargar datos al DAC (ver DAC.h -> DAC_SetData)
+	DAC0->DAT[0].DATH = 0x8U;
+	DAC0->DAT[0].DATL = 0x00U;
+}
+
+void resumeSound() {
+	PIT_Start(PIT_CH1);
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS

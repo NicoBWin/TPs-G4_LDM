@@ -40,6 +40,10 @@ uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, c
 
 void play_file(char *mp3_fname);
 
+void pauseSound(void);
+
+void resumeSound(void);
+
 /*******************************************************************************
  ******************************************************************************/
 
