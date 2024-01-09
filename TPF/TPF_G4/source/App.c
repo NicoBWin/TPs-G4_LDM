@@ -194,6 +194,8 @@ void App_Run(void) {
 
 				case ONOFF:
 					// Apagar los display y poner el modo bajo consumo
+					mp3_file_index+=1;
+					status=MENU;
 					printOnOffLCD();
 				break;
 
