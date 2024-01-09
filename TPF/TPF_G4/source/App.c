@@ -115,6 +115,7 @@ void App_Init() {
 	BOARD_InitDebugConsole();
 	SYSMPU_Enable(SYSMPU, false);
 	LED_BLUE_INIT(1);
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -122,7 +123,7 @@ void App_Run(void) {
 	SD_ReadSongs(mp3_files , mp3_total_files);
 
 	RGBMatrix_SetBrightness(50.0);
-	VUmeter(1, 50, VUColor);
+	VUmeter(2, 50, VUColor);
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
 	swResult_t switches_input = SW_NONE; // Variable que recibe los estados del encoder
@@ -139,7 +140,7 @@ void App_Run(void) {
 	// Maquina de estados NO RTOS
 	while (1) {
 		// FOR TEST ONLY -> SONG PLAY NON STOP
-		play_file(mp3_files[mp3_file_index]);
+//		play_file(mp3_files[mp3_file_index]);
 		// ******************************* //
 
 		// Se comunica con el encoder para saber si se acciono y que es lo que se acciono
@@ -159,6 +160,10 @@ void App_Run(void) {
 		encoder_control(&index, joystick_input, &next_status);
 		switch_control(switches_input, &next_status);
 		status = next_status;
+		if(status==MENU){
+			play_file(mp3_files[mp3_file_index]);
+		}
+
 
 		// Maquina de estados avanzado
 		if(switches_input != SW_NONE || joystick_input != ENC_NONE) {
@@ -172,7 +177,7 @@ void App_Run(void) {
 						index = 4;
 
 					printMenuLCD(index);
-					mp3_file_index++;
+
 
 				break;
 
@@ -258,6 +263,7 @@ static void switch_control(swResult_t switches_input, int *status){
 			Play = false;
 		}
 		else{
+			*status = MENU;
 			resumeSound();
 			Play = true;
 		}
