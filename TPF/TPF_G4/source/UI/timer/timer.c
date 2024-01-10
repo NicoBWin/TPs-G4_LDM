@@ -20,8 +20,6 @@
 #define TIMER_DEVELOPMENT_MODE    0
 #define TIMER_ID_INTERNAL   0 //ID del timer bloqueante reservado dentro del driver
 
-#define TIMERS_MAXCANT 35  // Maxima cantidad de timers en simultaneo
-
 #define TIMER_RUNNING 1
 #define TIMER_STOPED 0
 
@@ -55,7 +53,7 @@ static void timer_isr(void);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static timer_t timers[TIMERS_MAXCANT];
+static timer_t timers[TIMERS_MAX_CANT];
 static tim_id_t timers_cant = TIMER_ID_INTERNAL+1;
 
 /*******************************************************************************
@@ -171,7 +169,7 @@ uint8_t isTimerPaused(tim_id_t id)
  *******************************************************************************
  ******************************************************************************/
 static void timer_isr(void) {
-	for(tim_id_t id=TIMER_ID_INTERNAL; id<TIMERS_MAXCANT; id++){
+	for(tim_id_t id=TIMER_ID_INTERNAL; id<timers_cant; id++){
 
 	  // decremento los timers activos y si hubo timeout!
 	  if(timers[id].running && !(--timers[id].cnt)){

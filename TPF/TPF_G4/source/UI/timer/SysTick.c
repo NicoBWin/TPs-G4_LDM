@@ -18,7 +18,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define SYSTICK_DEVELOPMENT_MODE    1
+#define SYSTICK_DEVELOPMENT_MODE    0
 
 #define SYSTICK_LOAD_INIT ((__CORE_CLOCK__ / SYSTICK_ISR_FREQUENCY_HZ) - 1U)
 #if SYSTICK_LOAD_INIT > (1 << 24)
@@ -36,12 +36,13 @@ extern volatile uint32_t g_timeMilliseconds;
  *******************************************************************************
  ******************************************************************************/
 bool SysTick_Init(systick_callback_t callback) {
+	SysTick->CTRL = 0x00;			   //Enable sysT interrupt
+	SysTick->LOAD = SYSTICK_LOAD_INIT; //1000L  - 1;
+	SysTick->VAL = 0x00;
 	NVIC_EnableIRQ(SysTick_IRQn);
 
-	SysTick->CTRL = 0x00;			   //Enable sysT interrupt
-	SysTick->LOAD = SYSTICK_LOAD_INIT; //00100000L  - 1;
-	SysTick->VAL = 0x00;
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+
 	st_callback = callback;
 
 	return true;

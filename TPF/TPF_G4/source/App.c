@@ -148,7 +148,7 @@ void App_Run(void) {
 		status = next_status;
 		if(status!=PAUSE){
 			resumeSound();
-			play_file(mp3_files[mp3_file_index]);
+			play_file(mp3_files[mp3_file_index], vol);
 		}
 
 
@@ -215,7 +215,7 @@ static void INIT(void){
 
 	SW_Init();		// Inicializa encoder
 
-	RGBMatrix_Init();
+    RGBMatrix_Init();
 	RGBMatrix_Clear();
 
 	LCD1602_Init();

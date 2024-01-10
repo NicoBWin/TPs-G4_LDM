@@ -44,8 +44,8 @@ enum play_e {eREPLAY, ePREVIOUS, eNEXT};
 ******************************************************************************/
 volatile uint8_t forced_mono,bass_boosted,fast_forward;
 volatile uint32_t r1,r2;
-volatile uint8_t next, prev, replay, mute,ffd,reset, play, volume = 5;
-
+volatile uint8_t next, prev, replay, mute,ffd,reset, play;
+//volume = 5
 /*******************************************************************************
 * Prototypes
 ******************************************************************************/
@@ -53,7 +53,7 @@ static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuff
 
 static void RunDACsound(int sample_rate, int output_samples);
 
-static void ProvideAudioBuffer(int16_t *samples, int cnt);
+static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol);
 
 /*******************************************************************************
 * Variables
@@ -130,7 +130,7 @@ uint8_t SD_ReadSongs(uint8_t mp3_files[1000][15]){
 }
 
 
-void play_file(char *mp3_fname) {
+void play_file(char *mp3_fname, uint8_t vol) {
 	/* PLay_File Vars */
 	static FIL fil;        /* File object */
 	static FRESULT fr;     /* FatFs return code */
@@ -238,7 +238,7 @@ void play_file(char *mp3_fname) {
 		}
 	}
 	if (!outOfData) {
-		ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps);
+		ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps, vol);
 	}
 }
 
@@ -412,18 +412,19 @@ float a2 = 0.00005029912027879971;
 float b1 = -1.9821252053783214;
 float b2 = 0.9823264018594366;
 */
-static void ProvideAudioBuffer(int16_t *samples, int cnt) {
+static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
   static float z1,z2;
 
   static uint8_t state = 0;
-
   int32_t tmp = 0;
+
+  uint8_t volume = vol*5;
   if(1) {
     for(int i = 0; i < cnt; i++) {
       if(i%2 == 0) {
         tmp =   samples[i] + samples[i+1];
         tmp /= 2;
-        samples[i] = (int16_t)tmp * (int32_t)volume / 10;;
+        samples[i] = (int16_t)tmp * (int32_t)volume / 100;;
       }
     }
   }
@@ -459,7 +460,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt) {
       }
       samples[i] = (int16_t)out;
     }
-    */
+
     for(int i = 0; i < cnt; i++) {
       if( i % 2 == 0) {
         //w = (float)samples[i] - b1_3*z1 - b2_3*z2;
@@ -468,7 +469,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt) {
         z1 = w;
       }
       samples[i] = (int16_t)out;
-    }
+    }   */
   }
   if(state == 0) {
     r1 =  DMA_GetRemainingMajorLoopCount(DMA_1) - cnt/2;
