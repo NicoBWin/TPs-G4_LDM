@@ -22,7 +22,7 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 //Estados de la Encoder FSM
-enum states {NONE, LEFT, RIGHT, PLAY, MENU, ONOFF, VOL};
+enum states {NONE, LEFT, RIGHT, PLAY, PAUSE, MENU, VOL};
 //Son 3 estados porque analizamos 3 flancos
 
 /*******************************************************************************
@@ -107,8 +107,8 @@ static void readPins(void) {
 			if ( gpioRead(SW1) == SW_ACTIVE ){swFSM = LEFT;}
 			if ( gpioRead(SW2) == SW_ACTIVE ){swFSM = RIGHT;}
 			if ( gpioRead(SW3) == SW_ACTIVE ){swFSM = PLAY;}
-			if ( gpioRead(SW4) == SW_ACTIVE ){swFSM = MENU;}
-			if ( gpioRead(SW5) == SW_ACTIVE ){swFSM = ONOFF;}
+			if ( gpioRead(SW4) == SW_ACTIVE ){swFSM = PAUSE;}
+			if ( gpioRead(SW5) == SW_ACTIVE ){swFSM = MENU;}
 			if ( gpioRead(SW6) == SW_ACTIVE ){swFSM = VOL;}
 			break;
 		case LEFT:
@@ -132,17 +132,17 @@ static void readPins(void) {
 				swFSM = NONE;
 			}
 			break;
-		case MENU:
+		case PAUSE:
 			if ( gpioRead(SW4) == !SW_ACTIVE ){
 				status = true;
-				swEvent = SW_MENU;
+				swEvent = SW_PAUSE;
 				swFSM = NONE;
 			}
 			break;
-		case ONOFF:
+		case MENU:
 			if ( gpioRead(SW5) == !SW_ACTIVE ){
 				status = true;
-				swEvent = SW_ONOFF;
+				swEvent = SW_MENU;
 				swFSM = NONE;
 			}
 			break;

@@ -20,8 +20,8 @@ typedef enum {
 	SW_LEFT,
 	SW_RIGHT,
 	SW_PLAY,
+	SW_PAUSE,
 	SW_MENU,
-	SW_ONOFF,
 	SW_VOL,
 	SW_NONE
 }swResult_t;

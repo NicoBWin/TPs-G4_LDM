@@ -58,41 +58,30 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt);
 /*******************************************************************************
 * Variables
 ******************************************************************************/
-static FATFS g_fileSystem; /* File system object */
-
 MP3FrameInfo	mp3FrameInfo;
 HMP3Decoder     hMP3Decoder;
 uint8_t 		read_buff[FILE_READ_BUFFER_SIZE];
 uint32_t 		bytes_read;
-int		bytes_left;
+
 char    *read_ptr;
 int16_t pcm_buff[2304];
 int16_t audio_buff[2304*2];
-/*
-static uint8_t	mp3_files[1000][15];    //to save file names
-static int 	mp3_file_index;
-static int 	mp3_total_files;
-*/
-uint8_t dac_started = 0;
 
 
-/* PLay_File Vars */
-uint8_t firstTime = 1;
-FIL fil;        /* File object */
-FRESULT fr;     /* FatFs return code */
-bytes_left = 0;
 
-int offset, err;
-int outOfData = 0;
 
 unsigned int br, btr;
+
 
 int16_t *samples = pcm_buff;
 /*******************************************************************************
 * Code
 ******************************************************************************/
-void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
-	int mp3_file_index=0;
+uint8_t SD_ReadSongs(uint8_t mp3_files[1000][15]){
+	uint8_t 	mp3_total_files=0;
+	uint8_t		mp3_file_index=0;
+
+	static FATFS g_fileSystem; /* File system object */
 	FRESULT error;
 	DIR directory; /* Directory object */
 
@@ -120,11 +109,11 @@ void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
 		return -1;
 	}
 
-	volatile FILINFO files;
+	FILINFO files;
 	FRESULT res;
 
-	char mp3_fname[50];
-	memset(mp3_fname, 0, 50);
+	//char mp3_fname[50];
+	//memset(mp3_fname, 0, 50);
 	while(1) {
 		res =  f_readdir(&directory, &files);
 		if(res != FR_OK || strlen(files.fname) == 0) {
@@ -137,21 +126,44 @@ void SD_ReadSongs(uint8_t mp3_files[1000][15], int mp3_total_files){
 			mp3_total_files++;
 		}
 	}
+	return mp3_total_files;
 }
 
+
 void play_file(char *mp3_fname) {
+	/* PLay_File Vars */
+	static FIL fil;        /* File object */
+	static FRESULT fr;     /* FatFs return code */
+	static int bytes_left;
+
+	static int offset, err;
+	static int outOfData;
+
+	static uint8_t dac_started = 0;
+
+	static bool fileOpen = false;
+
 	static char *mp3_old_fname = NULL;
 	if(*mp3_old_fname != *mp3_fname){
 		mp3_old_fname = mp3_fname;
-		firstTime = 0;
+		bytes_left = 0;
+		outOfData = 0;
+
 		if(strlen(mp3_fname) == 0) {
 			//PRINTF("No hay cancion pa");
 			while(1);
 		}
 
-		fr = f_open(&fil, mp3_fname, FA_READ);
-		if(fr) {
-			//PRINTF("Fallo el file read");
+		if (fileOpen) {
+			f_close(&fil);
+			fileOpen = false;
+		}
+
+		if(f_open(&fil, mp3_fname, FA_READ) == FR_OK) {
+			fileOpen = true;
+		}
+		else {
+			//PRINTF("No funca el file read");
 			while(1);
 		}
 		// Read ID3v2 Tag
@@ -172,11 +184,6 @@ void play_file(char *mp3_fname) {
 		GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 0);
 		fr = f_read(&fil, read_buff + bytes_left, btr, &br);
 		GPIO_WritePinOutput(GPIOB, BOARD_LED_BLUE_GPIO_PIN, 1);
-
-		static char flag_sw = 0;
-		if (flag_sw!=1) {
-			bass_boosted=0;
-		}
 
 		bytes_left = FILE_READ_BUFFER_SIZE;
 

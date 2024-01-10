@@ -43,7 +43,8 @@ enum status {  //estados de la interfaz principal
 	MENU,
 	SONGS,
 	EQUALIZER,
-	ONOFF,
+	PLAY,
+	PAUSE,
 	VOLUME
 };
 
@@ -64,10 +65,11 @@ static swResult_t 	swState;
 
 static color_t VUColor = {.r=255,.b=0,.g=0};
 
-static const char menu[5]={'M', 'S', 'E', 'O', 'V'};
+static const char menu[4]={'M', 'S', 'E', 'V'};
 
-static uint8_t	mp3_files[1000][15];    //to save file names
-static int 	mp3_total_files;
+static uint8_t	mp3_files[50][15];    //to save file names -> 50 songs + 15 letter name
+static uint8_t 	mp3_total_files;
+static int mp3_file_index = 0;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -81,6 +83,7 @@ static void printVolLCD(uint8_t volume);
 static void printOnOffLCD();
 static void printEqLCD();
 static void printSongsLCD();
+static void printPauseLCD();
 
 static int equalizer_control(encResult_t joystick_input);
 static void printEQLCD(int N_Frequency, char Attenuation, int equalizer_status);
@@ -88,6 +91,8 @@ static void printEQLCD(int N_Frequency, char Attenuation, int equalizer_status);
 /*******************************************************************************
  * USEFUL FUNCTION PROTOTYPES (FILE LEVEL SCOPE)
  ******************************************************************************/
+static void INIT(void);
+
 static void intochar(int16_t num, char chscore[LENG_SC]);
 
 /*******************************************************************************
@@ -97,33 +102,18 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init() {
-
 	timerInit();		// Inicializa timers
-
-	encInit();		// Inicializa encoder
-
-	SW_Init();		// Inicializa encoder
-
-	RGBMatrix_Init();
-	RGBMatrix_Clear();
-
-	LCD1602_Init();
-
-	// Init de Sound
-	BOARD_InitPins();
-	BOARD_BootClockRUN();
-	BOARD_InitDebugConsole();
-	SYSMPU_Enable(SYSMPU, false);
-	LED_BLUE_INIT(1);
 
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run(void) {
-	SD_ReadSongs(mp3_files , mp3_total_files);
 
-	RGBMatrix_SetBrightness(50.0);
-	VUmeter(2, 50, VUColor);
+	INIT();
+	mp3_total_files = SD_ReadSongs(mp3_files);
+
+	//RGBMatrix_SetBrightness(50.0);
+	//VUmeter(2, 50, VUColor);
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
 	swResult_t switches_input = SW_NONE; // Variable que recibe los estados del encoder
@@ -135,14 +125,10 @@ void App_Run(void) {
 
 	static uint8_t index;
 
-	static uint8_t mp3_file_index = 0;
+
 
 	// Maquina de estados NO RTOS
 	while (1) {
-		// FOR TEST ONLY -> SONG PLAY NON STOP
-//		play_file(mp3_files[mp3_file_index]);
-		// ******************************* //
-
 		// Se comunica con el encoder para saber si se acciono y que es lo que se acciono
 		if(encGetStatus())
 			encoderState = encGetEvent();	// Cambio el encoder
@@ -160,7 +146,8 @@ void App_Run(void) {
 		encoder_control(&index, joystick_input, &next_status);
 		switch_control(switches_input, &next_status);
 		status = next_status;
-		if(status==MENU){
+		if(status!=PAUSE){
+			resumeSound();
 			play_file(mp3_files[mp3_file_index]);
 		}
 
@@ -173,12 +160,10 @@ void App_Run(void) {
 
 					if(index < 0)
 						index = 0;
-					if(index > 4) //If it is -1
-						index = 4;
+					if(index > 3) //If it is -1
+						index = 3;
 
 					printMenuLCD(index);
-
-
 				break;
 
 				case SONGS:
@@ -186,17 +171,21 @@ void App_Run(void) {
 					printSongsLCD();
 				break;
 
+				case PLAY:
+					// Mostrar la cancion que está sonando
+					printSongsLCD();
+				break;
+
+				case PAUSE:
+					// Indicar que está en pausa la canción
+					pauseSound();
+					printPauseLCD();
+				break;
+
 				case EQUALIZER:
 					// Ecualizar las bandas
 					next_status = equalizer_control(joystick_input);
 					//printEqLCD();
-				break;
-
-				case ONOFF:
-					// Apagar los display y poner el modo bajo consumo
-					mp3_file_index+=1;
-					status=MENU;
-					printOnOffLCD();
 				break;
 
 				case VOLUME:
@@ -221,6 +210,24 @@ void App_Run(void) {
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+static void INIT(void){
+	encInit();		// Inicializa encoder
+
+	SW_Init();		// Inicializa encoder
+
+	RGBMatrix_Init();
+	RGBMatrix_Clear();
+
+	LCD1602_Init();
+
+	// Init de Sound
+	BOARD_InitPins();
+	BOARD_BootClockRUN();
+	BOARD_InitDebugConsole();
+	SYSMPU_Enable(SYSMPU, false);
+	LED_BLUE_INIT(1);
+}
+
 static void encoder_control(uint8_t *index, encResult_t joystick_input, int *status) {
 	if (joystick_input == ENC_NONE)
 		return;
@@ -230,9 +237,6 @@ static void encoder_control(uint8_t *index, encResult_t joystick_input, int *sta
 		}
 		else if(menu[(*index)] == 'E') {
 			*status = EQUALIZER;
-		}
-		else if(menu[(*index)] == 'O') {
-			*status = ONOFF;
 		}
 		else if(menu[(*index)] == 'V') {
 			*status = VOLUME;
@@ -252,31 +256,30 @@ static void switch_control(swResult_t switches_input, int *status){
 		return;
 	else if (switches_input == SW_MENU)
 		*status = MENU;
-	else if (switches_input == SW_ONOFF)
-		*status = ONOFF;
+	else if (switches_input == SW_PAUSE)
+		*status = PAUSE;
 	else if (switches_input == SW_VOL)
 		*status = VOLUME;
 	else if (switches_input == SW_PLAY) {
 		// PONER PLAY O PAUSAR LA MUSICA
-		*status = SONGS;
-		static bool Play = true;
-		if (Play){
-			pauseSound();
-			Play = false;
-		}
-		else{
-			*status = MENU;
-			resumeSound();
-			Play = true;
-		}
+		*status = PLAY;
 	}
 	else if (switches_input == SW_LEFT) {
-		*status = SONGS;
-		// PONER LA CANCIÓN ANTERIOR
+		//*status = SONGS;
+
+		mp3_file_index--;
+		if(mp3_file_index < 0 ) {
+			mp3_file_index = mp3_total_files - 1;
+		}
+		// PONER LA CANCIÓN ANTERIOR O LA ULTIMA
 	}
 	else if (switches_input == SW_RIGHT) {
-		*status = SONGS;
-		// PONER LA CANCIÓN SIGUIENTE
+		//*status = SONGS;
+		mp3_file_index++;
+		if(mp3_file_index >= mp3_total_files ) {
+			mp3_file_index = 0;
+		  }
+		// PONER LA CANCIÓN SIGUIENTE O LA PRIMERA
 	}
 }
 
@@ -284,7 +287,6 @@ static void printMenuLCD(uint8_t index) {
 	const unsigned char  menu_text[] = 	 "      MENU      ";
 	const unsigned char  songs_text[] =  "     SONGS      ";
 	const unsigned char  eq_text[] = 	 "   EQUALIZER    ";
-	const unsigned char  onoff_text[] =  "    ON / OFF    ";
 	const unsigned char  volume_text[] = "     VOLUME     ";
 	const unsigned char  arrows_text[] = "<              >";
 	//const unsigned char  TEST[] =		 "________________";
@@ -295,8 +297,6 @@ static void printMenuLCD(uint8_t index) {
 		LCD1602_W1L(&songs_text);
 	else if (menu[index] == 'E')
 		LCD1602_W1L(&eq_text);
-	else if (menu[index] == 'O')
-		LCD1602_W1L(&onoff_text);
 	else if (menu[index] == 'V')
 		LCD1602_W1L(&volume_text);
 
@@ -320,13 +320,6 @@ static void printVolLCD(uint8_t vol){
 	LCD1602_W2L(&volume_val);
 }
 
-
-static void printOnOffLCD(){
-	const unsigned char text1[] = "  BAJO CONSUMO";
-	LCD1602_Clear();
-	LCD1602_W1L(&text1);
-}
-
 static void printEqLCD(){
 	const unsigned char text2[] = "ECUALIZANDO...";
 	LCD1602_Clear();
@@ -335,6 +328,12 @@ static void printEqLCD(){
 
 static void printSongsLCD(){
 	const unsigned char text3[] = "CANCIONES...";
+	LCD1602_Clear();
+	LCD1602_W1L(&text3);
+}
+
+static void printPauseLCD(){
+	const unsigned char text3[] = "PAUSA...";
 	LCD1602_Clear();
 	LCD1602_W1L(&text3);
 }
