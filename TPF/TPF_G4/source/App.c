@@ -102,7 +102,6 @@ static void intochar(int16_t num, char chscore[LENG_SC]);
  ******************************************************************************/
 /* Todos los init necesarios */
 void App_Init() {
-	timerInit();		// Inicializa timers
 
 }
 
@@ -110,10 +109,10 @@ void App_Init() {
 void App_Run(void) {
 
 	INIT();
-	mp3_total_files = SD_ReadSongs(mp3_files);
+	//mp3_total_files = SD_ReadSongs(mp3_files);
 
-	//RGBMatrix_SetBrightness(50.0);
-	//VUmeter(2, 50, VUColor);
+	RGBMatrix_SetBrightness(50.0);
+
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
 	swResult_t switches_input = SW_NONE; // Variable que recibe los estados del encoder
@@ -147,8 +146,8 @@ void App_Run(void) {
 		switch_control(switches_input, &next_status);
 		status = next_status;
 		if(status!=PAUSE){
-			resumeSound();
-			play_file(mp3_files[mp3_file_index], vol);
+			//resumeSound();
+			//play_file(mp3_files[mp3_file_index], vol);
 		}
 
 
@@ -173,12 +172,14 @@ void App_Run(void) {
 
 				case PLAY:
 					// Mostrar la cancion que está sonando
+					VUmeter(2, 80, VUColor);
 					printSongsLCD();
 				break;
 
 				case PAUSE:
 					// Indicar que está en pausa la canción
-					pauseSound();
+					VUmeter(2, 40, VUColor);
+					//pauseSound();
 					printPauseLCD();
 				break;
 
@@ -211,6 +212,15 @@ void App_Run(void) {
  *******************************************************************************
  ******************************************************************************/
 static void INIT(void){
+	// Init de Sound
+	BOARD_InitPins();
+	BOARD_BootClockRUN();
+	BOARD_InitDebugConsole();
+	SYSMPU_Enable(SYSMPU, false);
+	LED_BLUE_INIT(1);
+
+	timerInit();		// Inicializa timers
+
 	encInit();		// Inicializa encoder
 
 	SW_Init();		// Inicializa encoder
@@ -219,13 +229,6 @@ static void INIT(void){
 	RGBMatrix_Clear();
 
 	LCD1602_Init();
-
-	// Init de Sound
-	BOARD_InitPins();
-	BOARD_BootClockRUN();
-	BOARD_InitDebugConsole();
-	SYSMPU_Enable(SYSMPU, false);
-	LED_BLUE_INIT(1);
 }
 
 static void encoder_control(uint8_t *index, encResult_t joystick_input, int *status) {

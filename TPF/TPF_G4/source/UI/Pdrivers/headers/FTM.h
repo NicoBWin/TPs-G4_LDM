@@ -117,6 +117,8 @@ void FTM_Init (FTM_n FTMn, FTMConfig_t config);
 
 void FTM_start(FTM_n FTMn);
 
+void FTM_startWDuty(FTM_n FTMn, uint16_t PWM_DC);
+
 void FTM_stop(FTM_n FTMn);
 
 uint16_t FTM_getCounter(FTM_n FTMn);

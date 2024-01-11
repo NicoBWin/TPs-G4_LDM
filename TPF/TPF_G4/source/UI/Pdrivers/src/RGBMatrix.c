@@ -24,6 +24,7 @@
  ******************************************************************************/
 #define LED_BITS 24
 #define PMW_ARRAY_LEN	HEIGHT*WIDTH*LED_BITS
+#define PMW_ARRAY_LEN_PLUSRES	HEIGHT*WIDTH*LED_BITS+40
 
 #define MAX_BRIGHTNESS	(float)100.0
 
@@ -40,7 +41,7 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef uint16_t PWM_Array_t[PMW_ARRAY_LEN];
+typedef uint16_t PWM_Array_t[PMW_ARRAY_LEN_PLUSRES];
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -68,10 +69,13 @@ static void RGBMatrix_Restart();
  *******************************************************************************
  ******************************************************************************/
 void RGBMatrix_Init() {
-	//ResetCode_Tim = timerGetId(); // If you want to use timers
+	ResetCode_Tim = timerGetId(); // If you want to use timers
 
-	// Matrix init
-	Matrix_RGB2PWM();
+	// Matrix array init
+	RGBMatrix_Clear();
+	for(int i=PMW_ARRAY_LEN; i<PMW_ARRAY_LEN_PLUSRES; i++){
+		pwmMatrix[i]=1;
+	}
 
 	// PWM Config -> DO NOT USE FTM0 & CH5!
 	FTMConfig_t FTMConfigPWM = {.channel=FTM_Channel_0, .mode=FTM_mPWM, .prescale=FTM_PSC_x1, .CLK_source=FTM_SysCLK,
@@ -80,20 +84,20 @@ void RGBMatrix_Init() {
 	FTM_start(FTM_0);
 
 	// DMA Config
-	DMA_config_t DMAConfigOutput = {.source_buffer = pwmMatrix, .destination_buffer = &(PWM0_DC_MEM),
+	DMA_config_t DMAConfigOutput = {.source_buffer = (uint16_t*)pwmMatrix + 1, .destination_buffer = &(PWM0_DC_MEM),
 			 	 	 	 	 	 .request_source = FTM0CH0, .source_offset = sizeof(uint16_t), .destination_offset = 0x00,
-								 .transfer_bytes = sizeof(uint16_t), .major_cycles = PMW_ARRAY_LEN, .wrap_around = sizeof(pwmMatrix)};
+								 .transfer_bytes = sizeof(uint16_t), .major_cycles = (PMW_ARRAY_LEN_PLUSRES)-1, .wrap_around = sizeof(pwmMatrix)-2};
+
 	DMA_Init(DMA_0, DMAConfigOutput);
 	DMA_SetCallback(DMA_0, RGBMatrix_Reset);
 
-	PIT_Init(PITLDVAL_MStoTICKS(20), PIT_CH0, false);
-	PIT_TIEen(PIT_CH0);
-	PIT_Stop(PIT_CH0);
-	Pit_SetCallback(PIT_CH0, RGBMatrix_Restart);
+	//PIT_Init(PITLDVAL_MStoTICKS(20), PIT_CH0, false);
+	//PIT_Stop(PIT_CH0);
+	//Pit_SetCallback(PIT_CH0, RGBMatrix_Restart);
 }
 
 void RGBMatrix_UpdateLED(color_t led, uint8_t col, uint8_t row) {
-	rgbMatrix[col][row] = led;
+	rgbMatrix[row][col] = led;
 	Matrix_RGB2PWM();
 }
 
@@ -184,10 +188,11 @@ static void Matrix_RGB2PWM() {
 // Future improvement -> USE PIT!
 static void RGBMatrix_Reset() {
 	FTM_stop(FTM_0);
-	PIT_Start(PIT_CH0);
-	//timerStart(ResetCode_Tim, RESET_TICKS, TIM_MODE_SINGLESHOT, RGBMatrix_Restart); // If you want to use timers
+	//PIT_Start(PIT_CH0);
+	timerStart(ResetCode_Tim, RESET_TICKS, TIM_MODE_SINGLESHOT, RGBMatrix_Restart); // If you want to use timers
 }
 
 static void RGBMatrix_Restart() {
-	FTM_start(FTM_0);
+	FTM_startWDuty(FTM_0, *((uint16_t*)pwmMatrix));
+	//FTM_start(FTM_0);
 }

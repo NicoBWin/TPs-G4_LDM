@@ -258,6 +258,13 @@ void FTM_start(FTM_n FTMn) {
 	FTM_PTRS[FTMn]->SC = FTM_PTRS[FTMn]->SC | FTM_SC_CLKS(0x01);
 }
 
+// Only for channel 0!
+void FTM_startWDuty(FTM_n FTMn, uint16_t PWM_DC) {
+	FTM_PTRS[FTMn]->CONTROLS[FTM_Channel_0].CnV = FTM_CnV_VAL(PWM_DC);
+	FTM_PTRS[FTMn]->SC = FTM_PTRS[FTMn]->SC | FTM_SC_CLKS(0x01);
+}
+
+
 void FTM_stop(FTM_n FTMn) {
 	FTM_PTRS[FTMn]->SC =  FTM_PTRS[FTMn]->SC & ~(FTM_SC_CLKS(0x01));
 }
