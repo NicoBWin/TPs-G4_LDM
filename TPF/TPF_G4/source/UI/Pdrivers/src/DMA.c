@@ -90,7 +90,7 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config) {
 	DMA0->TCD[DMA_channel].DLAST_SGA = 0x00; //IMPORTANTE! SETEAR EN 0 (o valor conocido, es random)
 
 	//DMA0->TCD[DMA_channel].CSR &= ~DMA_CSR_INTMAJOR_MASK;
-	DMA0->TCD[DMA_0].CSR |= DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
+	DMA0->TCD[DMA_0].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
 	DMA0->TCD[DMA_1].CSR &= ~(DMA_CSR_INTMAJOR_MASK);	//Enable Major Interrupt.
 
 	/* Enable request signal. */

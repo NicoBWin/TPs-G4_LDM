@@ -164,6 +164,7 @@ void App_Run(void) {
 
 					RGBMatrix_Clear();
 
+
 					printMenuLCD(index);
 				break;
 
@@ -197,6 +198,7 @@ void App_Run(void) {
 					if(encoderState == ENC_LEFT && vol >= 1)
 						vol--;
 					printVolLCD(vol*5);
+					RGBMatrix_Test();
 				break;
 
 				default:

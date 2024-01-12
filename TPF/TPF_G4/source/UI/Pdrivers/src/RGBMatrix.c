@@ -24,13 +24,17 @@
  ******************************************************************************/
 #define LED_BITS 24
 #define PMW_ARRAY_LEN	HEIGHT*WIDTH*LED_BITS
-#define PMW_ARRAY_LEN_PLUSRES	HEIGHT*WIDTH*LED_BITS+100
+#define PMW_ARRAY_LEN_PLUSRES	HEIGHT*WIDTH*LED_BITS+48
 
 #define MAX_BRIGHTNESS	(float)100.0
 
-#define TrFREC	(uint16_t) 62	// 125ns periodo @ 50Mhz
+/*#define TrFREC	(uint16_t) 61	// 125ns periodo @ 50Mhz
 #define PWM0	(uint16_t) 20	// 33% de DC
-#define PWM1 	(uint16_t) 40	// 65% de DC
+#define PWM1 	(uint16_t) 40	// 65% de DC */
+
+#define TrFREC	(uint16_t) 74	// 125ns periodo @ 60Mhz
+#define PWM0	(uint16_t) 25	// 33% de DC
+#define PWM1 	(uint16_t) 49	// 65% de DC
 
 #define GREEN_BITS 0
 #define RED_BITS	1
@@ -83,14 +87,14 @@ void RGBMatrix_Init() {
 	FTM_Init (FTM_0, FTMConfigPWM); // PTC,1
 
 	// DMA Config
-	DMA_config_t DMAConfigOutput = {.source_buffer = (uint16_t*)pwmMatrix + 1, .destination_buffer = &(PWM0_DC_MEM),
+	DMA_config_t DMAConfigOutput = {.source_buffer = (uint16_t*)pwmMatrix, .destination_buffer = &(PWM0_DC_MEM),
 			 	 	 	 	 	 .request_source = FTM0CH0, .source_offset = sizeof(uint16_t), .destination_offset = 0x00,
-								 .transfer_bytes = sizeof(uint16_t), .major_cycles = (PMW_ARRAY_LEN_PLUSRES)-1, .wrap_around = sizeof(pwmMatrix)-2};
+								 .transfer_bytes = sizeof(uint16_t), .major_cycles = (PMW_ARRAY_LEN_PLUSRES), .wrap_around = sizeof(pwmMatrix)};
 
 	DMA_Init(DMA_0, DMAConfigOutput);
 	DMA_SetCallback(DMA_0, RGBMatrix_Reset);
 
-	PIT_Init(600000, PIT_CH0, false); // Refresh each 10us
+	PIT_Init(6000000, PIT_CH0, false); // Refresh each 10us
 	//PIT_Stop(PIT_CH0);
 	PIT_TIEen(PIT_CH0);
 	Pit_SetCallback(PIT_CH0, RGBMatrix_Restart);
@@ -120,7 +124,7 @@ void RGBMatrix_Clear(void) {
 
 void RGBMatrix_Test(void){
 	color_t ledOn = {.r=255,.b=255,.g=255};
-	RGBMatrix_SetBrightness(10.0);	// MAX CURRENT TESTED 1.25Amps @ 100.0 Brightness
+	RGBMatrix_SetBrightness(50.0);	// MAX CURRENT TESTED 1.25Amps @ 100.0 Brightness
 	for(int i=0;i<HEIGHT;i++){
 		for(int j=0;j<WIDTH;j++){
 			rgbMatrix[i][j] = ledOn;
