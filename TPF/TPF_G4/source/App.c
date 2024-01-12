@@ -111,7 +111,7 @@ void App_Run(void) {
 	INIT();
 	mp3_total_files = SD_ReadSongs(mp3_files);
 
-	RGBMatrix_SetBrightness(50.0);
+	RGBMatrix_SetBrightness(40.0);
 
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
@@ -175,13 +175,21 @@ void App_Run(void) {
 
 				case PLAY:
 					// Mostrar la cancion que está sonando
-					VUmeter(2, 80, VUColor);
+					RGBMatrix_Clear();
+					VUmeter(5, 70, VUColor);
+					RGBMatrix_UpdateLED(VUColor, 4, 3);
+					RGBMatrix_UpdateLED(VUColor, 4, 1);
+					RGBMatrix_UpdateLED(VUColor, 3, 2);
+
 					printSongsLCD();
 				break;
 
 				case PAUSE:
 					// Indicar que está en pausa la canción
-					VUmeter(2, 40, VUColor);
+					RGBMatrix_Clear();
+					VUmeter(2, 100, VUColor);
+					VUmeter(5, 100, VUColor);
+
 					pauseSound();
 					printPauseLCD();
 				break;
@@ -198,7 +206,6 @@ void App_Run(void) {
 					if(encoderState == ENC_LEFT && vol >= 1)
 						vol--;
 					printVolLCD(vol*5);
-					RGBMatrix_Test();
 				break;
 
 				default:

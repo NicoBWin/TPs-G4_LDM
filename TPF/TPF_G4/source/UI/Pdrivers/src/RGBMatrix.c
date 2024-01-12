@@ -94,7 +94,7 @@ void RGBMatrix_Init() {
 	DMA_Init(DMA_0, DMAConfigOutput);
 	DMA_SetCallback(DMA_0, RGBMatrix_Reset);
 
-	PIT_Init(6000000, PIT_CH0, false); // Refresh each 10us
+	PIT_Init(600000, PIT_CH0, false); // Refresh each 10us
 	//PIT_Stop(PIT_CH0);
 	PIT_TIEen(PIT_CH0);
 	Pit_SetCallback(PIT_CH0, RGBMatrix_Restart);
