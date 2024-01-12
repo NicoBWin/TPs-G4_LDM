@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define __CORE_CLOCK__  100000000U
+#define __CORE_CLOCK__  120000000U
 #define __FOREVER__     for(;;)
 #define __ISR__         void __attribute__ ((interrupt))
 

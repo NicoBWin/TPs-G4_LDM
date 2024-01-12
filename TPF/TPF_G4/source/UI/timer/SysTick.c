@@ -10,15 +10,17 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <UI/Pdrivers/pines.h>
-#include "../../../sdmmc/port/event.h"
 #include "SysTick.h"
 #include "../MCAL/gpio.h"
 #include "MK64F12.h"
 
+// Extern g_timeMilliseconds
+#include "../../../sdmmc/port/event.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define SYSTICK_DEVELOPMENT_MODE    0
+//#define SYSTICK_DEVELOPMENT_MODE    0
 
 #define SYSTICK_LOAD_INIT ((__CORE_CLOCK__ / SYSTICK_ISR_FREQUENCY_HZ) - 1U)
 #if SYSTICK_LOAD_INIT > (1 << 24)
@@ -29,7 +31,9 @@
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static systick_callback_t st_callback;
+
 extern volatile uint32_t g_timeMilliseconds;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -54,7 +58,7 @@ __ISR__ SysTick_Handler(void) {
 		gpioWrite(PIN_IRQ, HIGH);
 	#endif //SYSTICK_DEVELOPMENT_MODE
 	if (st_callback!=NULL){
-	st_callback();
+		st_callback();
 	}
 	#ifdef SYSTICK_DEVELOPMENT_MODE
 		gpioWrite(PIN_IRQ, LOW);

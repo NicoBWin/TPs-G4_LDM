@@ -10,6 +10,8 @@
 // Main lib
 #include "../headers/DMA.h"
 
+#include <UI/Pdrivers/pines.h>
+#include "../../MCAL/gpio.h"
 
 // MCU libs
 #include "MK64F12.h"
@@ -20,6 +22,7 @@
  ******************************************************************************/
 static dma_callback_t dma_callbacks[16];
 
+//#define DEBUG_CALLBACK_MODE0 0
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -44,6 +47,7 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config) {
 	/* Enable the DMA interrupts. */
 	NVIC_EnableIRQ(DMA0_IRQn);
 	/* Enable the interrupts for the channel 0. */
+
 	/* Clear all the pending events. */
 	NVIC_ClearPendingIRQ(DMA1_IRQn);
 	/* Enable the DMA interrupts. */
@@ -86,57 +90,58 @@ void DMA_Init(uint8_t DMA_channel, DMA_config_t config) {
 	DMA0->TCD[DMA_channel].DLAST_SGA = 0x00; //IMPORTANTE! SETEAR EN 0 (o valor conocido, es random)
 
 	//DMA0->TCD[DMA_channel].CSR &= ~DMA_CSR_INTMAJOR_MASK;
-	DMA0->TCD[DMA_channel].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
+	DMA0->TCD[DMA_0].CSR |= DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
+	DMA0->TCD[DMA_1].CSR &= ~(DMA_CSR_INTMAJOR_MASK);	//Enable Major Interrupt.
 
-	/* Enable request signal for channel 0. */
+	/* Enable request signal. */
 	switch(DMA_channel) {
 		case 0:
-			DMA0->ERQ = DMA_ERQ_ERQ0_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ0_MASK;
 		break;
 		case 1:
-			DMA0->ERQ = DMA_ERQ_ERQ1_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ1_MASK;
 		break;
 		case 2:
-			DMA0->ERQ = DMA_ERQ_ERQ2_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ2_MASK;
 		break;
 		case 3:
-			DMA0->ERQ = DMA_ERQ_ERQ3_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ3_MASK;
 		break;
 		case 4:
-			DMA0->ERQ = DMA_ERQ_ERQ4_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ4_MASK;
 		break;
 		case 5:
-			DMA0->ERQ = DMA_ERQ_ERQ5_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ5_MASK;
 		break;
 		case 6:
-			DMA0->ERQ = DMA_ERQ_ERQ6_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ6_MASK;
 		break;
 		case 7:
-			DMA0->ERQ = DMA_ERQ_ERQ7_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ7_MASK;
 		break;
 		case 8:
-			DMA0->ERQ = DMA_ERQ_ERQ8_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ8_MASK;
 		break;
 		case 9:
-			DMA0->ERQ = DMA_ERQ_ERQ9_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ9_MASK;
 		break;
 		case 10:
-			DMA0->ERQ = DMA_ERQ_ERQ10_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ10_MASK;
 		break;
 		case 11:
-			DMA0->ERQ = DMA_ERQ_ERQ11_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ11_MASK;
 		break;
 		case 12:
-			DMA0->ERQ = DMA_ERQ_ERQ12_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ12_MASK;
 		break;
 		case 13:
-			DMA0->ERQ = DMA_ERQ_ERQ13_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ13_MASK;
 		break;
 		case 14:
-			DMA0->ERQ = DMA_ERQ_ERQ14_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ14_MASK;
 		break;
 		case 15:
-			DMA0->ERQ = DMA_ERQ_ERQ15_MASK;
+			DMA0->ERQ |= DMA_ERQ_ERQ15_MASK;
 		break;
 	}
 }
@@ -171,17 +176,23 @@ uint32_t DMA_GetRemainingMajorLoopCount(uint8_t DMA_channel) {
  ******************************************************************************/
 void DMA0_IRQHandler(void) {
 	/* Clear all the pending events. */
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
 	NVIC_ClearPendingIRQ(DMA0_IRQn);
 	DMA0->CINT |= DMA_CINT_CINT(DMA_0); //clear interrupt ch0
 	if(dma_callbacks[DMA_0]){
 		dma_callbacks[DMA_0]();
 	}
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 }
 
 void DMA1_IRQHandler(void) {
 	/* Clear all the pending events. */
 	NVIC_ClearPendingIRQ(DMA1_IRQn);
-	DMA0->CINT |= DMA_CINT_CINT(DMA_1); //clear interrupt ch0
+	DMA0->CINT |= DMA_CINT_CINT(DMA_1); //clear interrupt ch1
 	if(dma_callbacks[DMA_1]){
 		dma_callbacks[DMA_1]();
 	}

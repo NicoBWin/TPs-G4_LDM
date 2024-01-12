@@ -109,7 +109,7 @@ void App_Init() {
 void App_Run(void) {
 
 	INIT();
-	//mp3_total_files = SD_ReadSongs(mp3_files);
+	mp3_total_files = SD_ReadSongs(mp3_files);
 
 	RGBMatrix_SetBrightness(50.0);
 
@@ -146,8 +146,8 @@ void App_Run(void) {
 		switch_control(switches_input, &next_status);
 		status = next_status;
 		if(status!=PAUSE){
-			//resumeSound();
-			//play_file(mp3_files[mp3_file_index], vol);
+			resumeSound();
+			play_file(mp3_files[mp3_file_index], vol);
 		}
 
 
@@ -161,6 +161,8 @@ void App_Run(void) {
 						index = 0;
 					if(index > 3) //If it is -1
 						index = 3;
+
+					RGBMatrix_Clear();
 
 					printMenuLCD(index);
 				break;
@@ -179,7 +181,7 @@ void App_Run(void) {
 				case PAUSE:
 					// Indicar que está en pausa la canción
 					VUmeter(2, 40, VUColor);
-					//pauseSound();
+					pauseSound();
 					printPauseLCD();
 				break;
 

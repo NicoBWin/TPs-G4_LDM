@@ -81,7 +81,7 @@ void PITdelayCallback();
 void LCD1602_Init() {
 	LCD_Pin_Enable(); 	// Enable pins
 
-	delay(10000);
+	delay(30000);
 
 	SetUp();
 
@@ -123,13 +123,13 @@ void LCD1602_ShiftL() {
  ******************************************************************************/
 void enable(void){
 	LCD_EN_ON;
-	delay(6000);
+	delay(20000);
 	LCD_EN_OFF;
 }
 
 void enable2(void){
 	LCD_EN_ON;
-	delay(3000);
+	delay(15000);
 	LCD_EN_OFF;
 }
 

@@ -17,7 +17,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define SYSTICK_ISR_FREQUENCY_HZ 100000U // 10us @ 100MHz
+#define SYSTICK_ISR_FREQUENCY_HZ 100U // 10us @ 100MHz
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

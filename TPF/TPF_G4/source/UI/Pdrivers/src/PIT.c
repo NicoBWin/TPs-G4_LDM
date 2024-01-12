@@ -10,11 +10,14 @@
 #include "../headers/PIT.h"
 #include "MK64F12.h"
 
+#include <UI/Pdrivers/pines.h>
+#include "../../MCAL/gpio.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
+//#define DEBUG_CALLBACK_MODE0 0
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -58,6 +61,7 @@ void PIT_Start(uint8_t channel) {
 void PIT_TIEen(uint8_t channel) {
 	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TIE_MASK;
 }
+
 void PIT_Stop(uint8_t channel){
 	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 }
@@ -73,29 +77,53 @@ void Pit_SetCallback(uint8_t channel, pit_callback_t callback_fn) {
  ******************************************************************************/
 //ISR of the PIT timers.
 void PIT0_IRQHandler(void) {
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
+
 	// Clear interrupt
 	PIT->CHANNEL[0].TFLG = PIT_TFLG_TIF_MASK;
 	if(pit_callback[0]){
 		pit_callback[0]();
 	}
+
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 }
 
 void PIT1_IRQHandler(void) {
+#ifdef DEBUG_CALLBACK_MODE1
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
+
 	// Clear interrupt
 	PIT->CHANNEL[1].TFLG = PIT_TFLG_TIF_MASK;
 
 	if(pit_callback[1]){
 		pit_callback[1]();
 	}
+
+#ifdef DEBUG_CALLBACK_MODE1
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 }
 
 void PIT2_IRQHandler(void) {
+#ifdef DEBUG_CALLBACK_MODE2
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
+
 	// Clear interrupt
 	PIT->CHANNEL[2].TFLG = PIT_TFLG_TIF_MASK;
 
 	if(pit_callback[2]){
 		pit_callback[2]();
 	}
+
+#ifdef DEBUG_CALLBACK_MODE2
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 }
 
 void PIT3_IRQHandler(void) {

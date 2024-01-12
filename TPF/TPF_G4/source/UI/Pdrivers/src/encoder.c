@@ -18,6 +18,8 @@
 //El switch tiene un pullup externo
 #define SWACTIVE       LOW
 
+
+
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -98,8 +100,9 @@ encResult_t encGetEvent() {
  *******************************************************************************
  ******************************************************************************/
 static void encoCallback(void){
-  readPins();
-  encEvent = encStatus(PINA, PINB, PINSW);
+	readPins();
+	encEvent = encStatus(PINA, PINB, PINSW);
+
 }
 
 // Lee todos los pins

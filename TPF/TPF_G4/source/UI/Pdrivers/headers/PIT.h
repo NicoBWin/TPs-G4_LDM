@@ -26,8 +26,8 @@ typedef enum {
 	PIT_CH3,
 } PITch_n;
 
-#define BUS_CLOCK	50000000U
-#define PITLDVAL_MStoTICKS(x) (  ( (BUS_CLOCK * x) / 1000 ) - 1U)
+#define BUS_CLOCK	60000000U
+#define PITLDVAL_MStoTICKS(x) (  ( (BUS_CLOCK * x) / 10000) - 1U)
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
