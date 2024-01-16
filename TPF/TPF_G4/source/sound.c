@@ -29,11 +29,16 @@
 #include "UI/Pdrivers/headers/PIT.h"
 #include "UI/Pdrivers/headers/DAC.h"
 
+// FOR DEBUG IQRs
+#define PIN_IRQ PORTNUM2PIN(PB, 10)
+#include <UI/Pdrivers/pines.h>
+#include "UI/MCAL/gpio.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define FILE_READ_BUFFER_SIZE   (1024*16)
 
+//#define DEBUG_CALLBACK_MODE0 0
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -42,7 +47,7 @@ enum play_e {eREPLAY, ePREVIOUS, eNEXT};
 /*******************************************************************************
 * Volatile
 ******************************************************************************/
-volatile uint8_t forced_mono,bass_boosted,fast_forward;
+volatile uint8_t forced_mono,bass_boosted;
 volatile uint32_t r1,r2;
 volatile uint8_t next, prev, replay, mute,ffd,reset, play;
 //volume = 5
@@ -144,6 +149,7 @@ void play_file(char *mp3_fname, uint8_t vol) {
 	static bool fileOpen = false;
 
 	static char *mp3_old_fname = NULL;
+
 	if(*mp3_old_fname != *mp3_fname){
 		mp3_old_fname = mp3_fname;
 		bytes_left = 0;
@@ -471,36 +477,41 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
       samples[i] = (int16_t)out;
     }   */
   }
+
+
+
   if(state == 0) {
-    r1 =  DMA_GetRemainingMajorLoopCount(DMA_1) - cnt/2;
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
     while( DMA_GetRemainingMajorLoopCount(DMA_1) > cnt/2 ) {
-      if(fast_forward){
-        goto end1;
-      }
+
     }
+
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, LOW);
+#endif
+
     for(int i = 0; i < cnt; i++) {
       audio_buff[i] = *samples / 16;
       audio_buff[i] += (4096/2);
       samples++;
     }
     state = 1;
-  end1:
     return;
   }
 
+
+
   if(state == 1) {
-    r2 = DMA_GetRemainingMajorLoopCount(DMA_1);
     while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) {
-      if(fast_forward) {
-        goto end2;
-      }
+
     }
     for(int i = 0; i < cnt; i++) {
       audio_buff[i + cnt] = *samples / 16;
       audio_buff[i + cnt] += (4096/2);
       samples++;
     }
-  end2:
     state = 0;
   }
 }

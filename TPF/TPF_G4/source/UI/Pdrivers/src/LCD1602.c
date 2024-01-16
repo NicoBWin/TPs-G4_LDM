@@ -21,6 +21,7 @@
 #include "MK64F12.h"
 #include "hardware.h"
 
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -129,7 +130,7 @@ void enable(void){
 
 void enable2(void){
 	LCD_EN_ON;
-	delay(15000);
+	delay(5000);
 	LCD_EN_OFF;
 }
 

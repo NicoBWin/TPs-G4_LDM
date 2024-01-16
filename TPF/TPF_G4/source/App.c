@@ -30,6 +30,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+// FOR DEBUG IQRs
+#define PIN_IRQ PORTNUM2PIN(PB, 10)
+#include <UI/Pdrivers/pines.h>
+#include "UI/MCAL/gpio.h"
+#define DEBUG_CALLBACK_MODE0 0
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -111,7 +117,7 @@ void App_Run(void) {
 	INIT();
 	mp3_total_files = SD_ReadSongs(mp3_files);
 
-	RGBMatrix_SetBrightness(40.0);
+	RGBMatrix_SetBrightness(10.0);
 
 
 	encResult_t joystick_input = ENC_NONE; // Variable que recibe los estados del encoder
@@ -145,10 +151,6 @@ void App_Run(void) {
 		encoder_control(&index, joystick_input, &next_status);
 		switch_control(switches_input, &next_status);
 		status = next_status;
-		if(status!=PAUSE){
-			resumeSound();
-			play_file(mp3_files[mp3_file_index], vol);
-		}
 
 
 		// Maquina de estados avanzado
@@ -163,7 +165,6 @@ void App_Run(void) {
 						index = 3;
 
 					RGBMatrix_Clear();
-
 
 					printMenuLCD(index);
 				break;
@@ -197,7 +198,7 @@ void App_Run(void) {
 				case EQUALIZER:
 					// Ecualizar las bandas
 					next_status = equalizer_control(joystick_input);
-					//printEqLCD();
+					printEqLCD();
 				break;
 
 				case VOLUME:
@@ -206,6 +207,10 @@ void App_Run(void) {
 					if(encoderState == ENC_LEFT && vol >= 1)
 						vol--;
 					printVolLCD(vol*5);
+
+					RGBMatrix_Clear();
+					VUmeter(3, vol*5, VUColor);
+					VUmeter(4, vol*5, VUColor);
 				break;
 
 				default:
@@ -214,6 +219,16 @@ void App_Run(void) {
 			switches_input = SW_NONE;
 			joystick_input = ENC_NONE;
 		}
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
+		if(status!=PAUSE){
+			resumeSound();
+			play_file(mp3_files[mp3_file_index], vol);
+		}
+#ifdef DEBUG_CALLBACK_MODE0
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 	}
 }
 

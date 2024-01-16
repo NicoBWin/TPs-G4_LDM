@@ -18,7 +18,7 @@
 //El switch tiene un pullup externo
 #define SWACTIVE       LOW
 
-
+//#define DEBUG_CALLBACK_MODE1 0
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -69,7 +69,7 @@ void encInit() {
 
   //Seteo el timer para que llame periodicamente a la callback con 1ms
   encTimer = timerGetId();
-  timerStart(encTimer, TIMER_MS2TICKS(4), TIM_MODE_PERIODIC, &encoCallback);
+  timerStart(encTimer, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, &encoCallback);
 }
 
 /**
@@ -100,8 +100,16 @@ encResult_t encGetEvent() {
  *******************************************************************************
  ******************************************************************************/
 static void encoCallback(void){
+#ifdef DEBUG_CALLBACK_MODE1
+	gpioWrite(PIN_IRQ, HIGH);
+#endif
+// To meassure the time it takes to run this
 	readPins();
 	encEvent = encStatus(PINA, PINB, PINSW);
+
+#ifdef DEBUG_CALLBACK_MODE1
+	gpioWrite(PIN_IRQ, LOW);
+#endif
 
 }
 
