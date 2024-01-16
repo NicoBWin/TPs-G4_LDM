@@ -44,11 +44,6 @@
  ******************************************************************************/
 
 /*******************************************************************************
-* Volatile
-******************************************************************************/
-//volatile uint32_t r1,r2;
-
-/*******************************************************************************
 * Prototypes
 ******************************************************************************/
 static uint32_t Mp3ReadId3V2Text(FIL* pInFile, uint32_t unDataLen, char* pszBuffer, uint32_t unBufferSize);
@@ -63,21 +58,17 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol);
 MP3FrameInfo	mp3FrameInfo;
 HMP3Decoder     hMP3Decoder;
 uint8_t 		read_buff[FILE_READ_BUFFER_SIZE];
-uint32_t 		bytes_read;
 
 char    *read_ptr;
 int16_t pcm_buff[2304];
-int16_t audio_buff[2304*2];
+int16_t *samples = pcm_buff;
 
+int16_t audio_buff[2304*2];
 
 static char szArtist[120];
 static char szTitle[120];
 
 
-unsigned int br, btr;
-
-
-int16_t *samples = pcm_buff;
 /*******************************************************************************
 * Code
 ******************************************************************************/
@@ -116,8 +107,6 @@ uint8_t SD_ReadSongs(uint8_t mp3_files[1000][15]){
 	FILINFO files;
 	FRESULT res;
 
-	//char mp3_fname[50];
-	//memset(mp3_fname, 0, 50);
 	while(1) {
 		res =  f_readdir(&directory, &files);
 		if(res != FR_OK || strlen(files.fname) == 0) {
@@ -174,10 +163,12 @@ void play_file(char *mp3_fname, uint8_t vol) {
 		// Read ID3v2 Tag
 		hMP3Decoder = MP3InitDecoder();
 
+		// Revisar funcion que no anda como debería
 		Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
+		// ---------------------------------------
 	}
 
-
+	static unsigned int br, btr;
 	if( bytes_left < FILE_READ_BUFFER_SIZE/2 ) {
 		memcpy( read_buff, read_ptr, bytes_left );
 		read_ptr = read_buff;
@@ -410,51 +401,44 @@ void RunDACsound(int sample_rate, int output_samples) {
 
 
 static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
-  static uint8_t state = 0;
-  static uint32_t r1,r2;
+	static uint8_t state = 0;
 
-  int32_t tmp = 0;
-  uint8_t volume = vol*5;
-    for(int i = 0; i < cnt; i++) {
-      if(i%2 == 0) {
-        tmp =   samples[i] + samples[i+1];
-        tmp /= 2;
-        samples[i] = (int16_t)tmp * (int32_t)volume / 100;
-      }
-    }
+	int32_t tmp = 0;
+	uint8_t volume = vol*5;
+	for(int i = 0; i < cnt; i++) {
+		if(i%2 == 0) {
+			tmp =   samples[i] + samples[i+1];
+			tmp /= 2;
+			samples[i] = (int16_t)tmp * (int32_t)volume / 100;
+		}
+	}
 
-  if(state == 0) {
+	if(state == 0) {
 #ifdef DEBUG_CALLBACK_MODE0
 	gpioWrite(PIN_IRQ, HIGH);
 #endif
-    while( DMA_GetRemainingMajorLoopCount(DMA_1) > cnt/2 ) {
-
-    }
-
+		while( DMA_GetRemainingMajorLoopCount(DMA_1) > cnt/2 ) { }
 #ifdef DEBUG_CALLBACK_MODE0
 	gpioWrite(PIN_IRQ, LOW);
 #endif
+		for(int i = 0; i < cnt; i++) {
+			audio_buff[i] = *samples / 16;
+			audio_buff[i] += (4096/2);
+			samples++;
+		}
+		state = 1;
+		return;
+	}
 
-    for(int i = 0; i < cnt; i++) {
-      audio_buff[i] = *samples / 16;
-      audio_buff[i] += (4096/2);
-      samples++;
-    }
-    state = 1;
-    return;
-  }
+	if(state == 1) {
+		while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) {
 
-
-
-  if(state == 1) {
-    while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) {
-
-    }
-    for(int i = 0; i < cnt; i++) {
-      audio_buff[i + cnt] = *samples / 16;
-      audio_buff[i + cnt] += (4096/2);
-      samples++;
-    }
-    state = 0;
-  }
+		}
+		for(int i = 0; i < cnt; i++) {
+			audio_buff[i + cnt] = *samples / 16;
+			audio_buff[i + cnt] += (4096/2);
+			samples++;
+		}
+		state = 0;
+	}
 }
