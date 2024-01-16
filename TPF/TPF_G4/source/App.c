@@ -35,7 +35,7 @@
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
 #include <UI/Pdrivers/pines.h>
 #include "UI/MCAL/gpio.h"
-#define DEBUG_CALLBACK_MODE0 0
+//#define DEBUG_CALLBACK_MODE0 0
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -130,6 +130,7 @@ void App_Run(void) {
 
 	static uint8_t index;
 
+	static uint8_t isPlaying = 1;
 
 	// Maquina de estados NO RTOS
 	while (1) {
@@ -156,12 +157,12 @@ void App_Run(void) {
 		if(switches_input != SW_NONE || joystick_input != ENC_NONE) {
 			switch (status) {
 				case MENU:
-					LCD1602_Clear();
+					//LCD1602_Clear();
 
-					if(index < 0)
-						index = 0;
-					if(index > 3) //If it is -1
+					if(index == 255)
 						index = 3;
+					if(index > 3) //If it is -1
+						index = 0;
 
 					RGBMatrix_Clear();
 
@@ -181,6 +182,8 @@ void App_Run(void) {
 					RGBMatrix_UpdateLED(VUColor, 4, 1);
 					RGBMatrix_UpdateLED(VUColor, 3, 2);
 
+					isPlaying = 1;
+
 					printSongsLCD();
 				break;
 
@@ -189,6 +192,8 @@ void App_Run(void) {
 					RGBMatrix_Clear();
 					VUmeter(2, 100, VUColor);
 					VUmeter(5, 100, VUColor);
+
+					isPlaying = 0;
 
 					pauseSound();
 					printPauseLCD();
@@ -218,16 +223,10 @@ void App_Run(void) {
 			switches_input = SW_NONE;
 			joystick_input = ENC_NONE;
 		}
-#ifdef DEBUG_CALLBACK_MODE0
-	gpioWrite(PIN_IRQ, HIGH);
-#endif
-		if(status!=PAUSE){
+		if(isPlaying){
 			resumeSound();
 			play_file(mp3_files[mp3_file_index], vol);
 		}
-#ifdef DEBUG_CALLBACK_MODE0
-	gpioWrite(PIN_IRQ, LOW);
-#endif
 	}
 }
 
@@ -332,10 +331,8 @@ static void printMenuLCD(uint8_t index) {
 }
 
 static void printVolLCD(uint8_t vol){
-	LCD1602_Clear();
 	const unsigned char  volume_text[] = "     VOLUME     ";
 	unsigned char  volume_val[] =  		 "      100%      ";
-	//const unsigned char  TEST[] =		 "________________";
 
 	char charVol[4];
 	intochar(vol, charVol);
@@ -349,19 +346,19 @@ static void printVolLCD(uint8_t vol){
 }
 
 static void printEqLCD(){
-	const unsigned char text2[] = "ECUALIZANDO...";
+	const unsigned char text2[] =  "ECUALIZANDO...  ";
 	LCD1602_Clear();
 	LCD1602_W1L(&text2);
 }
 
 static void printSongsLCD(){
-	const unsigned char text3[] = "CANCIONES...";
+	const unsigned char text3[] =  "    PLAYING     ";
 	LCD1602_Clear();
 	LCD1602_W1L(&text3);
 }
 
 static void printPauseLCD(){
-	const unsigned char text3[] = "PAUSA...";
+	const unsigned char text3[] =  "     PAUSA      ";
 	LCD1602_Clear();
 	LCD1602_W1L(&text3);
 }

@@ -130,7 +130,7 @@ void enable(void){
 
 void enable2(void){
 	LCD_EN_ON;
-	delay(5000);
+	delay(1000);
 	LCD_EN_OFF;
 }
 
@@ -152,7 +152,7 @@ void instructionLong(unsigned char x){
 	enable2();
 
 	lcd_data((x<<4)&0xF0);
-	enable2();
+	enable();
 }
 
 //-----------------------------------------------------------------------
@@ -206,10 +206,10 @@ void info(unsigned char x) {
 	LCD_RS_ON;
 
 	lcd_data( x&0xF0 );
-	enable();
+	enable2();
 
 	lcd_data( (x<<4)&0xF0 );
-	enable();
+	enable2();
 }
 
 //-----------------------------------------------------------------------
