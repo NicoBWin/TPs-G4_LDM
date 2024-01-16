@@ -131,7 +131,6 @@ void App_Run(void) {
 	static uint8_t index;
 
 
-
 	// Maquina de estados NO RTOS
 	while (1) {
 		// Se comunica con el encoder para saber si se acciono y que es lo que se acciono

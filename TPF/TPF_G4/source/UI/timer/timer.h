@@ -68,6 +68,14 @@ void timerStart(tim_id_t id, ttick_t ticks, uint8_t mode, tim_callback_t callbac
 void timerStop(tim_id_t id);
 
 
+//Set timer on TIMER_RUNNING if it was previously stopped
+void timerResume(tim_id_t id);
+
+
+//Reset ticks count on a timer
+void timerReset(tim_id_t id);
+
+
 /**
  * @brief Verify if a timer has run timeout
  * @param id ID of the timer to check for expiration

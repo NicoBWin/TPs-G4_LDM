@@ -79,6 +79,7 @@ void encInit() {
 bool encGetStatus() {
 	if(status) {
 		status = false;
+		timerReset(encTimer);
 		return true;
 	}
 	else {
@@ -100,17 +101,8 @@ encResult_t encGetEvent() {
  *******************************************************************************
  ******************************************************************************/
 static void encoCallback(void){
-#ifdef DEBUG_CALLBACK_MODE1
-	gpioWrite(PIN_IRQ, HIGH);
-#endif
-// To meassure the time it takes to run this
 	readPins();
 	encEvent = encStatus(PINA, PINB, PINSW);
-
-#ifdef DEBUG_CALLBACK_MODE1
-	gpioWrite(PIN_IRQ, LOW);
-#endif
-
 }
 
 // Lee todos los pins
@@ -211,6 +203,9 @@ static encResult_t encStatus(bool A, bool B, bool SW){
       }
     break;
     default: break;
+  }
+  if(result!=ENC_NONE){
+	  timerStop(encTimer);
   }
   return result;
 }

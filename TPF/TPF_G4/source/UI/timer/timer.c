@@ -84,10 +84,6 @@ tim_id_t timerGetId(void) {
 
 
 void timerStart(tim_id_t id, ttick_t ticks, uint8_t mode, tim_callback_t callback) {
-#if TIMER_DEVELOPMENT_MODE
-    if ((id < timers_cant) && (mode < CANT_TIM_MODES) && (id >= 0))
-#endif // TIMER_DEVELOPMENT_MODE
-    {
     	timers[id].running = 0b0;
 
     	//Timer init default config
@@ -98,7 +94,6 @@ void timerStart(tim_id_t id, ttick_t ticks, uint8_t mode, tim_callback_t callbac
         timers[id].expired = 0b0;
 
         timers[id].running = 0b1;
-    }
 }
 
 
@@ -112,25 +107,15 @@ void timerStop(tim_id_t id)
 }
 
 //Set timer on TIMER_RUNNING if it was previously stopped
-void timerResume(tim_id_t id)
-{
-#if TIMER_DEVELOPMENT_MODE
-    if ((id < timers_cant) && (id > 0))
-#endif
+void timerResume(tim_id_t id) {
         timers[id].running = TIMER_RUNNING;
 }
 
 //Reset ticks count on a timer
-void timerReset(tim_id_t id)
-{
-#if TIMER_DEVELOPMENT_MODE
-    if ((id < timers_cant) && (id > 0))
-#endif
-    {
+void timerReset(tim_id_t id){
         timers[id].cnt = timers[id].period;
         timers[id].expired = TIMER_NOT_EXPIRED;
         timers[id].running = TIMER_RUNNING;
-    }
 }
 
 bool timerExpired(tim_id_t id) {
