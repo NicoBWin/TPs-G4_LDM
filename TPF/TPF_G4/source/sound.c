@@ -42,15 +42,12 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-enum play_e {eREPLAY, ePREVIOUS, eNEXT};
 
 /*******************************************************************************
 * Volatile
 ******************************************************************************/
-volatile uint8_t forced_mono,bass_boosted;
-volatile uint32_t r1,r2;
-volatile uint8_t next, prev, replay, mute,ffd,reset, play;
-//volume = 5
+//volatile uint32_t r1,r2;
+
 /*******************************************************************************
 * Prototypes
 ******************************************************************************/
@@ -73,6 +70,8 @@ int16_t pcm_buff[2304];
 int16_t audio_buff[2304*2];
 
 
+static char szArtist[120];
+static char szTitle[120];
 
 
 unsigned int br, btr;
@@ -175,8 +174,6 @@ void play_file(char *mp3_fname, uint8_t vol) {
 		// Read ID3v2 Tag
 		hMP3Decoder = MP3InitDecoder();
 
-		char szArtist[120];
-		char szTitle[120];
 		Mp3ReadId3V2Tag(&fil, szArtist, sizeof(szArtist), szTitle, sizeof(szTitle));
 	}
 
@@ -411,74 +408,20 @@ void RunDACsound(int sample_rate, int output_samples) {
 	PIT_Start(PIT_CH1);
 }
 
-/* FILTRO -> NO ANDA POR AHORA
-float a0 = 0.00005029912027879971;
-float a1 = 0.00010059824055759942;
-float a2 = 0.00005029912027879971;
-float b1 = -1.9821252053783214;
-float b2 = 0.9823264018594366;
-*/
+
 static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
-  static float z1,z2;
-
   static uint8_t state = 0;
-  int32_t tmp = 0;
+  static uint32_t r1,r2;
 
+  int32_t tmp = 0;
   uint8_t volume = vol*5;
-  if(1) {
     for(int i = 0; i < cnt; i++) {
       if(i%2 == 0) {
         tmp =   samples[i] + samples[i+1];
         tmp /= 2;
-        samples[i] = (int16_t)tmp * (int32_t)volume / 100;;
+        samples[i] = (int16_t)tmp * (int32_t)volume / 100;
       }
     }
-  }
-  float w,out;//, in;
-  //bass_boosted = 1;
-  if(bass_boosted) {
-	  /*
-    for(int i = 0; i < cnt; i++) {
-      if( i % 2 == 0) {
-        w = (float)samples[i] - b1*z1 - b2*z2;
-        out = a0*w + a1*z1 + a2*z2;
-     //   z2 = z1;
-     //   z1 = w;
-      }
-      samples[i] = (int16_t)out;
-    }
-    for(int i = 0; i < cnt; i++) {
-      if( i % 2 == 0) {
-        w = (float)samples[i] - b1_1*z1 - b2_1*z2;
-        out = a0_1*w + a1*z1 + a2_1*z2;
-     //   z2 = z1;
-     //   z1 = w;
-      }
-      samples[i] = (int16_t)out;
-    }
-
-    for(int i = 0; i < cnt; i++) {
-      if( i % 2 == 0) {
-        w = (float)samples[i] - b1_2*z1 - b2_2*z2;
-        out = a0_2*w + a1_2*z1 + a2_2*z2;
-  //      z2 = z1;
-    //    z1 = w;
-      }
-      samples[i] = (int16_t)out;
-    }
-
-    for(int i = 0; i < cnt; i++) {
-      if( i % 2 == 0) {
-        //w = (float)samples[i] - b1_3*z1 - b2_3*z2;
-        //out = a0_3*w + a1_3*z1 + a2_3*z2;
-        z2 = z1;
-        z1 = w;
-      }
-      samples[i] = (int16_t)out;
-    }   */
-  }
-
-
 
   if(state == 0) {
 #ifdef DEBUG_CALLBACK_MODE0
