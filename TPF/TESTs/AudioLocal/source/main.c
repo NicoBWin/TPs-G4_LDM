@@ -199,7 +199,7 @@ int main(void) {
     }
   }
 
-  mp3_file_index = 0;
+  mp3_file_index = 4;
 
   char file_name_and_index[50];
   PRINTF(file_name_and_index, "%s (%d/%d)", mp3_files[mp3_file_index], mp3_file_index + 1, mp3_total_files);

@@ -65,14 +65,12 @@ int16_t *samples = pcm_buff;
 
 int16_t audio_buff[2304*2];
 
-static char szArtist[120];
-static char szTitle[120];
-
-
+static char szArtist[64];
+static char szTitle[64];
 /*******************************************************************************
 * Code
 ******************************************************************************/
-uint8_t SD_ReadSongs(uint8_t mp3_files[1000][15]){
+uint8_t SD_ReadSongs(uint8_t mp3_files[50][16]){
 	uint8_t 	mp3_total_files=0;
 	uint8_t		mp3_file_index=0;
 
@@ -332,6 +330,10 @@ void pauseSound(){
 
 void resumeSound() {
 	PIT_Start(PIT_CH1);
+}
+
+void getSongName(uint8_t Name[1][16]){
+	strcpy(Name[0], szTitle);    //Save names
 }
 /*******************************************************************************
  *******************************************************************************

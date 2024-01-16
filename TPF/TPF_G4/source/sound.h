@@ -34,7 +34,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-uint8_t SD_ReadSongs(uint8_t mp3_files[1000][15]);
+uint8_t SD_ReadSongs(uint8_t mp3_files[50][16]);
 
 uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, char* pszTitle, uint32_t unTitleSize);
 
@@ -43,6 +43,8 @@ void play_file(char *mp3_fname, uint8_t vol);
 void pauseSound(void);
 
 void resumeSound(void);
+
+void getSongName(uint8_t Name[1][16]);
 
 /*******************************************************************************
  ******************************************************************************/

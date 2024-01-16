@@ -73,7 +73,7 @@ static color_t VUColor = {.r=255,.b=0,.g=0};
 
 static const char menu[4]={'M', 'S', 'E', 'V'};
 
-static uint8_t	mp3_files[50][15];    //to save file names -> 50 songs + 15 letter name
+static uint8_t	mp3_files[50][16];    //to save file names -> 50 songs + 16 letter name
 static uint8_t 	mp3_total_files;
 static int mp3_file_index = 0;
 
@@ -152,6 +152,10 @@ void App_Run(void) {
 		switch_control(switches_input, &next_status);
 		status = next_status;
 
+		if(isPlaying){
+			resumeSound();
+			play_file(mp3_files[mp3_file_index], vol);
+		}
 
 		// Maquina de estados avanzado
 		if(switches_input != SW_NONE || joystick_input != ENC_NONE) {
@@ -222,10 +226,6 @@ void App_Run(void) {
 			}
 			switches_input = SW_NONE;
 			joystick_input = ENC_NONE;
-		}
-		if(isPlaying){
-			resumeSound();
-			play_file(mp3_files[mp3_file_index], vol);
 		}
 	}
 }
@@ -311,6 +311,7 @@ static void switch_control(swResult_t switches_input, int *status){
 }
 
 static void printMenuLCD(uint8_t index) {
+	RGBMatrix_Clear();
 	const unsigned char  menu_text[] = 	 "      MENU      ";
 	const unsigned char  songs_text[] =  "     SONGS      ";
 	const unsigned char  eq_text[] = 	 "   EQUALIZER    ";
@@ -352,9 +353,10 @@ static void printEqLCD(){
 }
 
 static void printSongsLCD(){
-	const unsigned char text3[] =  "    PLAYING     ";
 	LCD1602_Clear();
-	LCD1602_W1L(&text3);
+	static uint8_t	Name[1][16];
+	getSongName(Name);
+	LCD1602_W1L(&Name);
 }
 
 static void printPauseLCD(){
