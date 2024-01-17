@@ -74,6 +74,7 @@ void SW_Init() {
 bool swGetStatus() {
 	if(status) {
 		status = false;
+		timerReset(swTimer);
 		return true;
 	}
 	else {
@@ -86,7 +87,9 @@ bool swGetStatus() {
  * @return event
  */
 swResult_t swGetEvent() {
-  return swEvent;
+	swResult_t aux = swEvent;
+	swEvent = SW_NONE;
+	return aux;
 }
 
 /*******************************************************************************
@@ -153,5 +156,8 @@ static void readPins(void) {
 				swFSM = NONE;
 			}
 			break;
+	}
+	if (swEvent != SW_NONE){
+		timerStop(swTimer);
 	}
 }

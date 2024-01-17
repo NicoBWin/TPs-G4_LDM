@@ -130,7 +130,7 @@ void enable(void){
 
 void enable2(void){
 	LCD_EN_ON;
-	delay(1000);
+	delay(500);
 	LCD_EN_OFF;
 }
 
