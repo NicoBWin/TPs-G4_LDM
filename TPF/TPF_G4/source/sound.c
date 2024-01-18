@@ -14,6 +14,7 @@
 
 // Main Lib
 #include "sound.h"
+#include "equalizer.h"
 
 // Fresscale Libs
 #include "fsl_debug_console.h"
@@ -28,6 +29,7 @@
 #include "UI/Pdrivers/headers/DMA.h"
 #include "UI/Pdrivers/headers/PIT.h"
 #include "UI/Pdrivers/headers/DAC.h"
+#include "UI/Pdrivers/headers/RGBMatrix.h"
 
 // FOR DEBUG IQRs
 #define PIN_IRQ PORTNUM2PIN(PB, 10)
@@ -62,8 +64,8 @@ uint8_t 		read_buff[FILE_READ_BUFFER_SIZE];
 char    *read_ptr;
 int16_t pcm_buff[2304];
 int16_t *samples = pcm_buff;
-
 int16_t audio_buff[2304*2];
+float32_t MP3FloatTables[2304];
 
 static char szArtist[64];
 static char szTitle[64];
@@ -231,6 +233,19 @@ void play_file(char *mp3_fname, uint8_t vol) {
 	}
 	if (!outOfData) {
 		ProvideAudioBuffer(samples, mp3FrameInfo.outputSamps, vol);
+
+		// Vumetro ---------------------------------------
+        // Pasa a float
+        for (int i = 0; i < mp3FrameInfo.outputSamps; i++) {
+            MP3FloatTables[i] = (float32_t)samples[i];
+        }
+		InitVUAnalyzer(MP3FloatTables);
+		static uint8_t vumetValues[8];
+		getAnalyzer(vumetValues);
+		for(int i=0; i<8; i++){
+			static color_t VUColor = {.r=255,.b=0,.g=0};
+			VUmeter(i, vumetValues[i], VUColor);
+		}
 	}
 }
 
@@ -416,13 +431,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
 	}
 
 	if(state == 0) {
-#ifdef DEBUG_CALLBACK_MODE0
-	gpioWrite(PIN_IRQ, HIGH);
-#endif
 		while( DMA_GetRemainingMajorLoopCount(DMA_1) > cnt/2 ) { }
-#ifdef DEBUG_CALLBACK_MODE0
-	gpioWrite(PIN_IRQ, LOW);
-#endif
 		for(int i = 0; i < cnt; i++) {
 			audio_buff[i] = *samples / 16;
 			audio_buff[i] += (4096/2);
@@ -433,9 +442,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
 	}
 
 	if(state == 1) {
-		while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) {
-
-		}
+		while( DMA_GetRemainingMajorLoopCount(DMA_1) < cnt/2 ) { }
 		for(int i = 0; i < cnt; i++) {
 			audio_buff[i + cnt] = *samples / 16;
 			audio_buff[i + cnt] += (4096/2);
