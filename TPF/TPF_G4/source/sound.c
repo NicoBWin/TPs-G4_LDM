@@ -473,7 +473,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
 	}
 	if ( Equalizer_ON == 1)
 	{
-		blockEqualizer( (float*)sample, (float*)sample , cnt);
+		blockEqualizer( (float*)samples, (float*)samples , cnt);
 	}
 }
 //
