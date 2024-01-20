@@ -384,10 +384,12 @@ static int equalizer_control(encResult_t joystick_input){
 					if ( menu_equalizer[0] == '0' && menu_equalizer[1] == '0' && menu_equalizer[2] == '0' && menu_equalizer[3] == '0')
 					{
 						// Desactivar equalizador
+						On_Off_equalizer(0);
 					}
 					else
 					{
-						// Activar Equalizador
+						On_Off_equalizer(1);
+						setUpCascadeFilter(menu_equalizer);
 					}
 					return MENU;
 				}
