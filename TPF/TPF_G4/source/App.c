@@ -87,7 +87,7 @@ static void printMenuLCD(uint8_t index);
 static void printVolLCD(uint8_t volume);
 
 static void printOnOffLCD();
-static void printEqLCD();
+//static void printEqLCD();
 static void printSongsLCD();
 static void printPauseLCD();
 
@@ -161,8 +161,6 @@ void App_Run(void) {
 		if(switches_input != SW_NONE || joystick_input != ENC_NONE) {
 			switch (status) {
 				case MENU:
-					//LCD1602_Clear();
-
 					if(index == 255)
 						index = 3;
 					if(index > 3) //If it is -1
@@ -180,14 +178,7 @@ void App_Run(void) {
 
 				case PLAY:
 					// Mostrar la cancion que está sonando
-					RGBMatrix_Clear();
-					VUmeter(5, 70, VUColor);
-					RGBMatrix_UpdateLED(VUColor, 4, 3);
-					RGBMatrix_UpdateLED(VUColor, 4, 1);
-					RGBMatrix_UpdateLED(VUColor, 3, 2);
-
 					isPlaying = 1;
-
 					printSongsLCD();
 				break;
 
@@ -206,7 +197,7 @@ void App_Run(void) {
 				case EQUALIZER:
 					// Ecualizar las bandas
 					next_status = equalizer_control(joystick_input);
-					printEqLCD();
+					//printEqLCD();
 				break;
 
 				case VOLUME:
