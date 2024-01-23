@@ -195,7 +195,6 @@ void App_Run(void) {
 				case EQUALIZER:
 					// Ecualizar las bandas
 					next_status = equalizer_control(joystick_input);
-					//printEqLCD();
 				break;
 
 				case VOLUME:
@@ -379,7 +378,6 @@ static int equalizer_control(encResult_t joystick_input){
 				else {		// Click para modificar la atenuación de una frecuencia
 					equalizer_status = EQUALIZER;
 				}
-
 			}
 			else if(equalizer_status == EQUALIZER) {		// Si ya estaba modificando una atenuación, que vuelva al menu del equalizer
 				equalizer_status = MENU;

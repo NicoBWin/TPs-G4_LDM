@@ -16,22 +16,23 @@
 #include "../CMSIS/arm_math.h"
 
 /*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
-
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-// VARIABLE GLOBAL BORRAR LUEGO
-
-
-/*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+//FILTROS
+void On_Off_equalizer(int on);
+
+int GetOnOffEq();
+
+void setUpCascadeFilter(char* GaindB);
+
+void setUpFilter(int N_Frequency, int GaindB);
+
+void blockEqualizer(const float * pSrc, float * pDst, int blockSize);
+
+//VUMETRO
 void InitVUAnalyzer(float32_t * tableStart);
 
-void getAnalyzer(uint8_t data[8]);
+void VUAnalyze(uint8_t data[8]);
 
 /*******************************************************************************
  ******************************************************************************/
