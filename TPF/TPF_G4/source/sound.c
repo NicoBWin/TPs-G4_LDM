@@ -521,6 +521,10 @@ void On_Off_equalizer(int on) {
 	Equalizer_ON = on;
 }
 
+int GetOnOffEq() {
+	return Equalizer_ON;
+}
+
 void blockEqualizer(const float * pSrc, float * pDst, int blockSize){
 //########################################
 	arm_biquad_cascade_df1_f32(&Sequ, pSrc, pDst, blockSize);

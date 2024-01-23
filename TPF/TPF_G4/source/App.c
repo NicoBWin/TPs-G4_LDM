@@ -366,7 +366,8 @@ static int equalizer_control(encResult_t joystick_input){
 		else if(joystick_input == ENC_CLICK) { 	// CLICK
 			if ( equalizer_status == MENU) {	// Si esta en el MENU del equalizar, moverse entre frecuencias
 				if (index_Equalizer == 4) {		// Si Seteo e equalizer
-					if ( menu_equalizer[0] == '0' && menu_equalizer[1] == '0' && menu_equalizer[2] == '0' && menu_equalizer[3] == '0') {
+					//if ( menu_equalizer[0] == '0' && menu_equalizer[1] == '0' && menu_equalizer[2] == '0' && menu_equalizer[3] == '0') {
+					if (GetOnOffEq()){
 						// Desactivar equalizador
 						On_Off_equalizer(0);
 					}
@@ -374,7 +375,6 @@ static int equalizer_control(encResult_t joystick_input){
 						On_Off_equalizer(1);
 						setUpCascadeFilter(menu_equalizer);
 					}
-					return MENU;
 				}
 				else {		// Click para modificar la atenuación de una frecuencia
 					equalizer_status = EQUALIZER;
@@ -419,6 +419,7 @@ static int equalizer_control(encResult_t joystick_input){
 		}
 	}
 	else {
+		equalizer_status = MENU;
 		first_click = 1;
 	}
 	printEQLCD(index_Equalizer, menu_equalizer[index_Equalizer], equalizer_status);
@@ -429,13 +430,17 @@ static void printEQLCD(int N_Frequency, char Attenuation, int equalizer_status){
 	LCD1602_Clear();
 
 	unsigned char  Set_text[] = "<    SET EQ    >";
+	unsigned char  ON_EQ[] = "       ON       ";
+	unsigned char  OFF_EQ[] = "       OFF      ";
 	unsigned char  Att_val[] =  		 "      0dB       ";
 	unsigned char  arrows_text[] = "<              >";
 	unsigned char  Blank[] =		 "                ";
-	if (N_Frequency == 4 )
-	{
+	if (N_Frequency == 4 ) {
 		LCD1602_W1L(&Set_text);
-		LCD1602_W2L(&Blank);
+		if(GetOnOffEq())
+			LCD1602_W2L(&ON_EQ);
+		else
+			LCD1602_W2L(&OFF_EQ);
 	}
 	else
 	{
@@ -460,8 +465,7 @@ static void printEQLCD(int N_Frequency, char Attenuation, int equalizer_status){
 			else
 				LCD1602_W1L("    F=150Hz     ");
 		Att_val[6] = Attenuation;
-		if(equalizer_status == EQUALIZER)
-		{
+		if(equalizer_status == EQUALIZER) {
 			Att_val[0] = '<';
 			Att_val[15] = '>';
 		}

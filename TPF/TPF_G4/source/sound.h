@@ -48,6 +48,8 @@ void getSongName(uint8_t Name[1][16]);
 
 void On_Off_equalizer(int on);
 
+int GetOnOffEq();
+
 void setUpCascadeFilter(char* GaindB);
 
 /*******************************************************************************
