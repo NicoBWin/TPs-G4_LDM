@@ -166,8 +166,6 @@ void App_Run(void) {
 					if(index > 3) //If it is -1
 						index = 0;
 
-					RGBMatrix_Clear();
-
 					printMenuLCD(index);
 				break;
 
@@ -362,87 +360,66 @@ static int equalizer_control(encResult_t joystick_input){
 	static int equalizer_status = MENU;
 	static uint8_t index_Equalizer = 0;
 	static char menu_equalizer[]={'0','0','0','0','S'};
-	if(first_click == 1)
-	{
-		if (joystick_input == ENC_NONE) // SI no clickea que siga en la funcion
+	if(first_click == 1) {
+		if (joystick_input == ENC_NONE) 		// SI no clickea que siga en la funcion
 			return EQUALIZER;
-		else if(joystick_input == ENC_CLICK)
-		{// CLICK
-			if ( equalizer_status == MENU) // Si esta en el MENU del equalizar, moverse entre frecuencias
-			{
-				if (index_Equalizer == 4) // Si Seteo e equalizer
-				{
-					if ( menu_equalizer[0] == '0' && menu_equalizer[1] == '0' && menu_equalizer[2] == '0' && menu_equalizer[3] == '0')
-					{
+		else if(joystick_input == ENC_CLICK) { 	// CLICK
+			if ( equalizer_status == MENU) {	// Si esta en el MENU del equalizar, moverse entre frecuencias
+				if (index_Equalizer == 4) {		// Si Seteo e equalizer
+					if ( menu_equalizer[0] == '0' && menu_equalizer[1] == '0' && menu_equalizer[2] == '0' && menu_equalizer[3] == '0') {
 						// Desactivar equalizador
 						On_Off_equalizer(0);
 					}
-					else
-					{
+					else {
 						On_Off_equalizer(1);
 						setUpCascadeFilter(menu_equalizer);
 					}
 					return MENU;
 				}
-				else // Click para modificar la atenuación de una frecuencia
-				{
+				else {		// Click para modificar la atenuación de una frecuencia
 					equalizer_status = EQUALIZER;
-
 				}
 
 			}
-			else if(equalizer_status == EQUALIZER) // Si ya estaba modificando una atenuación, que vuelva al menu del equalizer
-			{
+			else if(equalizer_status == EQUALIZER) {		// Si ya estaba modificando una atenuación, que vuelva al menu del equalizer
 				equalizer_status = MENU;
 			}
 		}
-		else if(joystick_input == ENC_RIGHT)
-		{
-			if(equalizer_status == MENU)
-			{
+		else if(joystick_input == ENC_RIGHT) {
+			if(equalizer_status == MENU) {
 				if (index_Equalizer == 4 )
 					index_Equalizer = 0;
 				else
 					index_Equalizer++;
 			}
-			else if (equalizer_status == EQUALIZER)
-			{
-				if(menu_equalizer[index_Equalizer] == '9')
-				{
+			else if (equalizer_status == EQUALIZER) {
+				if(menu_equalizer[index_Equalizer] == '9') {
 					menu_equalizer[index_Equalizer] = '0';
 				}
-				else
-				{
+				else {
 					menu_equalizer[index_Equalizer]+= 3;
 				}
 			}
 		}
-		else if(joystick_input == ENC_LEFT)
-		{
-			if(equalizer_status == MENU)
-			{
+		else if(joystick_input == ENC_LEFT) {
+			if(equalizer_status == MENU) {
 				if (index_Equalizer == 0 )
 					index_Equalizer = 4;
 				else
 					index_Equalizer--;
 			}
-			else if (equalizer_status == EQUALIZER)
-			{
-				if(menu_equalizer[index_Equalizer] == '0')
-				{
+			else if (equalizer_status == EQUALIZER) {
+				if(menu_equalizer[index_Equalizer] == '0') {
 					menu_equalizer[index_Equalizer] = '4';
 				}
-				else
-				{
+				else {
 					menu_equalizer[index_Equalizer]--;
 				}
 			}
 		}
 	}
-	else
-	{
+	else {
 		first_click = 1;
-
 	}
 	printEQLCD(index_Equalizer, menu_equalizer[index_Equalizer], equalizer_status);
 	return EQUALIZER;

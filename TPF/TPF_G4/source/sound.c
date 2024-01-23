@@ -56,6 +56,7 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol);
 
 void setUpFilter(int N_Frequency, int GaindB);
 
+void blockEqualizer(const float * pSrc, float * pDst, int blockSize);
 
 /*******************************************************************************
 * Variables
@@ -90,6 +91,7 @@ static float32_t pCoeffs_filter [12][5] ={{1.00453968207833,-2,0.995917140680743
 											{1.408996510952285,-2,0.966432759621188 ,1.227573744668495,-0.458007302436515}, // -6dB
 											{1.825171060708643,-2,0.550258209864829 ,0.933924963748510,-0.109236347703740}}; // -3dB
 static arm_biquad_casd_df1_inst_f32 Sequ;
+
 /*******************************************************************************
 * Code
 ******************************************************************************/
@@ -441,6 +443,19 @@ void RunDACsound(int sample_rate, int output_samples) {
 static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
 	static uint8_t state = 0;
 
+	if ( Equalizer_ON == 1) {
+		float32_t FloatSamples[2304];
+		float32_t FloatSamples2[2304];
+		 for (int i = 0; i < cnt; i++) {
+			FloatSamples[i] = (float32_t)samples[i];
+		}
+		blockEqualizer(FloatSamples, FloatSamples2, cnt);
+
+		 for (int i = 0; i < cnt; i++) {
+			samples[i] = (int16_t) FloatSamples2[i];
+		}
+	}
+
 	int32_t tmp = 0;
 	uint8_t volume = vol*5;
 	for(int i = 0; i < cnt; i++) {
@@ -471,17 +486,12 @@ static void ProvideAudioBuffer(int16_t *samples, int cnt, uint8_t vol) {
 		}
 		state = 0;
 	}
-	if ( Equalizer_ON == 1)
-	{
-		blockEqualizer( (float*)samples, (float*)samples , cnt);
-	}
 }
-//
-void setUpFilter(int N_Frequency, int GaindB){
 
+//
+void setUpFilter(int N_Frequency, int GaindB) {
 	int i;
-	if (GaindB > 0)
-	{
+	if (GaindB > 0) {
 		i = (N_Frequency*3) + (9/GaindB) - 1; // Asumo ganancia positiva
 		pCoeffs[N_Frequency*5+0] = pCoeffs_filter [i][0] ; // b0
 		pCoeffs[N_Frequency*5+1] = pCoeffs_filter [i][1] ; // b1
@@ -490,8 +500,7 @@ void setUpFilter(int N_Frequency, int GaindB){
 		pCoeffs[N_Frequency*5+3] = pCoeffs_filter [i][3] ; // a1
 		pCoeffs[N_Frequency*5+4] = pCoeffs_filter [i][4] ; // a2
 	}
-	else
-	{
+	else {
 		pCoeffs[N_Frequency*5] = 1;
 		pCoeffs[N_Frequency*5 + 1] = 0;
 		pCoeffs[N_Frequency*5 + 2] = 0;
@@ -499,29 +508,21 @@ void setUpFilter(int N_Frequency, int GaindB){
 		pCoeffs[N_Frequency*5 + 4] = 0;
 	}
 	arm_biquad_cascade_df1_init_f32(&Sequ, 4, pCoeffs, pState);
-
 }
 
-void setUpCascadeFilter(char* GaindB){
-
+void setUpCascadeFilter(char* GaindB) {
 	int i;
-	for(i = 0; i<4;i++)
-	{
-
+	for(i = 0; i<4; i++) {
 		setUpFilter(i, GaindB[i]-'0');
-
 	}
 }
 
-void On_Off_equalizer(int on)
-{
+void On_Off_equalizer(int on) {
 	Equalizer_ON = on;
 }
 
-void blockEqualizer(const float * pSrc, float * pDst, int 	blockSize){
-
+void blockEqualizer(const float * pSrc, float * pDst, int blockSize){
 //########################################
 	arm_biquad_cascade_df1_f32(&Sequ, pSrc, pDst, blockSize);
 //########################################
-
 }
